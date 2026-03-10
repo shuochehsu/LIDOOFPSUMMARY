@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIDO OFP Summary</title>
+    <!-- 強制載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 React 核心 -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 載入 Babel 編譯器 -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; }
+        #loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; color: #475569; }
+        .spinner { animation: spin 1s linear infinite; width: 40px; height: 40px; margin-bottom: 20px; color: #10b981; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <!-- 預設載入畫面，React 成功啟動後會自動覆蓋 -->
+        <div id="loading-screen">
+            <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <h2 style="font-size: 1.5rem; font-weight: bold;">系統啟動中 Loading...</h2>
+            <p style="margin-top: 10px; font-size: 0.875rem;">如果畫面持續卡住，請重新整理網頁。</p>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // --- 自定義圖示 ---
+        const PlaneTakeoff = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22h20"/><path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12l5-5 1.5-1.5a2.5 2.5 0 1 1 3.53 3.53L16.5 10.5 12 14l-.4 1.6 4.3 2.15a2 2 0 0 1 1.05 1.74v.01c-.01.54-.42.98-.96 1L6.36 17.4Z"/></svg>;
+        const PlaneLanding = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22h20"/><path d="M13.4 17.2 16 17l2-4-1.1-.55a2 2 0 0 0-1.8 0l-.17.1a2 2 0 0 1-1.8 0L12 12l-5-5-1.5-1.5a2.5 2.5 0 1 0-3.53 3.53L3.5 10.5 8 14l.4 1.6-4.3 2.15a2 2 0 0 0-1.05 1.74v.01c.01.54.42.98.96 1l9.63 1.6Z"/></svg>;
+        const Clock = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const Fuel = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>;
+        const Weight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.5 8z"/></svg>;
+        const Wind = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>;
+        const ChevronRight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
+        const AlertTriangle = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
+        const Upload = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
+        const FileText = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
+
+        // --- PDF.js 動態載入 ---
+        const loadPdfJs = () => {
+            return new Promise((resolve, reject) => {
+                if (window.pdfjsLib) {
+                    resolve(window.pdfjsLib);
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.onload = () => {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve(window.pdfjsLib);
+                };
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        };
+
+        // --- 時間推算引擎 ---
+        const getAbsMins = (hhmmZ, baseDate, stdMins) => {
+            let hh = parseInt(hhmmZ.substring(0, 2));
+            let mm = parseInt(hhmmZ.substring(3, 5));
+            let mins = hh * 60 + mm;
+            let day = baseDate;
+            if (mins < stdMins - 360) {
+                day = baseDate + 1;
+            }
+            return day * 24 * 60 + mins;
+        };
+
+        // --- 解析 OFP 核心邏輯 (防當機與完美過濾版) ---
+        const parseOFP = (text) => {
+            const data = {
+                flightNo: 'N/A', date: 'N/A', route: 'N/A', reg: 'N/A',
+                depIcao: 'N/A', arrIcao: 'N/A',
+                stdL: 'N/A', stdZ: 'N/A', staL: 'N/A', staZ: 'N/A',
+                flightTime: 'N/A', blockTime: 'N/A',
+                zfwLimit: 'N/A', zfwPlanned: 'N/A',
+                ldwLimit: 'N/A', ldwPlanned: 'N/A',
+                towLimit: 'N/A', towPlanned: 'N/A',
+                totalFuel: 'N/A', reserveFuelSum: 'N/A', ci: 'N/A', fl: 'N/A',
+                tkofRwy: 'N/A', sid: 'N/A',
+                ldgRwy: 'N/A', star: 'N/A',
+                weather: [], validityWindows: {},
+                baseDate: 1
+            };
+
+            try {
+                // 擷取前 8000 字元做基本資料分析，避免全文搜尋卡死
+                const topText = text.substring(0, 8000);
+
+                const headerMatch = topText.match(/([A-Z0-9\s]+)\/(\d{2}[A-Za-z]{3}\d{2})\/([A-Z]{3,4}-[A-Z]{3,4})\s+Reg:\s*([A-Z0-9-]+)/i);
+                if (headerMatch) {
+                    data.flightNo = headerMatch[1].replace(/\s+/g, '');
+                    data.date = headerMatch[2].toUpperCase();
+                    data.route = headerMatch[3];
+                    data.reg = headerMatch[4];
+                } else {
+                    const fltMatch = topText.match(/(?:EVA|BR|CAL|CI)\s*\d+/i);
+                    if(fltMatch) data.flightNo = fltMatch[0].replace(/\s+/g, '').toUpperCase();
+                }
+
+                const depArrMatch = topText.match(/([A-Z]{4})\/([A-Z]{4})/);
+                if (depArrMatch) {
+                    data.depIcao = depArrMatch[1];
+                    data.arrIcao = depArrMatch[2];
+                }
+
+                const dateMatch = topText.match(/(\d{2})[A-Za-z]{3}\d{2}/i);
+                if (dateMatch) data.baseDate = parseInt(dateMatch[1]);
+
+                let stdMins = 0;
+                const stdMatch = topText.match(/STD\s+(\d{4}L)\s+(\d{4}Z)/);
+                if (stdMatch) { 
+                    data.stdL = stdMatch[1]; 
+                    data.stdZ = stdMatch[2]; 
+                    stdMins = parseInt(data.stdZ.substring(0,2)) * 60 + parseInt(data.stdZ.substring(2,4));
+                }
+
+                const staMatch = topText.match(/STA\s+(\d{4}L)\s+(\d{4}[Zz27])/);
+                if (staMatch) { data.staL = staMatch[1]; data.staZ = staMatch[2].replace(/[27]$/, 'Z'); }
+
+                if (data.stdZ !== 'N/A' && data.staZ !== 'N/A') {
+                    let start = parseInt(data.stdZ.substring(0, 2)) * 60 + parseInt(data.stdZ.substring(2, 4));
+                    let end = parseInt(data.staZ.substring(0, 2)) * 60 + parseInt(data.staZ.substring(2, 4));
+                    if (end < start) end += 24 * 60; 
+                    let diff = end - start;
+                    let hh = Math.floor(diff / 60).toString().padStart(2, '0');
+                    let mm = (diff % 60).toString().padStart(2, '0');
+                    data.blockTime = `${hh}:${mm}`;
+                }
+
+                const eteMatch = topText.match(/ETE[\s\n]*(\d{2}\.\d{2})/);
+                if (eteMatch) data.flightTime = eteMatch[1].replace('.', ':');
+
+                const zfwMatch = topText.match(/ZFW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
+                if (zfwMatch) { data.zfwLimit = zfwMatch[1]; data.zfwPlanned = zfwMatch[2]; }
+
+                const ldwMatch = topText.match(/LDW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
+                if (ldwMatch) { data.ldwLimit = ldwMatch[1]; data.ldwPlanned = ldwMatch[2]; }
+
+                const towMatch = topText.match(/TOW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
+                if (towMatch) { data.towLimit = towMatch[1]; data.towPlanned = towMatch[2]; }
+
+                const fuelMatch = topText.match(/TOTAL[\s\n]*(\d{5,6})/);
+                if (fuelMatch) data.totalFuel = fuelMatch[1];
+
+                let altnFuel = 0;
+                let finalResFuel = 0;
+                const altnMatch = topText.match(/ALTN[^\d]+(\d{3,6})/);
+                if (altnMatch) altnFuel = parseInt(altnMatch[1], 10);
+                const finalResMatch = topText.match(/FINAL RES[^\d]+(\d{3,6})/);
+                if (finalResMatch) finalResFuel = parseInt(finalResMatch[1], 10);
+                
+                if (altnMatch || finalResMatch) {
+                    data.reserveFuelSum = (altnFuel + finalResFuel).toString();
+                }
+
+                const ciMatch = topText.match(/CRZ\s+CI(\d+)/);
+                if (ciMatch) data.ci = ciMatch[1];
+
+                // 高度擷取 (包含階梯爬升)
+                let fplStartFL = text.indexOf('(FPL-');
+                if (fplStartFL !== -1) {
+                    let fplChunkFL = text.substring(fplStartFL, fplStartFL + 3000);
+                    const flMatches = [...fplChunkFL.matchAll(/(?:-|\/)[NM]\d{3,4}F(\d{3})/g)];
+                    if (flMatches.length > 0) {
+                        const initialFL = flMatches[0][1];
+                        const finalFL = flMatches[flMatches.length - 1][1];
+                        data.fl = initialFL === finalFL ? `FL${initialFL}` : `FL${initialFL} ➔ FL${finalFL}`;
+                    }
+                }
+                if (data.fl === 'N/A') {
+                    const crzFl = topText.match(/CRZ.+FL(\d{3})/);
+                    if (crzFl) data.fl = `FL${crzFl[1]}`;
+                }
+
+                const sidMatch = topText.match(/-(?:[NM]\d{3,4}F\d{3})\s+([A-Z0-9]+)/);
+                if (sidMatch) data.sid = sidMatch[1];
+
+                if (data.depIcao !== 'N/A') {
+                    const tkofMatch = topText.match(new RegExp(`${data.depIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`));
+                    if (tkofMatch) data.tkofRwy = tkofMatch[1];
+                }
+                if (data.arrIcao !== 'N/A') {
+                    const ldgMatch = topText.match(new RegExp(`${data.arrIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`));
+                    if (ldgMatch) data.ldgRwy = ldgMatch[1];
+                    
+                    const starMatch = topText.match(new RegExp(`([A-Z0-9]+)\\s*\\n+-${data.arrIcao}`));
+                    if (starMatch) data.star = starMatch[1];
+                }
+
+                // Validity Windows
+                let valStart = text.indexOf('ALTERNATE VALIDITY TIMES');
+                if (valStart !== -1) {
+                    let valChunk = text.substring(valStart, valStart + 5000);
+                    let vEnd1 = valChunk.indexOf('WIND SUMMARY');
+                    let vEnd2 = valChunk.indexOf('DECOMPRESSION');
+                    let ends = [];
+                    if(vEnd1 !== -1) ends.push(vEnd1);
+                    if(vEnd2 !== -1) ends.push(vEnd2);
+                    if(ends.length > 0) valChunk = valChunk.substring(0, Math.min(...ends));
+
+                    const lines = valChunk.split('\n');
+                    let currentApt = null;
+
+                    lines.forEach(line => {
+                        const aptMatch = line.match(/\b([A-Z]{4})\b/);
+                        if (aptMatch && !line.includes('TO')) currentApt = aptMatch[1];
+                        if (aptMatch && line.includes('VALIDITY WINDOW')) currentApt = aptMatch[1];
+
+                        const timeRegex = /(\d{2}:\d{2}[Zz27]?)\s+(?:TO|T[O0Ο])\s+(\d{2}:\d{2}[Zz27]?)/gi;
+                        let tMatch;
+                        while ((tMatch = timeRegex.exec(line)) !== null && currentApt) {
+                            const start = tMatch[1].toUpperCase().replace(/[27]$/, 'Z');
+                            const end = tMatch[2].toUpperCase().replace(/[27]$/, 'Z');
+                            
+                            let sMins = getAbsMins(start, data.baseDate, stdMins);
+                            let eMins = getAbsMins(end, data.baseDate, stdMins);
+                            if (eMins < sMins) eMins += 24 * 60;
+
+                            if (!data.validityWindows[currentApt]) data.validityWindows[currentApt] = [];
+                            data.validityWindows[currentApt].push({ start, end, startMins: sMins, endMins: eMins });
+                        }
+                    });
+                }
+
+                // 天氣擷取
+                let wxStart = text.indexOf('DESTINATION AIRPORT:');
+                if (wxStart !== -1) {
+                    let wxChunk = text.substring(wxStart, wxStart + 15000);
+                    let wEnd1 = wxChunk.indexOf('AIRPORTLIST ENDED');
+                    let wEnd2 = wxChunk.indexOf('NOTAM');
+                    let ends = [];
+                    if(wEnd1 !== -1) ends.push(wEnd1);
+                    if(wEnd2 !== -1) ends.push(wEnd2);
+                    if(ends.length > 0) wxChunk = wxChunk.substring(0, Math.min(...ends));
+
+                    const rawWeather = [];
+                    const lines = wxChunk.split('\n');
+                    
+                    let currentIcao = null;
+                    let currentName = '';
+                    let currentWxLines = [];
+                    let isCollectingWx = false;
+
+                    lines.forEach(line => {
+                        let l = line.trim();
+                        if (l === '') return;
+                        if (/^(DESTINATION AIRPORT|DESTINATION ALTERNATE|ENROUTE AIRPORT\(S\)|Critical ETOPS Airports|DEPARTURE AIRPORT):?/i.test(l)) return;
+                        if (l.includes('AIRPORTLIST ENDED') || l.startsWith('NOTAM')) return;
+
+                        // 過濾頁碼與無用資訊
+                        if (/^Page \d+ of \d+/i.test(l)) return;
+                        if (/^[A-Z0-9\s]+\/\d{2}[A-Za-z]{3}\d{2}\/[A-Z]{3,4}-[A-Z]{3,4}/i.test(l)) return;
+                        if (/(?:EVA|BR|CAL|CI)\s*\d+\/\d{2}[A-Za-z]{3}\d{2}/i.test(l)) return;
+                        // 過濾溫度陣列
+                        if (/^(?:\d{2}\/\d{2}\s+){2,}/.test(l) || /^(?:\d{2}\/\d{2})$/.test(l)) {
+                            isCollectingWx = false;
+                            return;
+                        }
+
+                        const titleMatch = l.match(/^([A-Z]{4})\/([A-Z]{3})\s+(.*)/);
+                        
+                        if (titleMatch) {
+                            if (currentIcao) {
+                                rawWeather.push({ icao: currentIcao, name: currentName.replace(/\s+/g, ' ').trim(), raw: currentWxLines.join('\n').trim() });
+                            }
+                            currentIcao = titleMatch[1];
+                            currentName = titleMatch[3].trim();
+                            currentWxLines = [];
+                            isCollectingWx = false;
+                        } else if (currentIcao) {
+                            if (/\d/.test(l) || /^(?:FT|SA|FC|METAR|TAF|SPECI|TEMPO|BECMG|PROB|FM)/.test(l)) {
+                                isCollectingWx = true;
+                                currentWxLines.push(l);
+                            } else {
+                                if (!isCollectingWx) currentName += ' ' + l;
+                                else currentWxLines.push(l);
+                            }
+                        }
+                    });
+
+                    if (currentIcao) {
+                        rawWeather.push({ icao: currentIcao, name: currentName.replace(/\s+/g, ' ').trim(), raw: currentWxLines.join('\n').trim() });
+                    }
+
+                    const requiredAirports = new Set([data.depIcao, data.arrIcao, ...Object.keys(data.validityWindows)]);
+                    data.weather = rawWeather.filter(wx => requiredAirports.has(wx.icao));
+                }
+            } catch (e) {
+                console.error("Parsing error", e);
+            }
+            return data;
+        };
+
+        const highlightTAF = (wxText, windows) => {
+            if (!windows || windows.length === 0) return wxText.split('\n').map((l, i) => <React.Fragment key={i}>{l}{'\n'}</React.Fragment>);
+            const lines = wxText.split('\n');
+            const parsedLines = lines.map(line => {
+                let start = -1, end = -1, isFm = false;
+                const periodMatch = line.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
+                const fmMatch = line.match(/FM(\d{2})(\d{2})(\d{2})/);
+                if (periodMatch) {
+                   start = parseInt(periodMatch[1]) * 24 * 60 + parseInt(periodMatch[2]) * 60;
+                   end = parseInt(periodMatch[3]) * 24 * 60 + parseInt(periodMatch[4]) * 60;
+                } else if (fmMatch) {
+                   start = parseInt(fmMatch[1]) * 24 * 60 + parseInt(fmMatch[2]) * 60 + parseInt(fmMatch[3]);
+                   isFm = true;
+                }
+                return { line, start, end, isFm, finalStart: -1, finalEnd: -1 };
+            });
+
+            let baseEnd = -1;
+            parsedLines.forEach(pl => { if (pl.line.match(/^FT/) && pl.end !== -1) baseEnd = pl.end; });
+
+            let currentStart = -1, currentEnd = -1;
+            for (let i = 0; i < parsedLines.length; i++) {
+                let pl = parsedLines[i];
+                if (pl.isFm) {
+                    currentStart = pl.start;
+                    let nextFmStart = baseEnd !== -1 ? baseEnd : currentStart + 12 * 60;
+                    for (let j = i + 1; j < parsedLines.length; j++) {
+                        if (parsedLines[j].isFm) { nextFmStart = parsedLines[j].start; break; }
+                    }
+                    currentEnd = nextFmStart;
+                } else if (pl.start !== -1 && pl.end !== -1) {
+                    currentStart = pl.start; currentEnd = pl.end;
+                } 
+                pl.finalStart = currentStart; pl.finalEnd = currentEnd;
+            }
+
+            return parsedLines.map((pl, idx) => {
+                let isHighlighted = false;
+                if (pl.finalStart !== -1 && pl.finalEnd !== -1) {
+                    isHighlighted = windows.some(w => Math.max(pl.finalStart, w.startMins) < Math.min(pl.finalEnd, w.endMins));
+                }
+                if (isHighlighted) {
+                    return <React.Fragment key={idx}><span className="bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded inline-block shadow-sm">{pl.line}</span>{'\n'}</React.Fragment>;
+                }
+                return <React.Fragment key={idx}>{pl.line}{'\n'}</React.Fragment>;
+            });
+        };
+
+        function App() {
+            const [mode, setMode] = useState('edit');
+            const [isLoading, setIsLoading] = useState(false);
+            const [data, setData] = useState(null);
+
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                setIsLoading(true);
+                setTimeout(async () => {
+                    try {
+                        const pdfjs = await loadPdfJs();
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+                        
+                        let fullText = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            
+                            let linesMap = new Map();
+                            content.items.forEach(item => {
+                                let y = Math.round(item.transform[5] / 4) * 4;
+                                if (!linesMap.has(y)) linesMap.set(y, []);
+                                linesMap.get(y).push(item);
+                            });
+
+                            let yKeys = Array.from(linesMap.keys()).sort((a, b) => b - a);
+                            let pageText = yKeys.map(y => {
+                                let lineItems = linesMap.get(y);
+                                lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
+                                let lineStr = '';
+                                let lastX = -1;
+                                lineItems.forEach(it => {
+                                    if (lastX !== -1 && (it.transform[4] - lastX > 10)) lineStr += ' ';
+                                    lineStr += it.str;
+                                    lastX = it.transform[4] + it.width;
+                                });
+                                return lineStr.trim();
+                            }).join('\n');
+                            fullText += pageText + '\n';
+                        }
+
+                        const newData = parseOFP(fullText);
+                        setData(newData);
+                        setMode('view');
+                    } catch (err) {
+                        console.error(err);
+                        alert('解析失敗，請確認檔案。');
+                    }
+                    setIsLoading(false);
+                }, 50); 
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-2 sm:p-4 pb-12">
+                    <header className="max-w-6xl mx-auto flex flex-row justify-between items-start sm:items-center mb-3 bg-white p-3 sm:px-5 rounded-xl shadow-sm border border-slate-200 gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            <h1 className="text-xl font-black text-emerald-700 tracking-tight flex items-center gap-1.5">
+                                <PlaneTakeoff className="w-6 h-6" />
+                                {data && mode === 'view' ? data.flightNo : 'OFP Briefing'}
+                            </h1>
+                            {data && mode === 'view' && (
+                                <div className="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs font-black text-slate-600">
+                                    <span className="bg-slate-100 px-2 py-1 rounded-md border border-slate-200 shadow-sm">{data.route}</span>
+                                    <span className="bg-slate-100 px-2 py-1 rounded-md border border-slate-200 shadow-sm">{data.date}</span>
+                                    <span className="bg-slate-100 px-2 py-1 rounded-md border border-slate-200 shadow-sm">Reg: {data.reg}</span>
+                                </div>
+                            )}
+                            {(!data || mode === 'edit') && <p className="text-xs text-slate-500 font-medium">LIDO Flight Plan Dashboard</p>}
+                        </div>
+                        {data && (
+                            <button onClick={() => setMode(mode === 'view' ? 'edit' : 'view')} className="bg-emerald-50 text-emerald-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold text-xs sm:text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5 shrink-0">
+                                {mode === 'view' ? <><Upload className="w-3.5 h-3.5"/> 新 PDF</> : '返回'}
+                            </button>
+                        )}
+                    </header>
+
+                    {mode === 'edit' || !data ? (
+                        <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center mt-6">
+                            <FileText className="w-16 h-16 text-emerald-100 mx-auto mb-4" />
+                            <h2 className="text-xl font-black mb-2 text-slate-700">上傳 OFP (PDF 格式)</h2>
+                            <p className="text-slate-500 text-xs mb-6 leading-relaxed">
+                                LIDO OFP 智能摘要工具，<br/>
+                                <span className="font-bold text-slate-600">一鍵解析航班數據、自動比對 EDTO 備降場天氣。</span>
+                            </p>
+                            <label className={`relative cursor-pointer bg-emerald-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 w-full shadow-md shadow-emerald-600/20 ${isLoading ? 'opacity-70 pointer-events-none' : ''}`}>
+                                {isLoading ? <span className="animate-pulse flex items-center gap-2"><Clock className="w-4 h-4 animate-spin"/> 🚀 智能解析中...</span> : <><Upload className="w-5 h-5" />選擇 LIDO OFP 檔案</>}
+                                <input type="file" accept="application/pdf" className="hidden" onChange={handleFileUpload} disabled={isLoading} />
+                            </label>
+                        </div>
+                    ) : (
+                        <div className="max-w-6xl mx-auto space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {/* Times */}
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                                    <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-2 border-b border-slate-50">
+                                        <Clock className="w-4 h-4 text-blue-500" />
+                                        <h3 className="text-sm font-bold text-slate-700">時間 (Timings)</h3>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-xs font-semibold text-slate-500">STD</span>
+                                            <div className="text-right">
+                                                <span className="block font-black text-xl text-slate-800 tracking-tight leading-none">{data.stdZ}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded inline-block mt-1">LCL {data.stdL}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-end">
+                                            <span className="text-xs font-semibold text-slate-500">STA</span>
+                                            <div className="text-right">
+                                                <span className="block font-black text-xl text-slate-800 tracking-tight leading-none">{data.staZ}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded inline-block mt-1">LCL {data.staL}</span>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                            <div className="flex flex-col bg-blue-50/50 p-2 rounded-lg border border-blue-100">
+                                                <span className="text-[10px] font-bold text-blue-800">Flight Time</span>
+                                                <span className="font-black text-lg text-blue-900 leading-none mt-1">{data.flightTime}</span>
+                                            </div>
+                                            <div className="flex flex-col bg-indigo-50/50 p-2 rounded-lg border border-indigo-100">
+                                                <span className="text-[10px] font-bold text-indigo-800">Block Time</span>
+                                                <span className="font-black text-lg text-indigo-900 leading-none mt-1">{data.blockTime}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Weights */}
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
+                                    <div className="flex items-center gap-1.5 text-slate-400 mb-2 pb-2 border-b border-slate-50">
+                                        <Weight className="w-4 h-4 text-orange-500" />
+                                        <h3 className="text-sm font-bold text-slate-700">重量 (Weights)</h3>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2">
+                                        <div className="text-left">TYPE</div>
+                                        <div>LIMIT</div>
+                                        <div>PLANNED</div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-3 items-center gap-1 border-b border-slate-50 pb-1.5">
+                                            <span className="text-xs font-bold text-slate-600">ZFW</span>
+                                            <span className="text-center font-mono text-xs font-bold text-slate-500">{data.zfwLimit}</span>
+                                            <span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.zfwPlanned}</span>
+                                        </div>
+                                        <div className="grid grid-cols-3 items-center gap-1 border-b border-slate-50 pb-1.5">
+                                            <span className="text-xs font-bold text-slate-600">LDW</span>
+                                            <span className="text-center font-mono text-xs font-bold text-slate-500">{data.ldwLimit}</span>
+                                            <span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.ldwPlanned}</span>
+                                        </div>
+                                        <div className="grid grid-cols-3 items-center gap-1">
+                                            <span className="text-xs font-bold text-slate-600">TOW</span>
+                                            <span className="text-center font-mono text-xs font-bold text-slate-500">{data.towLimit}</span>
+                                            <span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.towPlanned}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Perf & Fuel */}
+                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                                    <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-2 border-b border-slate-50">
+                                        <Fuel className="w-4 h-4 text-emerald-500" />
+                                        <h3 className="text-sm font-bold text-slate-700">效能 (Perf & Fuel)</h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="flex flex-col bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
+                                                <span className="text-[10px] font-bold text-emerald-800 mb-0.5">Total Fuel</span>
+                                                <span className="font-black text-xl text-emerald-900 leading-none">{data.totalFuel}</span>
+                                            </div>
+                                            <div className="flex flex-col bg-teal-50 p-2.5 rounded-lg border border-teal-100">
+                                                <span className="text-[10px] font-bold text-teal-800 mb-0.5">ALTN+FIN RES</span>
+                                                <span className="font-black text-xl text-teal-900 leading-none">{data.reserveFuelSum}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* ★ 優化：給 Flight Level 更大的空間 ★ */}
+                                        <div className="flex gap-2">
+                                            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 w-1/3">
+                                                <span className="block text-[10px] font-bold text-slate-400 mb-0.5">Cost Index</span>
+                                                <span className="font-black text-lg text-slate-700 leading-none">{data.ci}</span>
+                                            </div>
+                                            <div className="bg-blue-50 p-2.5 rounded-lg border border-blue-100 w-2/3 flex flex-col justify-center">
+                                                <span className="block text-[10px] font-bold text-blue-400 mb-0.5">Flight Level</span>
+                                                <span className="font-black text-lg sm:text-xl text-blue-700 leading-none tracking-tight">{data.fl}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Routing */}
+                            <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3">
+                                <div className="flex-1 w-full bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <PlaneTakeoff className="w-5 h-5 text-blue-600"/>
+                                            <span className="font-black text-lg text-slate-700">DEP</span>
+                                        </div>
+                                        <span className="bg-blue-200 text-blue-800 font-black text-sm px-2.5 py-0.5 rounded-md tracking-wide">{data.depIcao}</span>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <div>
+                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">RWY</span>
+                                            <span className="font-black text-xl text-slate-800 leading-none">{data.tkofRwy}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">SID</span>
+                                            <span className="font-black text-xl text-blue-700 leading-none">{data.sid}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ChevronRight className="w-6 h-6 text-slate-300 hidden md:block flex-shrink-0" />
+                                <div className="flex-1 w-full bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <PlaneLanding className="w-5 h-5 text-emerald-600"/>
+                                            <span className="font-black text-lg text-slate-700">ARR</span>
+                                        </div>
+                                        <span className="bg-emerald-200 text-emerald-800 font-black text-sm px-2.5 py-0.5 rounded-md tracking-wide">{data.arrIcao}</span>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <div>
+                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">RWY</span>
+                                            <span className="font-black text-xl text-slate-800 leading-none">{data.ldgRwy}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">STAR</span>
+                                            <span className="font-black text-xl text-emerald-700 leading-none">{data.star}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Weather Section */}
+                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-50">
+                                    <div className="flex items-center gap-1.5 text-slate-700">
+                                        <Wind className="w-5 h-5 text-cyan-500" />
+                                        <h2 className="font-black text-lg">天氣預報與有效時間分析</h2>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-yellow-800 bg-yellow-100 px-3 py-1 rounded-md">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-yellow-600" />
+                                        <span>重疊 Validity Window 高亮標示</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {data.weather.map((wx, idx) => {
+                                        const windows = data.validityWindows[wx.icao];
+                                        return (
+                                            <div key={idx} className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden shadow-sm flex flex-col h-full">
+                                                <div className="bg-slate-100 px-3 py-2 flex flex-row justify-between items-center border-b border-slate-200 gap-2 shrink-0">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-black text-base text-slate-800 tracking-tight flex items-center gap-1.5">
+                                                            {wx.icao}
+                                                            {wx.icao === data.depIcao && <span className="text-[9px] bg-blue-600 text-white px-1 py-0.5 rounded leading-none">DEP</span>}
+                                                            {wx.icao === data.arrIcao && <span className="text-[9px] bg-emerald-600 text-white px-1 py-0.5 rounded leading-none">ARR</span>}
+                                                        </h4>
+                                                        <span className="text-[10px] font-bold text-slate-500 block w-full truncate" title={wx.name}>{wx.name}</span>
+                                                    </div>
+                                                    {windows && windows.length > 0 && (
+                                                        <div className="text-right shrink-0">
+                                                            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Validity</span>
+                                                            <div className="flex flex-col items-end gap-0.5">
+                                                                {windows.map((w, i) => (
+                                                                    <span key={i} className="block text-[10px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shadow-sm leading-none">
+                                                                        {w.start} - {w.end}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="p-2.5 overflow-x-auto text-[11px] sm:text-xs font-mono text-slate-700 leading-snug whitespace-pre flex-1">
+                                                    {highlightTAF(wx.raw, windows)}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
