@@ -32,7 +32,7 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // --- 自定義圖示 ---
+        // --- 組件圖示 ---
         const PlaneTakeoff = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22h20"/><path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12l5-5 1.5-1.5a2.5 2.5 0 1 1 3.53 3.53L16.5 10.5 12 14l-.4 1.6 4.3 2.15a2 2 0 0 1 1.05 1.74v.01c-.01.54-.42.98-.96 1L6.36 17.4Z"/></svg>;
         const PlaneLanding = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 22h20"/><path d="M13.4 17.2 16 17l2-4-1.1-.55a2 2 0 0 0-1.8 0l-.17.1a2 2 0 0 1-1.8 0L12 12l-5-5-1.5-1.5a2.5 2.5 0 1 0-3.53 3.53L3.5 10.5 8 14l.4 1.6-4.3 2.15a2 2 0 0 0-1.05 1.74v.01c.01.54.42.98.96 1l9.63 1.6Z"/></svg>;
         const Clock = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
@@ -40,9 +40,9 @@
         const Weight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.5 8z"/></svg>;
         const Wind = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>;
         const ChevronRight = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
-        const AlertTriangle = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
         const Upload = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
         const FileText = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
+        const CloudLightning = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></svg>;
 
         const loadPdfJs = () => {
             return new Promise((resolve, reject) => {
@@ -58,7 +58,14 @@
             });
         };
 
-        // --- 解析 OFP 核心邏輯 (完美防卡死 + ETA 智能精算) ---
+        const getAbsMinsFromZ = (hhmmZ, baseDate, stdMinsRaw) => {
+            let hh = parseInt(hhmmZ.substring(0, 2));
+            let mm = parseInt(hhmmZ.substring(2, 4));
+            let day = baseDate;
+            if (hh * 60 + mm < stdMinsRaw - 360) day += 1;
+            return day * 24 * 60 + hh * 60 + mm;
+        };
+
         const parseOFP = (text) => {
             const data = {
                 flightNo: 'N/A', date: 'N/A', route: 'N/A', reg: 'N/A',
@@ -73,313 +80,146 @@
             };
 
             try {
-                const topText = text.substring(0, 8000);
-
+                const topText = text.substring(0, 15000);
                 const headerMatch = topText.match(/([A-Z0-9\s]+)\/(\d{2}[A-Za-z]{3}\d{2})\/([A-Z]{3,4}-[A-Z]{3,4})\s+Reg:\s*([A-Z0-9-]+)/i);
-                if (headerMatch) {
-                    data.flightNo = headerMatch[1].replace(/\s+/g, '');
-                    data.date = headerMatch[2].toUpperCase();
-                    data.route = headerMatch[3];
-                    data.reg = headerMatch[4];
-                } else {
-                    const fltMatch = topText.match(/(?:EVA|BR|CAL|CI)\s*\d+/i);
-                    if(fltMatch) data.flightNo = fltMatch[0].replace(/\s+/g, '').toUpperCase();
-                }
-
+                if (headerMatch) { data.flightNo = headerMatch[1].replace(/\s+/g, ''); data.date = headerMatch[2].toUpperCase(); data.route = headerMatch[3]; data.reg = headerMatch[4]; }
+                
                 const depArrMatch = topText.match(/([A-Z]{4})\/([A-Z]{4})/);
-                if (depArrMatch) {
-                    data.depIcao = depArrMatch[1];
-                    data.arrIcao = depArrMatch[2];
-                }
-
+                if (depArrMatch) { data.depIcao = depArrMatch[1]; data.arrIcao = depArrMatch[2]; }
                 const dateMatch = topText.match(/(\d{2})[A-Za-z]{3}\d{2}/i);
                 if (dateMatch) data.baseDate = parseInt(dateMatch[1]);
 
-                // ★ 精算絕對分鐘數 (Absolute Minutes) 供 TAF 比對使用
+                let stdMinsRaw = 0;
                 const stdMatch = topText.match(/STD\s+(\d{4}L)\s+(\d{4}Z)/);
-                if (stdMatch) { 
-                    data.stdL = stdMatch[1]; 
-                    data.stdZ = stdMatch[2]; 
-                    let refH = parseInt(data.stdZ.substring(0,2));
-                    let refM = parseInt(data.stdZ.substring(2,4));
-                    data.stdMins = data.baseDate * 24 * 60 + refH * 60 + refM;
-                }
-
+                if (stdMatch) { data.stdL = stdMatch[1]; data.stdZ = stdMatch[2]; stdMinsRaw = parseInt(data.stdZ.substring(0,2)) * 60 + parseInt(data.stdZ.substring(2,4)); data.stdMins = data.baseDate * 24 * 60 + stdMinsRaw; }
                 const staMatch = topText.match(/STA\s+(\d{4}L)\s+(\d{4}[Zz27])/);
-                if (staMatch) { 
-                    data.staL = staMatch[1]; 
-                    data.staZ = staMatch[2].replace(/[27]$/, 'Z'); 
-                    if (data.stdMins) {
-                        let staH = parseInt(data.staZ.substring(0, 2));
-                        let staM = parseInt(data.staZ.substring(2, 4));
-                        let staDay = data.baseDate;
-                        // 若 STA 時間小於 STD (跨夜)，日期+1
-                        let refH = parseInt(data.stdZ.substring(0,2));
-                        let refM = parseInt(data.stdZ.substring(2,4));
-                        if (staH * 60 + staM < refH * 60 + refM - 360) staDay += 1;
-                        data.staMins = staDay * 24 * 60 + staH * 60 + staM;
-                    }
-                }
+                if (staMatch) { data.staL = staMatch[1]; data.staZ = staMatch[2].replace(/[27]$/, 'Z'); if (data.stdMins !== null) data.staMins = getAbsMinsFromZ(data.staZ, data.baseDate, stdMinsRaw); }
+                if (data.stdZ !== 'N/A' && data.staZ !== 'N/A') { let diff = data.staMins - data.stdMins; let hh = Math.floor(diff / 60).toString().padStart(2, '0'); let mm = (diff % 60).toString().padStart(2, '0'); data.blockTime = `${hh}:${mm}`; }
+                const eteMatch = topText.match(/ETE[\s\n]*(\d{2}\.\d{2})/); if (eteMatch) data.flightTime = eteMatch[1].replace('.', ':');
+                const fuelMatch = topText.match(/TOTAL[\s\n]*(\d{5,6})/); if (fuelMatch) data.totalFuel = fuelMatch[1];
 
-                if (data.stdZ !== 'N/A' && data.staZ !== 'N/A') {
-                    let start = parseInt(data.stdZ.substring(0, 2)) * 60 + parseInt(data.stdZ.substring(2, 4));
-                    let end = parseInt(data.staZ.substring(0, 2)) * 60 + parseInt(data.staZ.substring(2, 4));
-                    if (end < start) end += 24 * 60; 
-                    let diff = end - start;
-                    let hh = Math.floor(diff / 60).toString().padStart(2, '0');
-                    let mm = (diff % 60).toString().padStart(2, '0');
-                    data.blockTime = `${hh}:${mm}`;
-                }
+                const zfwMatch = topText.match(/ZFW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/); if (zfwMatch) { data.zfwLimit = zfwMatch[1]; data.zfwPlanned = zfwMatch[2]; }
+                const ldwMatch = topText.match(/LDW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/); if (ldwMatch) { data.ldwLimit = ldwMatch[1]; data.ldwPlanned = ldwMatch[2]; }
+                const towMatch = topText.match(/TOW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/); if (towMatch) { data.towLimit = towMatch[1]; data.towPlanned = towMatch[2]; }
 
-                const eteMatch = topText.match(/ETE[\s\n]*(\d{2}\.\d{2})/);
-                if (eteMatch) data.flightTime = eteMatch[1].replace('.', ':');
-
-                const zfwMatch = topText.match(/ZFW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
-                if (zfwMatch) { data.zfwLimit = zfwMatch[1]; data.zfwPlanned = zfwMatch[2]; }
-                const ldwMatch = topText.match(/LDW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
-                if (ldwMatch) { data.ldwLimit = ldwMatch[1]; data.ldwPlanned = ldwMatch[2]; }
-                const towMatch = topText.match(/TOW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
-                if (towMatch) { data.towLimit = towMatch[1]; data.towPlanned = towMatch[2]; }
-                const fuelMatch = topText.match(/TOTAL[\s\n]*(\d{5,6})/);
-                if (fuelMatch) data.totalFuel = fuelMatch[1];
-
-                // ★ ALTN 精準擷取與 ETA 計算
-                let altnFuel = 0;
-                let finalResFuel = 0;
-                const altnRegex = /ALTN\s+([A-Z]{4})?\s*(\d{3,6})\s+(\d{2})\.(\d{2})/;
-                const altnMatch = topText.match(altnRegex);
+                let altnFuel = 0, finalResFuel = 0; const altnRegex = /ALTN\s+([A-Z]{4})?\s*(\d{3,6})\s+(\d{2})\.(\d{2})/; const altnMatch = topText.match(altnRegex);
                 if (altnMatch) {
-                    if (altnMatch[1]) data.altnIcao = altnMatch[1];
-                    altnFuel = parseInt(altnMatch[2], 10);
-                    let addH = parseInt(altnMatch[3], 10);
-                    let addM = parseInt(altnMatch[4], 10);
-                    
-                    if (data.staMins) {
-                        data.altnEtaMins = data.staMins + addH * 60 + addM;
-                        let finalH = Math.floor(data.altnEtaMins / 60) % 24;
-                        let finalM = data.altnEtaMins % 60;
-                        data.altnEtaZ = finalH.toString().padStart(2, '0') + finalM.toString().padStart(2, '0') + 'Z';
-                    }
-                } else {
-                    const fallbackAltn = topText.match(/ALTN[^\d]+(\d{3,6})/);
-                    if (fallbackAltn) altnFuel = parseInt(fallbackAltn[1], 10);
+                    if (altnMatch[1]) data.altnIcao = altnMatch[1]; altnFuel = parseInt(altnMatch[2], 10); let addH = parseInt(altnMatch[3], 10); let addM = parseInt(altnMatch[4], 10);
+                    if (data.staMins !== null) { data.altnEtaMins = data.staMins + addH * 60 + addM; let hE = Math.floor(data.altnEtaMins / 60) % 24; let mE = data.altnEtaMins % 60; data.altnEtaZ = hE.toString().padStart(2, '0') + mE.toString().padStart(2, '0') + 'Z'; }
                 }
+                const finalResMatch = topText.match(/FINAL RES[^\d]+(\d{3,6})/); if (finalResMatch) finalResFuel = parseInt(finalResMatch[1], 10); if (altnFuel || finalResFuel) data.reserveFuelSum = (altnFuel + finalResFuel).toString();
 
-                const finalResMatch = topText.match(/FINAL RES[^\d]+(\d{3,6})/);
-                if (finalResMatch) finalResFuel = parseInt(finalResMatch[1], 10);
-                if (altnFuel || finalResFuel) data.reserveFuelSum = (altnFuel + finalResFuel).toString();
+                const ciMatch = topText.match(/CRZ\s+CI(\d+)/); if (ciMatch) data.ci = ciMatch[1];
 
-                const ciMatch = topText.match(/CRZ\s+CI(\d+)/);
-                if (ciMatch) data.ci = ciMatch[1];
-
-                let fplStartFL = text.indexOf('(FPL-');
-                if (fplStartFL !== -1) {
-                    let fplChunkFL = text.substring(fplStartFL, fplStartFL + 3000);
-                    const flMatches = [...fplChunkFL.matchAll(/(?:-|\/)[NM]\d{3,4}F(\d{3})/g)];
+                let fplStartFLIdx = text.indexOf('(FPL-');
+                if (fplStartFLIdx !== -1) {
+                    let fplChunk = text.substring(fplStartFLIdx, fplStartFLIdx + 4000);
+                    const flMatches = [...fplChunk.matchAll(/(?:-|\/)[NM]\d{3,4}F(\d{3})/g)];
                     if (flMatches.length > 0) {
-                        const initialFL = flMatches[0][1];
-                        const finalFL = flMatches[flMatches.length - 1][1];
-                        data.fl = initialFL === finalFL ? `FL${initialFL}` : `FL${initialFL} ➔ FL${finalFL}`;
+                        const flNumbers = flMatches.map(m => parseInt(m[1], 10));
+                        const initialFL = flNumbers[0]; const maxFL = Math.max(...flNumbers);
+                        data.fl = initialFL < maxFL ? `FL${initialFL} - ${maxFL}` : `FL${maxFL}`;
                     }
                 }
-                if (data.fl === 'N/A') {
-                    const crzFl = topText.match(/CRZ.+FL(\d{3})/);
-                    if (crzFl) data.fl = `FL${crzFl[1]}`;
-                }
 
-                const sidMatch = topText.match(/-(?:[NM]\d{3,4}F\d{3})\s+([A-Z0-9]+)/);
+                const sidMatch = topText.match(/-(?:[NM]\d{3,4}F\d{3})\s+([A-Z0-9]+)\b/);
                 if (sidMatch) data.sid = sidMatch[1];
 
-                if (data.depIcao !== 'N/A') {
-                    const tkofMatch = topText.match(new RegExp(`${data.depIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`));
-                    if (tkofMatch) data.tkofRwy = tkofMatch[1];
-                }
-                if (data.arrIcao !== 'N/A') {
-                    const ldgMatch = topText.match(new RegExp(`${data.arrIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`));
-                    if (ldgMatch) data.ldgRwy = ldgMatch[1];
-                    const starMatch = topText.match(new RegExp(`([A-Z0-9]+)\\s*\\n+-${data.arrIcao}`));
-                    if (starMatch) data.star = starMatch[1];
-                }
-
-                // ★ EDTO Validity 時間換算
-                const getEdtoAbsMins = (timeStr, baseDay, refMinsRaw) => {
-                    let clean = timeStr.replace(/[^0-9]/g, '');
-                    if (clean.length < 4) return 0;
-                    let h = parseInt(clean.substring(0,2));
-                    let m = parseInt(clean.substring(2,4));
-                    let d = baseDay;
-                    if (h * 60 + m < refMinsRaw - 360) d += 1;
-                    return d * 24 * 60 + h * 60 + m;
-                };
+                if (data.depIcao !== 'N/A') { const tkofMatch = topText.match(new RegExp(`${data.depIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`)); if (tkofMatch) data.tkofRwy = tkofMatch[1]; }
+                if (data.arrIcao !== 'N/A') { const ldgMatch = topText.match(new RegExp(`${data.arrIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`)); if (ldgMatch) data.ldgRwy = ldgMatch[1]; const starMatch = topText.match(new RegExp(`([A-Z0-9]+)\\s*\\n+-${data.arrIcao}`)); if (starMatch) data.star = starMatch[1]; }
 
                 let valStart = text.indexOf('ALTERNATE VALIDITY TIMES');
                 if (valStart !== -1) {
-                    let valChunk = text.substring(valStart, valStart + 5000);
-                    let vEnd1 = valChunk.indexOf('WIND SUMMARY');
-                    let vEnd2 = valChunk.indexOf('DECOMPRESSION');
-                    let ends = [];
-                    if(vEnd1 !== -1) ends.push(vEnd1);
-                    if(vEnd2 !== -1) ends.push(vEnd2);
-                    if(ends.length > 0) valChunk = valChunk.substring(0, Math.min(...ends));
-
-                    const lines = valChunk.split('\n');
-                    let currentApt = null;
-                    let refMinsRaw = data.stdMins ? data.stdMins % (24 * 60) : 0;
-
-                    lines.forEach(line => {
-                        const aptMatch = line.match(/\b([A-Z]{4})\b/);
-                        if (aptMatch && !line.includes('TO')) currentApt = aptMatch[1];
-                        if (aptMatch && line.includes('VALIDITY WINDOW')) currentApt = aptMatch[1];
-
-                        const timeRegex = /(\d{2}:\d{2}[Zz27]?)\s+(?:TO|T[O0Ο])\s+(\d{2}:\d{2}[Zz27]?)/gi;
-                        let tMatch;
+                    let valChunk = text.substring(valStart, valStart + 8000);
+                    const valLines = valChunk.split('\n'); let currentApt = null;
+                    valLines.forEach(line => {
+                        const aptMatch = line.match(/\b([A-Z]{4})\b/); if (aptMatch && !line.includes('TO')) currentApt = aptMatch[1]; if (aptMatch && line.includes('VALIDITY WINDOW')) currentApt = aptMatch[1];
+                        const timeRegex = /(\d{2}:\d{2}[Zz27]?)\s+(?:TO|T[O0Ο])\s+(\d{2}:\d{2}[Zz27]?)/gi; let tMatch;
                         while ((tMatch = timeRegex.exec(line)) !== null && currentApt) {
-                            const startStr = tMatch[1].toUpperCase().replace(/[27]$/, 'Z');
-                            const endStr = tMatch[2].toUpperCase().replace(/[27]$/, 'Z');
-                            
-                            let sMins = getEdtoAbsMins(startStr, data.baseDate, refMinsRaw);
-                            let eMins = getEdtoAbsMins(endStr, data.baseDate, refMinsRaw);
+                            const startStr = tMatch[1].toUpperCase().replace(/[27]$/, 'Z'); const endStr = tMatch[2].toUpperCase().replace(/[27]$/, 'Z');
+                            let cleanS = startStr.replace(/[^0-9]/g, ''); let cleanE = endStr.replace(/[^0-9]/g, '');
+                            let hS = parseInt(cleanS.substring(0, 2)); let mS = parseInt(cleanS.substring(2, 4)); let dayS = data.baseDate; if (hS * 60 + mS < stdMinsRaw - 360) dayS += 1; let sMins = dayS * 24 * 60 + hS * 60 + mS;
+                            let hE = parseInt(cleanE.substring(0, 2)); let mE = parseInt(cleanE.substring(2, 4)); let dayE = data.baseDate; if (hE * 60 + mE < stdMinsRaw - 360) dayE += 1; let eMins = dayE * 24 * 60 + hE * 60 + mE;
                             if (eMins < sMins) eMins += 24 * 60;
-
                             if (!data.validityWindows[currentApt]) data.validityWindows[currentApt] = [];
                             data.validityWindows[currentApt].push({ start: startStr, end: endStr, startMins: sMins, endMins: eMins });
                         }
                     });
                 }
 
-                // 天氣擷取
-                let wxStart = text.indexOf('DESTINATION AIRPORT:');
-                if (wxStart !== -1) {
-                    let wxChunk = text.substring(wxStart, wxStart + 15000);
-                    let wEnd1 = wxChunk.indexOf('AIRPORTLIST ENDED');
-                    let wEnd2 = wxChunk.indexOf('NOTAM');
-                    let ends = [];
-                    if(wEnd1 !== -1) ends.push(wEnd1);
-                    if(wEnd2 !== -1) ends.push(wEnd2);
-                    if(ends.length > 0) wxChunk = wxChunk.substring(0, Math.min(...ends));
+                // ★ 天氣解析：徹底移除多餘的標題與 NOTAM 內容 ★
+                let wxStartIdx = text.indexOf('DESTINATION AIRPORT:');
+                if (wxStartIdx !== -1) {
+                    let wxEndSearchIdx = text.indexOf('AIRPORTLIST ENDED', wxStartIdx);
+                    if (wxEndSearchIdx === -1) wxEndSearchIdx = text.indexOf('NOTAM', wxStartIdx);
+                    if (wxEndSearchIdx === -1) wxEndSearchIdx = text.length;
 
-                    const rawWeather = [];
-                    const lines = wxChunk.split('\n');
-                    let currentIcao = null;
-                    let currentName = '';
-                    let currentWxLines = [];
-                    let isCollectingWx = false;
-
-                    lines.forEach(line => {
-                        let l = line.trim();
-                        if (l === '') return;
+                    let wxChunk = text.substring(wxStartIdx, wxEndSearchIdx);
+                    const rawWeather = []; const wxLines = wxChunk.split('\n');
+                    let currentIcao = null; let currentName = ''; let currentWxLines = []; let isCollectingWx = false;
+                    
+                    wxLines.forEach(line => {
+                        let l = line.trim(); if (l === '') return;
+                        // 過濾各種重複出現的機場導引文字
                         if (/^(DESTINATION AIRPORT|DESTINATION ALTERNATE|ENROUTE AIRPORT\(S\)|Critical ETOPS Airports|DEPARTURE AIRPORT):?/i.test(l)) return;
-                        if (l.includes('AIRPORTLIST ENDED') || l.startsWith('NOTAM')) return;
-
-                        if (/^Page \d+ of \d+/i.test(l)) return;
-                        if (/^[A-Z0-9\s]+\/\d{2}[A-Za-z]{3}\d{2}\/[A-Z]{3,4}-[A-Z]{3,4}/i.test(l)) return;
-                        if (/(?:EVA|BR|CAL|CI)\s*\d+\/\d{2}[A-Za-z]{3}\d{2}/i.test(l)) return;
-                        if (/^(?:\d{2}\/\d{2}\s+){2,}/.test(l) || /^(?:\d{2}\/\d{2})$/.test(l)) {
-                            isCollectingWx = false;
-                            return;
-                        }
+                        if (l.startsWith('Page ') && l.includes(' of ')) return;
 
                         const titleMatch = l.match(/^([A-Z]{4})\/([A-Z]{3})\s+(.*)/);
                         if (titleMatch) {
-                            if (currentIcao) {
-                                rawWeather.push({ icao: currentIcao, name: currentName.replace(/\s+/g, ' ').trim(), raw: currentWxLines.join('\n').trim() });
-                            }
-                            currentIcao = titleMatch[1];
-                            currentName = titleMatch[3].trim();
-                            currentWxLines = [];
-                            isCollectingWx = false;
+                            if (currentIcao) rawWeather.push({ icao: currentIcao, name: currentName.trim(), raw: currentWxLines.join('\n').trim() });
+                            currentIcao = titleMatch[1]; currentName = titleMatch[3].trim(); currentWxLines = []; isCollectingWx = false;
                         } else if (currentIcao) {
-                            if (/\d/.test(l) || /^(?:FT|SA|FC|METAR|TAF|SPECI|TEMPO|BECMG|PROB|FM)/.test(l)) {
-                                isCollectingWx = true;
-                                currentWxLines.push(l);
-                            } else {
-                                if (!isCollectingWx) currentName += ' ' + l;
-                                else currentWxLines.push(l);
-                            }
+                            if (/\d/.test(l) || /^(?:FT|SA|FC|METAR|TAF|SPECI|TEMPO|BECMG|PROB|FM)/.test(l)) { isCollectingWx = true; currentWxLines.push(l); }
+                            else { if (!isCollectingWx) currentName += ' ' + l; else currentWxLines.push(l); }
                         }
                     });
-
-                    if (currentIcao) {
-                        rawWeather.push({ icao: currentIcao, name: currentName.replace(/\s+/g, ' ').trim(), raw: currentWxLines.join('\n').trim() });
-                    }
-
-                    const requiredAirports = new Set([data.depIcao, data.arrIcao, data.altnIcao, ...Object.keys(data.validityWindows)]);
-                    requiredAirports.delete('N/A');
-                    data.weather = rawWeather.filter(wx => requiredAirports.has(wx.icao));
+                    if (currentIcao) rawWeather.push({ icao: currentIcao, name: currentName.trim(), raw: currentWxLines.join('\n').trim() });
+                    const reqApts = new Set([data.depIcao, data.arrIcao, data.altnIcao, ...Object.keys(data.validityWindows)]);
+                    reqApts.delete('N/A');
+                    data.weather = rawWeather.filter(wx => reqApts.has(wx.icao));
                 }
-            } catch (e) {
-                console.error("Parsing error", e);
-            }
+            } catch (e) { console.error(e); }
             return data;
         };
 
-        // ★★★ 核心渲染：智能 TAF 高亮與變色系統 ★★★
-        const highlightTAF = (wxText, windows, targetMins, targetType, isEdto, baseDate) => {
+        const highlightTAF = (wxText, windows, targetMins, targetType, baseDate) => {
             if (!wxText) return null;
-            
-            // 安全處理跨月/跨日
-            const normalizeDay = (d) => {
-                if (d < baseDate - 15) return d + 30;
-                if (d > baseDate + 15) return d - 30;
-                return d;
-            };
-
+            const normDay = (d) => { if (d < baseDate - 15) return d + 30; if (d > baseDate + 15) return d - 30; return d; };
             const lines = wxText.split('\n');
             const parsedLines = lines.map(line => {
                 let start = -1, end = -1, isFm = false;
-                const periodMatch = line.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
-                const fmMatch = line.match(/FM(\d{2})(\d{2})(\d{2})/);
-                if (periodMatch) {
-                   start = normalizeDay(parseInt(periodMatch[1])) * 24 * 60 + parseInt(periodMatch[2]) * 60;
-                   end = normalizeDay(parseInt(periodMatch[3])) * 24 * 60 + parseInt(periodMatch[4]) * 60;
-                } else if (fmMatch) {
-                   start = normalizeDay(parseInt(fmMatch[1])) * 24 * 60 + parseInt(fmMatch[2]) * 60 + parseInt(fmMatch[3]);
-                   isFm = true;
-                }
+                const pMatch = line.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
+                const fMatch = line.match(/FM(\d{2})(\d{2})(\d{2})/);
+                if (pMatch) { start = normDay(parseInt(pMatch[1])) * 24 * 60 + parseInt(pMatch[2]) * 60; end = normDay(parseInt(pMatch[3])) * 24 * 60 + parseInt(pMatch[4]) * 60; }
+                else if (fMatch) { start = normDay(parseInt(fMatch[1])) * 24 * 60 + parseInt(fMatch[2]) * 60 + parseInt(fMatch[3]); isFm = true; }
                 return { line, start, end, isFm, finalStart: -1, finalEnd: -1 };
             });
-
-            let baseEnd = -1;
-            parsedLines.forEach(pl => { if (pl.line.match(/^FT/) && pl.end !== -1) baseEnd = pl.end; });
-
-            let currentStart = -1, currentEnd = -1;
+            let mainStart = -1, mainEnd = -1;
+            for (let pl of parsedLines) { if (pl.line.trim().match(/^(FT|FC|TAF)\b/) && !pl.isFm && pl.start !== -1 && pl.end !== -1) { mainStart = pl.start; mainEnd = pl.end; break; } }
+            if (mainStart === -1) { for (let pl of parsedLines) { if (!pl.isFm && pl.start !== -1 && pl.end !== -1) { mainStart = pl.start; mainEnd = pl.end; break; } } }
+            
+            let curFmS = -1; let inT = false;
+            let hasM = wxText.match(/^(SA|SP|METAR|SPECI)\b/m); if (!hasM) inT = true;
             for (let i = 0; i < parsedLines.length; i++) {
-                let pl = parsedLines[i];
-                if (pl.isFm) {
-                    currentStart = pl.start;
-                    let nextFmStart = baseEnd !== -1 ? baseEnd : currentStart + 12 * 60;
-                    for (let j = i + 1; j < parsedLines.length; j++) {
-                        if (parsedLines[j].isFm) { nextFmStart = parsedLines[j].start; break; }
-                    }
-                    currentEnd = nextFmStart;
-                } else if (pl.start !== -1 && pl.end !== -1) {
-                    currentStart = pl.start; currentEnd = pl.end;
-                } 
-                pl.finalStart = currentStart; pl.finalEnd = currentEnd;
+                let pl = parsedLines[i]; let rL = pl.line.trim();
+                if (rL.match(/^(FT|FC|TAF)\b/)) inT = true; else if (rL.match(/^(SA|SP|METAR|SPECI)\b/)) inT = false;
+                if (!inT) { pl.finalStart = -1; pl.finalEnd = -1; continue; }
+                if (pl.isFm) { curFmS = pl.start; let nFmS = mainEnd !== -1 ? mainEnd : curFmS + 12 * 60; for (let j = i + 1; j < parsedLines.length; j++) { if (parsedLines[j].isFm) { nFmS = parsedLines[j].start; break; } } pl.finalStart = curFmS; pl.finalEnd = nFmS; }
+                else if (pl.start !== -1 && pl.end !== -1) { pl.finalStart = pl.start; pl.finalEnd = pl.end; }
+                else { if (curFmS !== -1) { pl.finalStart = curFmS; let nFmS = mainEnd !== -1 ? mainEnd : curFmS + 12 * 60; for (let j = i + 1; j < parsedLines.length; j++) { if (parsedLines[j].isFm) { nFmS = parsedLines[j].start; break; } } pl.finalEnd = nFmS; } else { pl.finalStart = mainStart; pl.finalEnd = mainEnd; } }
             }
-
             return parsedLines.map((pl, idx) => {
-                let hitTarget = targetMins !== null && pl.finalStart !== -1 && pl.finalEnd !== -1 && targetMins >= pl.finalStart && targetMins <= pl.finalEnd;
-                let hitEdto = false;
-                if (windows && windows.length > 0 && pl.finalStart !== -1 && pl.finalEnd !== -1) {
-                    hitEdto = windows.some(w => Math.max(pl.finalStart, w.startMins) < Math.min(pl.finalEnd, w.endMins));
-                }
-
-                let hlClass = "";
-                // 判斷顏色層級：EDTO 重疊 > 單純目標時間 > 單純 EDTO
-                if (hitTarget && hitEdto) {
-                    hlClass = "bg-fuchsia-200 text-fuchsia-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 桃紅：雙重疊加
-                } else if (hitTarget) {
-                    if (targetType === 'DEP') hlClass = "bg-blue-200 text-blue-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 藍：起飛
-                    else if (targetType === 'ARR') hlClass = "bg-emerald-200 text-emerald-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 綠：降落
-                    else if (targetType === 'ALTN') hlClass = "bg-amber-200 text-amber-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 橘：備降
-                } else if (hitEdto) {
-                    hlClass = "bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded shadow-sm"; // 黃紅：單純 EDTO
-                }
-
-                if (hlClass) {
-                    return <React.Fragment key={idx}><span className={`inline-block ${hlClass}`}>{pl.line}</span>{'\n'}</React.Fragment>;
-                }
+                let hTarget = targetMins !== null && pl.finalStart !== -1 && pl.finalEnd !== -1 && targetMins >= pl.finalStart && targetMins <= pl.finalEnd;
+                let hEdto = false; if (windows && windows.length > 0 && pl.finalStart !== -1 && pl.finalEnd !== -1) { hEdto = windows.some(w => Math.max(pl.finalStart, w.startMins) < Math.min(pl.finalEnd, w.endMins)); }
+                let hC = "";
+                if (hTarget && hEdto) hC = "bg-fuchsia-200 text-fuchsia-800 font-bold px-1 py-0.5 rounded"; 
+                else if (hTarget) {
+                    if (targetType === 'DEP') hC = "bg-blue-200 text-blue-800 font-bold px-1 py-0.5 rounded";
+                    else if (targetType === 'ARR') hC = "bg-emerald-200 text-emerald-800 font-bold px-1 py-0.5 rounded";
+                    else if (targetType === 'ALTN') hC = "bg-amber-200 text-amber-800 font-bold px-1 py-0.5 rounded";
+                    else hC = "bg-indigo-200 text-indigo-800 font-bold px-1 py-0.5 rounded";
+                } else if (hEdto) hC = "bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded"; 
+                if (hC) return <React.Fragment key={idx}><span className={`inline-block ${hC}`}>{pl.line}</span>{'\n'}</React.Fragment>;
                 return <React.Fragment key={idx}>{pl.line}{'\n'}</React.Fragment>;
             });
         };
@@ -388,64 +228,76 @@
             const [mode, setMode] = useState('edit');
             const [isLoading, setIsLoading] = useState(false);
             const [data, setData] = useState(null);
+            const [useLiveWx, setUseLiveWx] = useState(false);
+            const [liveWxData, setLiveWxData] = useState({});
+            const [isFetchingWx, setIsFetchingWx] = useState(false);
 
             const handleFileUpload = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                setIsLoading(true);
+                const file = e.target.files[0]; if (!file) return;
+                setIsLoading(true); setUseLiveWx(false); setLiveWxData({});
                 setTimeout(async () => {
                     try {
                         const pdfjs = await loadPdfJs();
                         const arrayBuffer = await file.arrayBuffer();
                         const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-                        
                         let fullText = '';
                         for (let i = 1; i <= pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const content = await page.getTextContent();
-                            
+                            const page = await pdf.getPage(i); const content = await page.getTextContent();
                             let linesMap = new Map();
-                            content.items.forEach(item => {
-                                let y = Math.round(item.transform[5] / 4) * 4;
-                                if (!linesMap.has(y)) linesMap.set(y, []);
-                                linesMap.get(y).push(item);
-                            });
-
+                            content.items.forEach(item => { let y = Math.round(item.transform[5] / 4) * 4; if (!linesMap.has(y)) linesMap.set(y, []); linesMap.get(y).push(item); });
                             let yKeys = Array.from(linesMap.keys()).sort((a, b) => b - a);
                             let pageText = yKeys.map(y => {
-                                let lineItems = linesMap.get(y);
-                                lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
-                                let lineStr = '';
-                                let lastX = -1;
-                                lineItems.forEach(it => {
-                                    if (lastX !== -1 && (it.transform[4] - lastX > 10)) lineStr += ' ';
-                                    lineStr += it.str;
-                                    lastX = it.transform[4] + it.width;
-                                });
+                                let lineItems = linesMap.get(y); lineItems.sort((a, b) => a.transform[4] - b.transform[4]);
+                                let lineStr = ''; let lastX = -1;
+                                lineItems.forEach(it => { if (lastX !== -1 && (it.transform[4] - lastX > 10)) lineStr += ' '; lineStr += it.str; lastX = it.transform[4] + it.width; });
                                 return lineStr.trim();
-                            }).join('\n');
-                            fullText += pageText + '\n';
+                            }).join('\n'); fullText += pageText + '\n';
                         }
-
-                        const newData = parseOFP(fullText);
-                        setData(newData);
-                        setMode('view');
-                    } catch (err) {
-                        console.error(err);
-                        alert('解析失敗，請確認檔案。');
-                    }
+                        const newData = parseOFP(fullText); setData(newData); setMode('view');
+                    } catch (err) { alert('解析失敗。'); }
                     setIsLoading(false);
                 }, 50); 
             };
 
+            const fetchRawViaProxy = async (url) => {
+                const proxies = [`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}` ];
+                for (let p of proxies) {
+                    try {
+                        const controller = new AbortController();
+                        const id = setTimeout(() => controller.abort(), 4000); // ★ 改為 4 秒超時
+                        const res = await fetch(p, { signal: controller.signal, cache: 'no-store' });
+                        clearTimeout(id);
+                        if (res.ok) { const text = await res.text(); if (!text.includes("<html") && !text.includes("<body")) return text; }
+                    } catch (e) { }
+                }
+                return ""; 
+            };
+
+            const handleToggleLiveWx = async (targetMode) => {
+                if (targetMode === useLiveWx) return;
+                setUseLiveWx(targetMode);
+                if (targetMode === true && Object.keys(liveWxData).length === 0 && data && data.weather) {
+                    setIsFetchingWx(true);
+                    const icaos = data.weather.map(w => w.icao); const newWx = { ...liveWxData };
+                    await Promise.all(icaos.map(async (icao) => {
+                        const cb = Date.now();
+                        const mText = await fetchRawViaProxy(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&cb=${cb}`);
+                        const tText = await fetchRawViaProxy(`https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw&cb=${cb}`);
+                        let combined = "";
+                        if (mText && mText.trim()) combined += mText.trim() + "\n\n";
+                        if (tText && tText.trim()) combined += tText.trim().replace(/\s+(FM\d{6}|PROB\d{2}|TEMPO|BECMG)/g, '\n$1');
+                        newWx[icao] = combined || `連線逾時 (4秒)，請切換回 OFP 原本查看。`;
+                    }));
+                    setLiveWxData(newWx); setIsFetchingWx(false);
+                }
+            };
+
             return (
-                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-2 sm:p-4 flex flex-col relative">
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-2 sm:p-4 flex flex-col relative pb-12">
                     <header className="max-w-6xl w-full mx-auto flex flex-row justify-between items-start sm:items-center mb-3 bg-white p-3 sm:px-5 rounded-xl shadow-sm border border-slate-200 gap-2">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                             <h1 className="text-xl font-black text-emerald-700 tracking-tight flex items-center gap-1.5">
-                                <PlaneTakeoff className="w-6 h-6" />
-                                {data && mode === 'view' ? data.flightNo : 'OFP Briefing'}
+                                <PlaneTakeoff className="w-6 h-6" /> {data && mode === 'view' ? data.flightNo : 'OFP Briefing'}
                             </h1>
                             {data && mode === 'view' && (
                                 <div className="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs font-black text-slate-600">
@@ -454,7 +306,6 @@
                                     <span className="bg-slate-100 px-2 py-1 rounded-md border border-slate-200 shadow-sm">Reg: {data.reg}</span>
                                 </div>
                             )}
-                            {(!data || mode === 'edit') && <p className="text-xs text-slate-500 font-medium">LIDO Flight Plan Dashboard</p>}
                         </div>
                         {data && (
                             <button onClick={() => setMode(mode === 'view' ? 'edit' : 'view')} className="bg-emerald-50 text-emerald-700 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold text-xs sm:text-sm hover:bg-emerald-100 transition-colors flex items-center gap-1.5 shrink-0">
@@ -467,234 +318,97 @@
                         <div className="max-w-xl mx-auto w-full bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center mt-6 flex-grow">
                             <FileText className="w-16 h-16 text-emerald-100 mx-auto mb-4" />
                             <h2 className="text-xl font-black mb-2 text-slate-700">上傳 OFP (PDF 格式)</h2>
-                            <p className="text-slate-500 text-xs mb-6 leading-relaxed">
-                                LIDO OFP 智能摘要工具，<br/>
-                                <span className="font-bold text-slate-600">一鍵解析航班數據、自動比對 EDTO 備降場天氣。</span>
-                            </p>
                             <label className={`relative cursor-pointer bg-emerald-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 w-full shadow-md shadow-emerald-600/20 ${isLoading ? 'opacity-70 pointer-events-none' : ''}`}>
-                                {isLoading ? <span className="animate-pulse flex items-center gap-2"><Clock className="w-4 h-4 animate-spin"/> 🚀 智能解析中...</span> : <><Upload className="w-5 h-5" />選擇 LIDO OFP 檔案</>}
+                                {isLoading ? <span className="animate-pulse flex items-center gap-2"><Clock className="w-4 h-4 animate-spin"/> 🚀 解析中...</span> : <><Upload className="w-5 h-5" />選擇 LIDO OFP 檔案</>}
                                 <input type="file" accept="application/pdf" className="hidden" onChange={handleFileUpload} disabled={isLoading} />
                             </label>
                         </div>
                     ) : (
                         <div className="max-w-6xl w-full mx-auto space-y-3 flex-grow">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {/* Times */}
                                 <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                                    <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-2 border-b border-slate-50">
-                                        <Clock className="w-4 h-4 text-blue-500" />
-                                        <h3 className="text-sm font-bold text-slate-700">時間 (Timings)</h3>
-                                    </div>
+                                    <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-2 border-b border-slate-50"><Clock className="w-4 h-4 text-blue-500" /> <h3 className="text-sm font-bold text-slate-700">時間 (Timings)</h3></div>
                                     <div className="space-y-2">
-                                        <div className="flex justify-between items-end">
-                                            <span className="text-xs font-semibold text-slate-500">STD</span>
-                                            <div className="text-right">
-                                                <span className="block font-black text-xl text-slate-800 tracking-tight leading-none">{data.stdZ}</span>
-                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded inline-block mt-1">LCL {data.stdL}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-end">
-                                            <span className="text-xs font-semibold text-slate-500">STA</span>
-                                            <div className="text-right">
-                                                <span className="block font-black text-xl text-slate-800 tracking-tight leading-none">{data.staZ}</span>
-                                                <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded inline-block mt-1">LCL {data.staL}</span>
-                                            </div>
-                                        </div>
+                                        <div className="flex justify-between items-end"><span className="text-xs font-semibold text-slate-500">STD</span><div className="text-right"><span className="block font-black text-xl text-slate-800 tracking-tight leading-none">{data.stdZ}</span><span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded mt-1">LCL {data.stdL}</span></div></div>
+                                        <div className="flex justify-between items-end"><span className="text-xs font-semibold text-slate-500">STA</span><div className="text-right"><span className="block font-black text-xl text-slate-800 tracking-tight leading-none">{data.staZ}</span><span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded mt-1">LCL {data.staL}</span></div></div>
                                         <div className="grid grid-cols-2 gap-2 mt-2">
-                                            <div className="flex flex-col bg-blue-50/50 p-2 rounded-lg border border-blue-100">
-                                                <span className="text-[10px] font-bold text-blue-800">Flight Time</span>
-                                                <span className="font-black text-lg text-blue-900 leading-none mt-1">{data.flightTime}</span>
-                                            </div>
-                                            <div className="flex flex-col bg-indigo-50/50 p-2 rounded-lg border border-indigo-100">
-                                                <span className="text-[10px] font-bold text-indigo-800">Block Time</span>
-                                                <span className="font-black text-lg text-indigo-900 leading-none mt-1">{data.blockTime}</span>
-                                            </div>
+                                            <div className="flex flex-col bg-blue-50 p-2 rounded-lg border border-blue-100"><span className="text-[10px] font-bold text-blue-800">Flight Time</span><span className="font-black text-lg text-blue-900 mt-1">{data.flightTime}</span></div>
+                                            <div className="flex flex-col bg-indigo-50 p-2 rounded-lg border border-indigo-100"><span className="text-[10px] font-bold text-indigo-800">Block Time</span><span className="font-black text-lg text-indigo-900 mt-1">{data.blockTime}</span></div>
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* Weights */}
                                 <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-400"></div>
-                                    <div className="flex items-center gap-1.5 text-slate-400 mb-2 pb-2 border-b border-slate-50">
-                                        <Weight className="w-4 h-4 text-orange-500" />
-                                        <h3 className="text-sm font-bold text-slate-700">重量 (Weights)</h3>
-                                    </div>
-                                    <div className="grid grid-cols-3 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2">
-                                        <div className="text-left">TYPE</div>
-                                        <div>LIMIT</div>
-                                        <div>PLANNED</div>
-                                    </div>
+                                    <div className="flex items-center gap-1.5 text-slate-400 mb-2 pb-2 border-b border-slate-50"><Weight className="w-4 h-4 text-orange-500" /> <h3 className="text-sm font-bold text-slate-700">重量 (Weights)</h3></div>
+                                    <div className="grid grid-cols-3 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2"><div className="text-left">TYPE</div><div>LIMIT</div><div>PLANNED</div></div>
                                     <div className="space-y-2">
-                                        <div className="grid grid-cols-3 items-center gap-1 border-b border-slate-50 pb-1.5">
-                                            <span className="text-xs font-bold text-slate-600">ZFW</span>
-                                            <span className="text-center font-mono text-xs font-bold text-slate-500">{data.zfwLimit}</span>
-                                            <span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.zfwPlanned}</span>
-                                        </div>
-                                        <div className="grid grid-cols-3 items-center gap-1 border-b border-slate-50 pb-1.5">
-                                            <span className="text-xs font-bold text-slate-600">LDW</span>
-                                            <span className="text-center font-mono text-xs font-bold text-slate-500">{data.ldwLimit}</span>
-                                            <span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.ldwPlanned}</span>
-                                        </div>
-                                        <div className="grid grid-cols-3 items-center gap-1">
-                                            <span className="text-xs font-bold text-slate-600">TOW</span>
-                                            <span className="text-center font-mono text-xs font-bold text-slate-500">{data.towLimit}</span>
-                                            <span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.towPlanned}</span>
-                                        </div>
+                                        <div className="grid grid-cols-3 items-center gap-1 border-b border-slate-50 pb-1.5"><span className="text-xs font-bold text-slate-600">ZFW</span><span className="text-center font-mono text-xs font-bold text-slate-500">{data.zfwLimit}</span><span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.zfwPlanned}</span></div>
+                                        <div className="grid grid-cols-3 items-center gap-1 border-b border-slate-50 pb-1.5"><span className="text-xs font-bold text-slate-600">LDW</span><span className="text-center font-mono text-xs font-bold text-slate-500">{data.ldwLimit}</span><span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.ldwPlanned}</span></div>
+                                        <div className="grid grid-cols-3 items-center gap-1"><span className="text-xs font-bold text-slate-600">TOW</span><span className="text-center font-mono text-xs font-bold text-slate-500">{data.towLimit}</span><span className="text-center font-mono text-sm font-black text-slate-800 bg-orange-50 rounded py-0.5">{data.towPlanned}</span></div>
                                     </div>
                                 </div>
-
-                                {/* Perf & Fuel */}
                                 <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
-                                    <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-2 border-b border-slate-50">
-                                        <Fuel className="w-4 h-4 text-emerald-500" />
-                                        <h3 className="text-sm font-bold text-slate-700">效能 (Perf & Fuel)</h3>
-                                    </div>
+                                    <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-2 border-b border-slate-50"><Fuel className="w-4 h-4 text-emerald-500" /> <h3 className="text-sm font-bold text-slate-700">效能 (Perf)</h3></div>
                                     <div className="space-y-3">
                                         <div className="grid grid-cols-2 gap-2">
-                                            <div className="flex flex-col bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
-                                                <span className="text-[10px] font-bold text-emerald-800 mb-0.5">Total Fuel</span>
-                                                <span className="font-black text-xl text-emerald-900 leading-none">{data.totalFuel}</span>
-                                            </div>
-                                            <div className="flex flex-col bg-teal-50 p-2.5 rounded-lg border border-teal-100">
-                                                <span className="text-[10px] font-bold text-teal-800 mb-0.5">ALTN+FIN RES</span>
-                                                <span className="font-black text-xl text-teal-900 leading-none">{data.reserveFuelSum}</span>
-                                            </div>
+                                            <div className="flex flex-col bg-emerald-50 p-2.5 rounded-lg border border-emerald-100"><span className="text-[10px] font-bold text-emerald-800">Total Fuel</span><span className="font-black text-xl text-emerald-900 leading-none">{data.totalFuel}</span></div>
+                                            <div className="flex flex-col bg-teal-50 p-2.5 rounded-lg border border-teal-100"><span className="text-[10px] font-bold text-teal-800">ALTN+FIN RES</span><span className="font-black text-xl text-teal-900 leading-none">{data.reserveFuelSum}</span></div>
                                         </div>
                                         <div className="flex gap-2">
-                                            <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 w-1/3">
-                                                <span className="block text-[10px] font-bold text-slate-400 mb-0.5">Cost Index</span>
-                                                <span className="font-black text-lg text-slate-700 leading-none">{data.ci}</span>
-                                            </div>
+                                            <div className="bg-slate-50 p-2.5 rounded-lg border w-1/3"><span className="block text-[10px] font-bold text-slate-400">CI</span><span className="font-black text-lg text-slate-700">{data.ci}</span></div>
                                             <div className="bg-blue-50 p-2.5 rounded-lg border border-blue-100 w-2/3 flex flex-col justify-center overflow-hidden">
                                                 <span className="block text-[10px] font-bold text-blue-400 mb-0.5">Flight Level</span>
-                                                <span className="font-black text-lg sm:text-xl text-blue-700 leading-none tracking-tight">{data.fl}</span>
+                                                <span className="font-black text-lg sm:text-xl text-blue-700 tracking-tight">{data.fl}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Routing */}
                             <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3">
-                                <div className="flex-1 w-full bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-1.5">
-                                            <PlaneTakeoff className="w-5 h-5 text-blue-600"/>
-                                            <span className="font-black text-lg text-slate-700">DEP</span>
-                                        </div>
-                                        <span className="bg-blue-200 text-blue-800 font-black text-sm px-2.5 py-0.5 rounded-md tracking-wide">{data.depIcao}</span>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div>
-                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">RWY</span>
-                                            <span className="font-black text-xl text-slate-800 leading-none">{data.tkofRwy}</span>
-                                        </div>
-                                        <div>
-                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">SID</span>
-                                            <span className="font-black text-xl text-blue-700 leading-none">{data.sid}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <ChevronRight className="w-6 h-6 text-slate-300 hidden md:block flex-shrink-0" />
-                                <div className="flex-1 w-full bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-1.5">
-                                            <PlaneLanding className="w-5 h-5 text-emerald-600"/>
-                                            <span className="font-black text-lg text-slate-700">ARR</span>
-                                        </div>
-                                        <span className="bg-emerald-200 text-emerald-800 font-black text-sm px-2.5 py-0.5 rounded-md tracking-wide">{data.arrIcao}</span>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <div>
-                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">RWY</span>
-                                            <span className="font-black text-xl text-slate-800 leading-none">{data.ldgRwy}</span>
-                                        </div>
-                                        <div>
-                                            <span className="block text-[10px] font-bold text-slate-400 mb-0.5">STAR</span>
-                                            <span className="font-black text-xl text-emerald-700 leading-none">{data.star}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div className="flex-1 w-full bg-blue-50/50 p-3 rounded-lg border border-blue-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-1.5"><PlaneTakeoff className="w-5 h-5 text-blue-600"/> <span className="font-black text-lg text-slate-700">DEP</span></div><span className="bg-blue-200 text-blue-800 font-black text-sm px-2.5 py-0.5 rounded-md">{data.depIcao}</span></div><div className="flex gap-4"><div><span className="block text-[10px] font-bold text-slate-400 mb-0.5">RWY</span><span className="font-black text-xl text-slate-800 leading-none">{data.tkofRwy}</span></div><div><span className="block text-[10px] font-bold text-slate-400 mb-0.5">SID</span><span className="font-black text-xl text-blue-700 leading-none">{data.sid}</span></div></div></div>
+                                <ChevronRight className="w-6 h-6 text-slate-300 hidden md:block" /><div className="flex-1 w-full bg-emerald-50/50 p-3 rounded-lg border border-emerald-100"><div className="flex items-center justify-between mb-2"><div className="flex items-center gap-1.5"><PlaneLanding className="w-5 h-5 text-emerald-600"/> <span className="font-black text-lg text-slate-700">ARR</span></div><span className="bg-emerald-200 text-emerald-800 font-black text-sm px-2.5 py-0.5 rounded-md">{data.arrIcao}</span></div><div className="flex gap-4"><div><span className="block text-[10px] font-bold text-slate-400 mb-0.5">RWY</span><span className="font-black text-xl text-slate-800 leading-none">{data.ldgRwy}</span></div><div><span className="block text-[10px] font-bold text-slate-400 mb-0.5">STAR</span><span className="font-black text-xl text-emerald-700 leading-none">{data.star}</span></div></div></div>
                             </div>
 
-                            {/* Weather Section */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-50">
-                                    <div className="flex items-center gap-1.5 text-slate-700">
-                                        <Wind className="w-5 h-5 text-cyan-500" />
-                                        <h2 className="font-black text-lg">天氣預報</h2>
+                                    <div className="flex items-center gap-1.5 text-slate-700"><Wind className="w-5 h-5 text-cyan-500" /> <h2 className="font-black text-lg">天氣預報</h2></div>
+                                    <div className="bg-slate-100 p-1 rounded-lg flex items-center gap-1 shadow-inner">
+                                        <button onClick={() => handleToggleLiveWx(false)} className={`px-3 py-1.5 rounded-md text-[11px] font-black transition-all ${!useLiveWx ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}> 📜 OFP 原本 </button>
+                                        <button onClick={() => handleToggleLiveWx(true)} className={`px-3 py-1.5 rounded-md text-[11px] font-black transition-all flex items-center gap-1 ${useLiveWx ? 'bg-blue-500 text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}> {isFetchingWx ? <Clock className="w-3 h-3 animate-spin" /> : <CloudLightning className="w-3 h-3" />} ⚡ 即時 Live 更新 </button>
                                     </div>
                                 </div>
-
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {data.weather.map((wx, idx) => {
                                         const windows = data.validityWindows[wx.icao] || [];
-                                        const isDep = wx.icao === data.depIcao;
-                                        const isArr = wx.icao === data.arrIcao;
-                                        const isAltn = wx.icao === data.altnIcao;
-                                        const isEdto = windows.length > 0;
-
-                                        let targetMins = null;
-                                        let targetType = '';
-                                        let targetTimeZ = '';
-                                        
+                                        const isDep = wx.icao === data.depIcao; const isArr = wx.icao === data.arrIcao; const isAltn = wx.icao === data.altnIcao; const isEdto = windows.length > 0;
+                                        let targetMins = null; let targetType = ''; let targetTimeZ = '';
                                         if (isDep) { targetMins = data.stdMins; targetType = 'DEP'; targetTimeZ = data.stdZ; }
                                         else if (isArr) { targetMins = data.staMins; targetType = 'ARR'; targetTimeZ = data.staZ; }
                                         else if (isAltn) { targetMins = data.altnEtaMins; targetType = 'ALTN'; targetTimeZ = data.altnEtaZ; }
-
+                                        else if (isEdto) { targetMins = windows[0].startMins; targetType = 'EDTO'; }
                                         let badges = [];
                                         if (isDep) badges.push({ text: `DEP${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-blue-600' });
                                         else if (isArr) badges.push({ text: `ARR${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-emerald-600' });
                                         else if (isAltn) badges.push({ text: `ALTN${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-amber-500' });
                                         else if (isEdto) badges.push({ text: `EDTO`, bg: 'bg-indigo-500' });
-
+                                        const displayWxRaw = useLiveWx ? (liveWxData[wx.icao] || (isFetchingWx ? "連線更新中..." : "無資料")) : wx.raw;
                                         return (
-                                            <div key={idx} className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden shadow-sm flex flex-col h-full">
-                                                <div className="bg-slate-100 px-3 py-2 flex flex-row justify-between items-center border-b border-slate-200 gap-2 shrink-0">
+                                            <div key={idx} className={`bg-slate-50 rounded-lg border overflow-hidden shadow-sm flex flex-col transition-colors ${useLiveWx ? 'border-blue-200' : 'border-slate-200'}`}>
+                                                <div className={`px-3 py-2 flex flex-row justify-between items-center border-b gap-2 ${useLiveWx ? 'bg-blue-50 border-blue-100' : 'bg-slate-100 border-slate-200'}`}>
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="font-black text-base text-slate-800 tracking-tight flex items-center gap-1.5">
-                                                            {wx.icao}
-                                                            {badges.map((b, i) => (
-                                                                <span key={i} className={`text-[9px] ${b.bg} text-white px-1 py-0.5 rounded shadow-sm leading-none whitespace-nowrap`}>
-                                                                    {b.text}
-                                                                </span>
-                                                            ))}
-                                                        </h4>
-                                                        <span className="text-[10px] font-bold text-slate-500 block w-full truncate" title={wx.name}>{wx.name}</span>
+                                                        <h4 className="font-black text-base text-slate-800 flex items-center gap-1.5">{wx.icao} {badges.map((b, i) => ( <span key={i} className={`text-[9px] ${b.bg} text-white px-1 py-0.5 rounded shadow-sm`}>{b.text}</span> ))}</h4>
+                                                        <span className="text-[10px] font-bold text-slate-500 block truncate" title={wx.name}>{wx.name}</span>
                                                     </div>
-                                                    
                                                     <div className="text-right shrink-0 flex flex-col gap-1 items-end">
-                                                        {/* 右上角 ETA 提示塊 */}
-                                                        {targetType && targetTimeZ !== 'N/A' && (
-                                                            <div>
-                                                                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
-                                                                    {targetType === 'DEP' ? 'ETD (STD)' : targetType === 'ARR' ? 'ETA (STA)' : 'ALTN ETA'}
-                                                                </span>
-                                                                <span className={`block text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm leading-none ${targetType === 'DEP' ? 'bg-blue-100 text-blue-700' : targetType === 'ARR' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                                    {targetTimeZ}
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                        {/* 右上角 EDTO 提示塊 */}
-                                                        {isEdto && (
-                                                            <div>
-                                                                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">EDTO VALIDITY</span>
-                                                                <div className="flex flex-col items-end gap-0.5">
-                                                                    {windows.map((w, i) => (
-                                                                        <span key={i} className={`block text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm leading-none ${targetType ? 'bg-fuchsia-100 text-fuchsia-800' : 'bg-yellow-100 text-red-700'}`}>
-                                                                            {w.start} - {w.end}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
+                                                        {targetType && targetTimeZ !== 'N/A' && targetType !== 'EDTO' && ( <div><span className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">{targetType === 'DEP' ? 'ETD' : 'ETA'}</span><span className={`block text-[10px] font-black px-1.5 py-0.5 rounded ${targetType === 'DEP' ? 'bg-blue-100 text-blue-700' : targetType === 'ARR' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{targetTimeZ}</span></div> )}
+                                                        {isEdto && ( <div><span className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">VALID</span><div className="flex flex-col items-end gap-0.5">{windows.map((w, i) => ( <span key={i} className={`block text-[10px] font-black px-1.5 py-0.5 rounded ${targetType !== 'EDTO' && targetType ? 'bg-fuchsia-100 text-fuchsia-800' : 'bg-yellow-100 text-red-700'}`}>{w.start}-{w.end}</span> ))}</div></div> )}
                                                     </div>
                                                 </div>
-                                                <div className="p-2.5 overflow-x-auto text-[11px] sm:text-xs font-mono text-slate-700 leading-snug whitespace-pre flex-1">
-                                                    {highlightTAF(wx.raw, windows, targetMins, targetType, isEdto, data.baseDate)}
+                                                <div className="p-2.5 overflow-x-auto text-[11px] sm:text-xs font-mono text-slate-700 leading-snug whitespace-pre relative">
+                                                    {useLiveWx && isFetchingWx && !liveWxData[wx.icao] ? ( <div className="text-blue-600 font-bold animate-pulse flex items-center gap-2 mt-1"><Clock className="w-4 h-4 animate-spin" /> 連線抓取中...</div> ) : ( highlightTAF(displayWxRaw, windows, targetMins, targetType, data.baseDate) )}
                                                 </div>
                                             </div>
                                         );
@@ -712,6 +426,4 @@
     </script>
 </body>
 </html>
-
-
 
