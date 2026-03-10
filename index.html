@@ -20,14 +20,12 @@
 </head>
 <body>
     <div id="root">
-        <!-- 預設載入畫面，React 成功啟動後會自動覆蓋 -->
         <div id="loading-screen">
             <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             <h2 style="font-size: 1.5rem; font-weight: bold;">系統啟動中 Loading...</h2>
-            <p style="margin-top: 10px; font-size: 0.875rem;">如果畫面持續卡住，請重新整理網頁。</p>
         </div>
     </div>
 
@@ -46,13 +44,9 @@
         const Upload = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
         const FileText = ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
 
-        // --- PDF.js 動態載入 ---
         const loadPdfJs = () => {
             return new Promise((resolve, reject) => {
-                if (window.pdfjsLib) {
-                    resolve(window.pdfjsLib);
-                    return;
-                }
+                if (window.pdfjsLib) { resolve(window.pdfjsLib); return; }
                 const script = document.createElement('script');
                 script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
                 script.onload = () => {
@@ -64,37 +58,21 @@
             });
         };
 
-        // --- 時間推算引擎 ---
-        const getAbsMins = (hhmmZ, baseDate, stdMins) => {
-            let hh = parseInt(hhmmZ.substring(0, 2));
-            let mm = parseInt(hhmmZ.substring(3, 5));
-            let mins = hh * 60 + mm;
-            let day = baseDate;
-            if (mins < stdMins - 360) {
-                day = baseDate + 1;
-            }
-            return day * 24 * 60 + mins;
-        };
-
-        // --- 解析 OFP 核心邏輯 (防當機與完美過濾版) ---
+        // --- 解析 OFP 核心邏輯 (完美防卡死 + ETA 智能精算) ---
         const parseOFP = (text) => {
             const data = {
                 flightNo: 'N/A', date: 'N/A', route: 'N/A', reg: 'N/A',
-                depIcao: 'N/A', arrIcao: 'N/A',
-                stdL: 'N/A', stdZ: 'N/A', staL: 'N/A', staZ: 'N/A',
+                depIcao: 'N/A', arrIcao: 'N/A', altnIcao: 'N/A',
+                stdL: 'N/A', stdZ: 'N/A', staL: 'N/A', staZ: 'N/A', altnEtaZ: 'N/A',
+                stdMins: null, staMins: null, altnEtaMins: null,
                 flightTime: 'N/A', blockTime: 'N/A',
-                zfwLimit: 'N/A', zfwPlanned: 'N/A',
-                ldwLimit: 'N/A', ldwPlanned: 'N/A',
-                towLimit: 'N/A', towPlanned: 'N/A',
+                zfwLimit: 'N/A', zfwPlanned: 'N/A', ldwLimit: 'N/A', ldwPlanned: 'N/A', towLimit: 'N/A', towPlanned: 'N/A',
                 totalFuel: 'N/A', reserveFuelSum: 'N/A', ci: 'N/A', fl: 'N/A',
-                tkofRwy: 'N/A', sid: 'N/A',
-                ldgRwy: 'N/A', star: 'N/A',
-                weather: [], validityWindows: {},
-                baseDate: 1
+                tkofRwy: 'N/A', sid: 'N/A', ldgRwy: 'N/A', star: 'N/A',
+                weather: [], validityWindows: {}, baseDate: 1
             };
 
             try {
-                // 擷取前 8000 字元做基本資料分析，避免全文搜尋卡死
                 const topText = text.substring(0, 8000);
 
                 const headerMatch = topText.match(/([A-Z0-9\s]+)\/(\d{2}[A-Za-z]{3}\d{2})\/([A-Z]{3,4}-[A-Z]{3,4})\s+Reg:\s*([A-Z0-9-]+)/i);
@@ -117,16 +95,31 @@
                 const dateMatch = topText.match(/(\d{2})[A-Za-z]{3}\d{2}/i);
                 if (dateMatch) data.baseDate = parseInt(dateMatch[1]);
 
-                let stdMins = 0;
+                // ★ 精算絕對分鐘數 (Absolute Minutes) 供 TAF 比對使用
                 const stdMatch = topText.match(/STD\s+(\d{4}L)\s+(\d{4}Z)/);
                 if (stdMatch) { 
                     data.stdL = stdMatch[1]; 
                     data.stdZ = stdMatch[2]; 
-                    stdMins = parseInt(data.stdZ.substring(0,2)) * 60 + parseInt(data.stdZ.substring(2,4));
+                    let refH = parseInt(data.stdZ.substring(0,2));
+                    let refM = parseInt(data.stdZ.substring(2,4));
+                    data.stdMins = data.baseDate * 24 * 60 + refH * 60 + refM;
                 }
 
                 const staMatch = topText.match(/STA\s+(\d{4}L)\s+(\d{4}[Zz27])/);
-                if (staMatch) { data.staL = staMatch[1]; data.staZ = staMatch[2].replace(/[27]$/, 'Z'); }
+                if (staMatch) { 
+                    data.staL = staMatch[1]; 
+                    data.staZ = staMatch[2].replace(/[27]$/, 'Z'); 
+                    if (data.stdMins) {
+                        let staH = parseInt(data.staZ.substring(0, 2));
+                        let staM = parseInt(data.staZ.substring(2, 4));
+                        let staDay = data.baseDate;
+                        // 若 STA 時間小於 STD (跨夜)，日期+1
+                        let refH = parseInt(data.stdZ.substring(0,2));
+                        let refM = parseInt(data.stdZ.substring(2,4));
+                        if (staH * 60 + staM < refH * 60 + refM - 360) staDay += 1;
+                        data.staMins = staDay * 24 * 60 + staH * 60 + staM;
+                    }
+                }
 
                 if (data.stdZ !== 'N/A' && data.staZ !== 'N/A') {
                     let start = parseInt(data.stdZ.substring(0, 2)) * 60 + parseInt(data.stdZ.substring(2, 4));
@@ -143,31 +136,42 @@
 
                 const zfwMatch = topText.match(/ZFW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
                 if (zfwMatch) { data.zfwLimit = zfwMatch[1]; data.zfwPlanned = zfwMatch[2]; }
-
                 const ldwMatch = topText.match(/LDW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
                 if (ldwMatch) { data.ldwLimit = ldwMatch[1]; data.ldwPlanned = ldwMatch[2]; }
-
                 const towMatch = topText.match(/TOW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/);
                 if (towMatch) { data.towLimit = towMatch[1]; data.towPlanned = towMatch[2]; }
-
                 const fuelMatch = topText.match(/TOTAL[\s\n]*(\d{5,6})/);
                 if (fuelMatch) data.totalFuel = fuelMatch[1];
 
+                // ★ ALTN 精準擷取與 ETA 計算
                 let altnFuel = 0;
                 let finalResFuel = 0;
-                const altnMatch = topText.match(/ALTN[^\d]+(\d{3,6})/);
-                if (altnMatch) altnFuel = parseInt(altnMatch[1], 10);
+                const altnRegex = /ALTN\s+([A-Z]{4})?\s*(\d{3,6})\s+(\d{2})\.(\d{2})/;
+                const altnMatch = topText.match(altnRegex);
+                if (altnMatch) {
+                    if (altnMatch[1]) data.altnIcao = altnMatch[1];
+                    altnFuel = parseInt(altnMatch[2], 10);
+                    let addH = parseInt(altnMatch[3], 10);
+                    let addM = parseInt(altnMatch[4], 10);
+                    
+                    if (data.staMins) {
+                        data.altnEtaMins = data.staMins + addH * 60 + addM;
+                        let finalH = Math.floor(data.altnEtaMins / 60) % 24;
+                        let finalM = data.altnEtaMins % 60;
+                        data.altnEtaZ = finalH.toString().padStart(2, '0') + finalM.toString().padStart(2, '0') + 'Z';
+                    }
+                } else {
+                    const fallbackAltn = topText.match(/ALTN[^\d]+(\d{3,6})/);
+                    if (fallbackAltn) altnFuel = parseInt(fallbackAltn[1], 10);
+                }
+
                 const finalResMatch = topText.match(/FINAL RES[^\d]+(\d{3,6})/);
                 if (finalResMatch) finalResFuel = parseInt(finalResMatch[1], 10);
-                
-                if (altnMatch || finalResMatch) {
-                    data.reserveFuelSum = (altnFuel + finalResFuel).toString();
-                }
+                if (altnFuel || finalResFuel) data.reserveFuelSum = (altnFuel + finalResFuel).toString();
 
                 const ciMatch = topText.match(/CRZ\s+CI(\d+)/);
                 if (ciMatch) data.ci = ciMatch[1];
 
-                // 高度擷取 (包含階梯爬升)
                 let fplStartFL = text.indexOf('(FPL-');
                 if (fplStartFL !== -1) {
                     let fplChunkFL = text.substring(fplStartFL, fplStartFL + 3000);
@@ -193,12 +197,21 @@
                 if (data.arrIcao !== 'N/A') {
                     const ldgMatch = topText.match(new RegExp(`${data.arrIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`));
                     if (ldgMatch) data.ldgRwy = ldgMatch[1];
-                    
                     const starMatch = topText.match(new RegExp(`([A-Z0-9]+)\\s*\\n+-${data.arrIcao}`));
                     if (starMatch) data.star = starMatch[1];
                 }
 
-                // Validity Windows
+                // ★ EDTO Validity 時間換算
+                const getEdtoAbsMins = (timeStr, baseDay, refMinsRaw) => {
+                    let clean = timeStr.replace(/[^0-9]/g, '');
+                    if (clean.length < 4) return 0;
+                    let h = parseInt(clean.substring(0,2));
+                    let m = parseInt(clean.substring(2,4));
+                    let d = baseDay;
+                    if (h * 60 + m < refMinsRaw - 360) d += 1;
+                    return d * 24 * 60 + h * 60 + m;
+                };
+
                 let valStart = text.indexOf('ALTERNATE VALIDITY TIMES');
                 if (valStart !== -1) {
                     let valChunk = text.substring(valStart, valStart + 5000);
@@ -211,6 +224,7 @@
 
                     const lines = valChunk.split('\n');
                     let currentApt = null;
+                    let refMinsRaw = data.stdMins ? data.stdMins % (24 * 60) : 0;
 
                     lines.forEach(line => {
                         const aptMatch = line.match(/\b([A-Z]{4})\b/);
@@ -220,15 +234,15 @@
                         const timeRegex = /(\d{2}:\d{2}[Zz27]?)\s+(?:TO|T[O0Ο])\s+(\d{2}:\d{2}[Zz27]?)/gi;
                         let tMatch;
                         while ((tMatch = timeRegex.exec(line)) !== null && currentApt) {
-                            const start = tMatch[1].toUpperCase().replace(/[27]$/, 'Z');
-                            const end = tMatch[2].toUpperCase().replace(/[27]$/, 'Z');
+                            const startStr = tMatch[1].toUpperCase().replace(/[27]$/, 'Z');
+                            const endStr = tMatch[2].toUpperCase().replace(/[27]$/, 'Z');
                             
-                            let sMins = getAbsMins(start, data.baseDate, stdMins);
-                            let eMins = getAbsMins(end, data.baseDate, stdMins);
+                            let sMins = getEdtoAbsMins(startStr, data.baseDate, refMinsRaw);
+                            let eMins = getEdtoAbsMins(endStr, data.baseDate, refMinsRaw);
                             if (eMins < sMins) eMins += 24 * 60;
 
                             if (!data.validityWindows[currentApt]) data.validityWindows[currentApt] = [];
-                            data.validityWindows[currentApt].push({ start, end, startMins: sMins, endMins: eMins });
+                            data.validityWindows[currentApt].push({ start: startStr, end: endStr, startMins: sMins, endMins: eMins });
                         }
                     });
                 }
@@ -246,7 +260,6 @@
 
                     const rawWeather = [];
                     const lines = wxChunk.split('\n');
-                    
                     let currentIcao = null;
                     let currentName = '';
                     let currentWxLines = [];
@@ -258,18 +271,15 @@
                         if (/^(DESTINATION AIRPORT|DESTINATION ALTERNATE|ENROUTE AIRPORT\(S\)|Critical ETOPS Airports|DEPARTURE AIRPORT):?/i.test(l)) return;
                         if (l.includes('AIRPORTLIST ENDED') || l.startsWith('NOTAM')) return;
 
-                        // 過濾頁碼與無用資訊
                         if (/^Page \d+ of \d+/i.test(l)) return;
                         if (/^[A-Z0-9\s]+\/\d{2}[A-Za-z]{3}\d{2}\/[A-Z]{3,4}-[A-Z]{3,4}/i.test(l)) return;
                         if (/(?:EVA|BR|CAL|CI)\s*\d+\/\d{2}[A-Za-z]{3}\d{2}/i.test(l)) return;
-                        // 過濾溫度陣列
                         if (/^(?:\d{2}\/\d{2}\s+){2,}/.test(l) || /^(?:\d{2}\/\d{2})$/.test(l)) {
                             isCollectingWx = false;
                             return;
                         }
 
                         const titleMatch = l.match(/^([A-Z]{4})\/([A-Z]{3})\s+(.*)/);
-                        
                         if (titleMatch) {
                             if (currentIcao) {
                                 rawWeather.push({ icao: currentIcao, name: currentName.replace(/\s+/g, ' ').trim(), raw: currentWxLines.join('\n').trim() });
@@ -293,7 +303,8 @@
                         rawWeather.push({ icao: currentIcao, name: currentName.replace(/\s+/g, ' ').trim(), raw: currentWxLines.join('\n').trim() });
                     }
 
-                    const requiredAirports = new Set([data.depIcao, data.arrIcao, ...Object.keys(data.validityWindows)]);
+                    const requiredAirports = new Set([data.depIcao, data.arrIcao, data.altnIcao, ...Object.keys(data.validityWindows)]);
+                    requiredAirports.delete('N/A');
                     data.weather = rawWeather.filter(wx => requiredAirports.has(wx.icao));
                 }
             } catch (e) {
@@ -302,18 +313,27 @@
             return data;
         };
 
-        const highlightTAF = (wxText, windows) => {
-            if (!windows || windows.length === 0) return wxText.split('\n').map((l, i) => <React.Fragment key={i}>{l}{'\n'}</React.Fragment>);
+        // ★★★ 核心渲染：智能 TAF 高亮與變色系統 ★★★
+        const highlightTAF = (wxText, windows, targetMins, targetType, isEdto, baseDate) => {
+            if (!wxText) return null;
+            
+            // 安全處理跨月/跨日
+            const normalizeDay = (d) => {
+                if (d < baseDate - 15) return d + 30;
+                if (d > baseDate + 15) return d - 30;
+                return d;
+            };
+
             const lines = wxText.split('\n');
             const parsedLines = lines.map(line => {
                 let start = -1, end = -1, isFm = false;
                 const periodMatch = line.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
                 const fmMatch = line.match(/FM(\d{2})(\d{2})(\d{2})/);
                 if (periodMatch) {
-                   start = parseInt(periodMatch[1]) * 24 * 60 + parseInt(periodMatch[2]) * 60;
-                   end = parseInt(periodMatch[3]) * 24 * 60 + parseInt(periodMatch[4]) * 60;
+                   start = normalizeDay(parseInt(periodMatch[1])) * 24 * 60 + parseInt(periodMatch[2]) * 60;
+                   end = normalizeDay(parseInt(periodMatch[3])) * 24 * 60 + parseInt(periodMatch[4]) * 60;
                 } else if (fmMatch) {
-                   start = parseInt(fmMatch[1]) * 24 * 60 + parseInt(fmMatch[2]) * 60 + parseInt(fmMatch[3]);
+                   start = normalizeDay(parseInt(fmMatch[1])) * 24 * 60 + parseInt(fmMatch[2]) * 60 + parseInt(fmMatch[3]);
                    isFm = true;
                 }
                 return { line, start, end, isFm, finalStart: -1, finalEnd: -1 };
@@ -339,12 +359,26 @@
             }
 
             return parsedLines.map((pl, idx) => {
-                let isHighlighted = false;
-                if (pl.finalStart !== -1 && pl.finalEnd !== -1) {
-                    isHighlighted = windows.some(w => Math.max(pl.finalStart, w.startMins) < Math.min(pl.finalEnd, w.endMins));
+                let hitTarget = targetMins !== null && pl.finalStart !== -1 && pl.finalEnd !== -1 && targetMins >= pl.finalStart && targetMins <= pl.finalEnd;
+                let hitEdto = false;
+                if (windows && windows.length > 0 && pl.finalStart !== -1 && pl.finalEnd !== -1) {
+                    hitEdto = windows.some(w => Math.max(pl.finalStart, w.startMins) < Math.min(pl.finalEnd, w.endMins));
                 }
-                if (isHighlighted) {
-                    return <React.Fragment key={idx}><span className="bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded inline-block shadow-sm">{pl.line}</span>{'\n'}</React.Fragment>;
+
+                let hlClass = "";
+                // 判斷顏色層級：EDTO 重疊 > 單純目標時間 > 單純 EDTO
+                if (hitTarget && hitEdto) {
+                    hlClass = "bg-fuchsia-200 text-fuchsia-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 桃紅：雙重疊加
+                } else if (hitTarget) {
+                    if (targetType === 'DEP') hlClass = "bg-blue-200 text-blue-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 藍：起飛
+                    else if (targetType === 'ARR') hlClass = "bg-emerald-200 text-emerald-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 綠：降落
+                    else if (targetType === 'ALTN') hlClass = "bg-amber-200 text-amber-800 font-bold px-1 py-0.5 rounded shadow-sm"; // 橘：備降
+                } else if (hitEdto) {
+                    hlClass = "bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded shadow-sm"; // 黃紅：單純 EDTO
+                }
+
+                if (hlClass) {
+                    return <React.Fragment key={idx}><span className={`inline-block ${hlClass}`}>{pl.line}</span>{'\n'}</React.Fragment>;
                 }
                 return <React.Fragment key={idx}>{pl.line}{'\n'}</React.Fragment>;
             });
@@ -406,8 +440,8 @@
             };
 
             return (
-                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-2 sm:p-4 pb-12">
-                    <header className="max-w-6xl mx-auto flex flex-row justify-between items-start sm:items-center mb-3 bg-white p-3 sm:px-5 rounded-xl shadow-sm border border-slate-200 gap-2">
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-2 sm:p-4 flex flex-col relative">
+                    <header className="max-w-6xl w-full mx-auto flex flex-row justify-between items-start sm:items-center mb-3 bg-white p-3 sm:px-5 rounded-xl shadow-sm border border-slate-200 gap-2">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                             <h1 className="text-xl font-black text-emerald-700 tracking-tight flex items-center gap-1.5">
                                 <PlaneTakeoff className="w-6 h-6" />
@@ -430,7 +464,7 @@
                     </header>
 
                     {mode === 'edit' || !data ? (
-                        <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center mt-6">
+                        <div className="max-w-xl mx-auto w-full bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center mt-6 flex-grow">
                             <FileText className="w-16 h-16 text-emerald-100 mx-auto mb-4" />
                             <h2 className="text-xl font-black mb-2 text-slate-700">上傳 OFP (PDF 格式)</h2>
                             <p className="text-slate-500 text-xs mb-6 leading-relaxed">
@@ -443,7 +477,7 @@
                             </label>
                         </div>
                     ) : (
-                        <div className="max-w-6xl mx-auto space-y-3">
+                        <div className="max-w-6xl w-full mx-auto space-y-3 flex-grow">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 {/* Times */}
                                 <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
@@ -529,14 +563,12 @@
                                                 <span className="font-black text-xl text-teal-900 leading-none">{data.reserveFuelSum}</span>
                                             </div>
                                         </div>
-                                        
-                                        {/* ★ 優化：給 Flight Level 更大的空間 ★ */}
                                         <div className="flex gap-2">
                                             <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 w-1/3">
                                                 <span className="block text-[10px] font-bold text-slate-400 mb-0.5">Cost Index</span>
                                                 <span className="font-black text-lg text-slate-700 leading-none">{data.ci}</span>
                                             </div>
-                                            <div className="bg-blue-50 p-2.5 rounded-lg border border-blue-100 w-2/3 flex flex-col justify-center">
+                                            <div className="bg-blue-50 p-2.5 rounded-lg border border-blue-100 w-2/3 flex flex-col justify-center overflow-hidden">
                                                 <span className="block text-[10px] font-bold text-blue-400 mb-0.5">Flight Level</span>
                                                 <span className="font-black text-lg sm:text-xl text-blue-700 leading-none tracking-tight">{data.fl}</span>
                                             </div>
@@ -593,50 +625,82 @@
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-50">
                                     <div className="flex items-center gap-1.5 text-slate-700">
                                         <Wind className="w-5 h-5 text-cyan-500" />
-                                        <h2 className="font-black text-lg">天氣預報與有效時間分析</h2>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-yellow-800 bg-yellow-100 px-3 py-1 rounded-md">
-                                        <AlertTriangle className="w-3.5 h-3.5 text-yellow-600" />
-                                        <span>重疊 Validity Window 高亮標示</span>
+                                        <h2 className="font-black text-lg">天氣預報</h2>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {data.weather.map((wx, idx) => {
-                                        const windows = data.validityWindows[wx.icao];
+                                        const windows = data.validityWindows[wx.icao] || [];
+                                        const isDep = wx.icao === data.depIcao;
+                                        const isArr = wx.icao === data.arrIcao;
+                                        const isAltn = wx.icao === data.altnIcao;
+                                        const isEdto = windows.length > 0;
+
+                                        let targetMins = null;
+                                        let targetType = '';
+                                        let targetTimeZ = '';
+                                        
+                                        if (isDep) { targetMins = data.stdMins; targetType = 'DEP'; targetTimeZ = data.stdZ; }
+                                        else if (isArr) { targetMins = data.staMins; targetType = 'ARR'; targetTimeZ = data.staZ; }
+                                        else if (isAltn) { targetMins = data.altnEtaMins; targetType = 'ALTN'; targetTimeZ = data.altnEtaZ; }
+
+                                        let badges = [];
+                                        if (isDep) badges.push({ text: `DEP${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-blue-600' });
+                                        else if (isArr) badges.push({ text: `ARR${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-emerald-600' });
+                                        else if (isAltn) badges.push({ text: `ALTN${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-amber-500' });
+                                        else if (isEdto) badges.push({ text: `EDTO`, bg: 'bg-indigo-500' });
+
                                         return (
                                             <div key={idx} className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden shadow-sm flex flex-col h-full">
                                                 <div className="bg-slate-100 px-3 py-2 flex flex-row justify-between items-center border-b border-slate-200 gap-2 shrink-0">
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="font-black text-base text-slate-800 tracking-tight flex items-center gap-1.5">
                                                             {wx.icao}
-                                                            {wx.icao === data.depIcao && <span className="text-[9px] bg-blue-600 text-white px-1 py-0.5 rounded leading-none">DEP</span>}
-                                                            {wx.icao === data.arrIcao && <span className="text-[9px] bg-emerald-600 text-white px-1 py-0.5 rounded leading-none">ARR</span>}
+                                                            {badges.map((b, i) => (
+                                                                <span key={i} className={`text-[9px] ${b.bg} text-white px-1 py-0.5 rounded shadow-sm leading-none whitespace-nowrap`}>
+                                                                    {b.text}
+                                                                </span>
+                                                            ))}
                                                         </h4>
                                                         <span className="text-[10px] font-bold text-slate-500 block w-full truncate" title={wx.name}>{wx.name}</span>
                                                     </div>
-                                                    {windows && windows.length > 0 && (
-                                                        <div className="text-right shrink-0">
-                                                            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Validity</span>
-                                                            <div className="flex flex-col items-end gap-0.5">
-                                                                {windows.map((w, i) => (
-                                                                    <span key={i} className="block text-[10px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded shadow-sm leading-none">
-                                                                        {w.start} - {w.end}
-                                                                    </span>
-                                                                ))}
+                                                    
+                                                    <div className="text-right shrink-0 flex flex-col gap-1 items-end">
+                                                        {/* 右上角 ETA 提示塊 */}
+                                                        {targetType && targetTimeZ !== 'N/A' && (
+                                                            <div>
+                                                                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">
+                                                                    {targetType === 'DEP' ? 'ETD (STD)' : targetType === 'ARR' ? 'ETA (STA)' : 'ALTN ETA'}
+                                                                </span>
+                                                                <span className={`block text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm leading-none ${targetType === 'DEP' ? 'bg-blue-100 text-blue-700' : targetType === 'ARR' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                    {targetTimeZ}
+                                                                </span>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                        {/* 右上角 EDTO 提示塊 */}
+                                                        {isEdto && (
+                                                            <div>
+                                                                <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">EDTO VALIDITY</span>
+                                                                <div className="flex flex-col items-end gap-0.5">
+                                                                    {windows.map((w, i) => (
+                                                                        <span key={i} className={`block text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm leading-none ${targetType ? 'bg-fuchsia-100 text-fuchsia-800' : 'bg-yellow-100 text-red-700'}`}>
+                                                                            {w.start} - {w.end}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="p-2.5 overflow-x-auto text-[11px] sm:text-xs font-mono text-slate-700 leading-snug whitespace-pre flex-1">
-                                                    {highlightTAF(wx.raw, windows)}
+                                                    {highlightTAF(wx.raw, windows, targetMins, targetType, isEdto, data.baseDate)}
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
-
                         </div>
                     )}
                 </div>
@@ -648,4 +712,6 @@
     </script>
 </body>
 </html>
+
+
 
