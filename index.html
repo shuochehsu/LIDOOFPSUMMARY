@@ -66,6 +66,7 @@
             return day * 24 * 60 + hh * 60 + mm;
         };
 
+        // --- 核心 OFP 解析器 ---
         const parseOFP = (text) => {
             const data = {
                 flightNo: 'N/A', date: 'N/A', route: 'N/A', reg: 'N/A',
@@ -80,6 +81,7 @@
             };
 
             try {
+                // 1. 基礎航班資訊
                 const topText = text.substring(0, 15000);
                 const headerMatch = topText.match(/([A-Z0-9\s]+)\/(\d{2}[A-Za-z]{3}\d{2})\/([A-Z]{3,4}-[A-Z]{3,4})\s+Reg:\s*([A-Z0-9-]+)/i);
                 if (headerMatch) { data.flightNo = headerMatch[1].replace(/\s+/g, ''); data.date = headerMatch[2].toUpperCase(); data.route = headerMatch[3]; data.reg = headerMatch[4]; }
@@ -95,6 +97,7 @@
                 const staMatch = topText.match(/STA\s+(\d{4}L)\s+(\d{4}[Zz27])/);
                 if (staMatch) { data.staL = staMatch[1]; data.staZ = staMatch[2].replace(/[27]$/, 'Z'); if (data.stdMins !== null) data.staMins = getAbsMinsFromZ(data.staZ, data.baseDate, stdMinsRaw); }
                 if (data.stdZ !== 'N/A' && data.staZ !== 'N/A') { let diff = data.staMins - data.stdMins; let hh = Math.floor(diff / 60).toString().padStart(2, '0'); let mm = (diff % 60).toString().padStart(2, '0'); data.blockTime = `${hh}:${mm}`; }
+                
                 const eteMatch = topText.match(/ETE[\s\n]*(\d{2}\.\d{2})/); if (eteMatch) data.flightTime = eteMatch[1].replace('.', ':');
                 const fuelMatch = topText.match(/TOTAL[\s\n]*(\d{5,6})/); if (fuelMatch) data.totalFuel = fuelMatch[1];
 
@@ -104,33 +107,99 @@
 
                 let altnFuel = 0, finalResFuel = 0; const altnRegex = /ALTN\s+([A-Z]{4})?\s*(\d{3,6})\s+(\d{2})\.(\d{2})/; const altnMatch = topText.match(altnRegex);
                 if (altnMatch) {
-                    if (altnMatch[1]) data.altnIcao = altnMatch[1]; altnFuel = parseInt(altnMatch[2], 10); let addH = parseInt(altnMatch[3], 10); let addM = parseInt(altnMatch[4], 10);
+                    if (altnMatch[1]) data.altnIcao = altnMatch[1];
+                    altnFuel = parseInt(altnMatch[2], 10); let addH = parseInt(altnMatch[3], 10); let addM = parseInt(altnMatch[4], 10);
                     if (data.staMins !== null) { data.altnEtaMins = data.staMins + addH * 60 + addM; let hE = Math.floor(data.altnEtaMins / 60) % 24; let mE = data.altnEtaMins % 60; data.altnEtaZ = hE.toString().padStart(2, '0') + mE.toString().padStart(2, '0') + 'Z'; }
                 }
                 const finalResMatch = topText.match(/FINAL RES[^\d]+(\d{3,6})/); if (finalResMatch) finalResFuel = parseInt(finalResMatch[1], 10); if (altnFuel || finalResFuel) data.reserveFuelSum = (altnFuel + finalResFuel).toString();
 
                 const ciMatch = topText.match(/CRZ\s+CI(\d+)/); if (ciMatch) data.ci = ciMatch[1];
 
+                // 2. ★ 高度區間：完美支援公制 (S, M) 與英制 (F) ★
                 let fplStartFLIdx = text.indexOf('(FPL-');
                 if (fplStartFLIdx !== -1) {
-                    let fplChunk = text.substring(fplStartFLIdx, fplStartFLIdx + 4000);
-                    const flMatches = [...fplChunk.matchAll(/(?:-|\/)[NM]\d{3,4}F(\d{3})/g)];
+                    let fplChunk = text.substring(fplStartFLIdx, fplStartFLIdx + 3000);
+                    const flMatches = [...fplChunk.matchAll(/(?:-|\/)[NMK]\d{3,4}([FSM])(\d{3,4})/g)];
                     if (flMatches.length > 0) {
-                        const flNumbers = flMatches.map(m => parseInt(m[1], 10));
-                        const initialFL = flNumbers[0]; const maxFL = Math.max(...flNumbers);
-                        data.fl = initialFL < maxFL ? `FL${initialFL} - ${maxFL}` : `FL${maxFL}`;
+                        const uniqueFLs = [];
+                        flMatches.forEach(m => {
+                            let type = m[1]; let val = parseInt(m[2], 10);
+                            let str = (type === 'F' ? 'FL' : type) + m[2];
+                            if (!uniqueFLs.find(x => x.str === str)) uniqueFLs.push({ type, val, str });
+                        });
+                        
+                        let res = [];
+                        ['S', 'M', 'F'].forEach(t => {
+                            let list = uniqueFLs.filter(x => x.type === t).map(x => x.val);
+                            if (list.length > 0) {
+                                let init = list[0]; let max = Math.max(...list);
+                                let prefix = t === 'F' ? 'FL' : t;
+                                if (init < max) res.push(`${prefix}${init} - ${max}`);
+                                else res.push(`${prefix}${init}`);
+                            }
+                        });
+                        data.fl = res.join(' / ');
                     }
                 }
 
-                const sidMatch = topText.match(/-(?:[NM]\d{3,4}F\d{3})\s+([A-Z0-9]+)\b/);
-                if (sidMatch) data.sid = sidMatch[1];
+                // 3. ★ SID/STAR 與跑道：最強 Navlog 解析器，保證抓到 VILUS3T 和 TONGA1A ★
+                let navLogStart = text.indexOf('NAVIGATION LOG');
+                if (navLogStart === -1) navLogStart = 0;
+                let badWords = ['CLB', 'DES', 'TOC', 'TOD', 'PAGE', 'AWY', 'WPT', 'MACH', 'HDG', 'ELEV', 'TIME', 'STAMP', 'FLIGHTLEVEL', 'POS', 'FREQ', 'DEST', 'STA', 'ETA'];
 
-                if (data.depIcao !== 'N/A') { const tkofMatch = topText.match(new RegExp(`${data.depIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`)); if (tkofMatch) data.tkofRwy = tkofMatch[1]; }
-                if (data.arrIcao !== 'N/A') { const ldgMatch = topText.match(new RegExp(`${data.arrIcao}\\/([0-3]\\d[LRC]?)(?!\\d)`)); if (ldgMatch) data.ldgRwy = ldgMatch[1]; const starMatch = topText.match(new RegExp(`([A-Z0-9]+)\\s*\\n+-${data.arrIcao}`)); if (starMatch) data.star = starMatch[1]; }
+                // 找起飛跑道與 SID
+                if (data.depIcao !== 'N/A') { 
+                    const depRegex = new RegExp(data.depIcao + '\\/([0-3]\\d[LRC]?)');
+                    const depMatch = text.substring(navLogStart).match(depRegex); 
+                    if (depMatch) {
+                        data.tkofRwy = depMatch[1];
+                        let afterDep = text.substring(navLogStart + depMatch.index + depMatch[0].length, navLogStart + depMatch.index + depMatch[0].length + 500);
+                        let lines = afterDep.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                        
+                        let firstWords = [];
+                        for (let l of lines) {
+                            let w = l.split(/[\s]+/)[0];
+                            // 必須是字母開頭、長度在 2-8 之間、不是座標、不是系統標題
+                            if (/^[A-Z][A-Z0-9]{1,7}$/.test(w) && !badWords.includes(w) && !/^[NS]\d/.test(w)) {
+                                firstWords.push(w);
+                            }
+                            if (firstWords.length === 2) break; // 第二個字就是 SID
+                        }
+                        if (firstWords.length === 2) {
+                            data.sid = firstWords[1]; 
+                        } else if (firstWords.length === 1) {
+                            data.sid = firstWords[0];
+                        }
+                    } 
+                }
 
+                // 找降落跑道與 STAR
+                if (data.arrIcao !== 'N/A') { 
+                    let searchArea = text.substring(navLogStart);
+                    const arrRegex = new RegExp(data.arrIcao + '\\/([0-3]\\d[LRC]?)', 'g');
+                    const arrMatches = [...searchArea.matchAll(arrRegex)];
+                    if (arrMatches.length > 0) {
+                        let lastArrMatch = arrMatches[arrMatches.length - 1]; // 取最後一筆 (目的地)
+                        data.ldgRwy = lastArrMatch[1];
+                        
+                        let afterArr = searchArea.substring(lastArrMatch.index + lastArrMatch[0].length, lastArrMatch.index + lastArrMatch[0].length + 300);
+                        let lines = afterArr.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                        
+                        for (let l of lines) {
+                            let w = l.split(/[\s]+/)[0];
+                            // 降落機場下方的第一個有效字串就是 STAR
+                            if (/^[A-Z][A-Z0-9]{1,7}$/.test(w) && !badWords.includes(w) && !/^[NS]\d/.test(w)) {
+                                data.star = w; 
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Validity Windows
                 let valStart = text.indexOf('ALTERNATE VALIDITY TIMES');
                 if (valStart !== -1) {
-                    let valChunk = text.substring(valStart, valStart + 8000);
+                    let valChunk = text.substring(valStart, valStart + 6000);
                     const valLines = valChunk.split('\n'); let currentApt = null;
                     valLines.forEach(line => {
                         const aptMatch = line.match(/\b([A-Z]{4})\b/); if (aptMatch && !line.includes('TO')) currentApt = aptMatch[1]; if (aptMatch && line.includes('VALIDITY WINDOW')) currentApt = aptMatch[1];
@@ -147,12 +216,15 @@
                     });
                 }
 
-                // ★ 天氣解析：徹底移除多餘的標題與 NOTAM 內容 ★
+                // 4. ★ 天氣解析：最強頁首消除器，保證 100% 乾淨 ★
                 let wxStartIdx = text.indexOf('DESTINATION AIRPORT:');
                 if (wxStartIdx !== -1) {
-                    let wxEndSearchIdx = text.indexOf('AIRPORTLIST ENDED', wxStartIdx);
-                    if (wxEndSearchIdx === -1) wxEndSearchIdx = text.indexOf('NOTAM', wxStartIdx);
-                    if (wxEndSearchIdx === -1) wxEndSearchIdx = text.length;
+                    let wxEndSearchIdx = text.length;
+                    const endMarkers = ['AIRPORTLIST ENDED', 'N O T A M', 'NOTAM', 'WIND SUMMARY', 'ATC FLIGHT PLAN', 'FLIGHT LOG'];
+                    for (let marker of endMarkers) {
+                        let idx = text.indexOf(marker, wxStartIdx + 20);
+                        if (idx !== -1 && idx < wxEndSearchIdx) wxEndSearchIdx = idx;
+                    }
 
                     let wxChunk = text.substring(wxStartIdx, wxEndSearchIdx);
                     const rawWeather = []; const wxLines = wxChunk.split('\n');
@@ -160,20 +232,28 @@
                     
                     wxLines.forEach(line => {
                         let l = line.trim(); if (l === '') return;
-                        // 過濾各種重複出現的機場導引文字
-                        if (/^(DESTINATION AIRPORT|DESTINATION ALTERNATE|ENROUTE AIRPORT\(S\)|Critical ETOPS Airports|DEPARTURE AIRPORT):?/i.test(l)) return;
-                        if (l.startsWith('Page ') && l.includes(' of ')) return;
+                        let uL = l.toUpperCase();
+                        let cleanL = uL.replace(/\s+/g, '');
+                        
+                        // 🛑 終極過濾結界：切斷所有跨頁產生的雜訊標題 (不管有沒有空格)
+                        if (cleanL.includes('REG:') || cleanL.includes('OFP:') || cleanL.includes('PAGE')) return;
+                        if (data.flightNo !== 'N/A' && cleanL.includes(data.flightNo.toUpperCase())) return;
+                        if (data.reg !== 'N/A' && cleanL.includes(data.reg.toUpperCase().replace('-', ''))) return;
+
+                        if (cleanL.includes('DESTINATIONAIRPORT') || cleanL.includes('DESTINATIONALTERNATE') || cleanL.includes('ENROUTEAIRPORT') || cleanL.includes('ETOPSAIRPORT') || cleanL.includes('DEPARTUREAIRPORT')) {
+                            isCollectingWx = false; return;
+                        }
 
                         const titleMatch = l.match(/^([A-Z]{4})\/([A-Z]{3})\s+(.*)/);
                         if (titleMatch) {
-                            if (currentIcao) rawWeather.push({ icao: currentIcao, name: currentName.trim(), raw: currentWxLines.join('\n').trim() });
+                            if (currentIcao && currentWxLines.length > 0) rawWeather.push({ icao: currentIcao, name: currentName.trim(), raw: currentWxLines.join('\n').trim() });
                             currentIcao = titleMatch[1]; currentName = titleMatch[3].trim(); currentWxLines = []; isCollectingWx = false;
                         } else if (currentIcao) {
                             if (/\d/.test(l) || /^(?:FT|SA|FC|METAR|TAF|SPECI|TEMPO|BECMG|PROB|FM)/.test(l)) { isCollectingWx = true; currentWxLines.push(l); }
-                            else { if (!isCollectingWx) currentName += ' ' + l; else currentWxLines.push(l); }
+                            else { if (!isCollectingWx) { if(currentName.length < 50) currentName += ' ' + l; } else { currentWxLines.push(l); } }
                         }
                     });
-                    if (currentIcao) rawWeather.push({ icao: currentIcao, name: currentName.trim(), raw: currentWxLines.join('\n').trim() });
+                    if (currentIcao && currentWxLines.length > 0) rawWeather.push({ icao: currentIcao, name: currentName.trim(), raw: currentWxLines.join('\n').trim() });
                     const reqApts = new Set([data.depIcao, data.arrIcao, data.altnIcao, ...Object.keys(data.validityWindows)]);
                     reqApts.delete('N/A');
                     data.weather = rawWeather.filter(wx => reqApts.has(wx.icao));
@@ -182,6 +262,7 @@
             return data;
         };
 
+        // --- 穩定版 TAF 高亮框引擎 ---
         const highlightTAF = (wxText, windows, targetMins, targetType, baseDate) => {
             if (!wxText) return null;
             const normDay = (d) => { if (d < baseDate - 15) return d + 30; if (d > baseDate + 15) return d - 30; return d; };
@@ -194,8 +275,9 @@
                 else if (fMatch) { start = normDay(parseInt(fMatch[1])) * 24 * 60 + parseInt(fMatch[2]) * 60 + parseInt(fMatch[3]); isFm = true; }
                 return { line, start, end, isFm, finalStart: -1, finalEnd: -1 };
             });
+
             let mainStart = -1, mainEnd = -1;
-            for (let pl of parsedLines) { if (pl.line.trim().match(/^(FT|FC|TAF)\b/) && !pl.isFm && pl.start !== -1 && pl.end !== -1) { mainStart = pl.start; mainEnd = pl.end; break; } }
+            for (let pl of parsedLines) { if (pl.line.trim().match(/^(FT|FC|TAF|TAF\s+K[A-Z]{3})\b/) && !pl.isFm && pl.start !== -1 && pl.end !== -1) { mainStart = pl.start; mainEnd = pl.end; break; } }
             if (mainStart === -1) { for (let pl of parsedLines) { if (!pl.isFm && pl.start !== -1 && pl.end !== -1) { mainStart = pl.start; mainEnd = pl.end; break; } } }
             
             let curFmS = -1; let inT = false;
@@ -212,13 +294,13 @@
                 let hTarget = targetMins !== null && pl.finalStart !== -1 && pl.finalEnd !== -1 && targetMins >= pl.finalStart && targetMins <= pl.finalEnd;
                 let hEdto = false; if (windows && windows.length > 0 && pl.finalStart !== -1 && pl.finalEnd !== -1) { hEdto = windows.some(w => Math.max(pl.finalStart, w.startMins) < Math.min(pl.finalEnd, w.endMins)); }
                 let hC = "";
-                if (hTarget && hEdto) hC = "bg-fuchsia-200 text-fuchsia-800 font-bold px-1 py-0.5 rounded"; 
+                if (hTarget && hEdto) hC = "bg-fuchsia-200 text-fuchsia-800 font-bold px-1 py-0.5 rounded shadow-sm"; 
                 else if (hTarget) {
-                    if (targetType === 'DEP') hC = "bg-blue-200 text-blue-800 font-bold px-1 py-0.5 rounded";
-                    else if (targetType === 'ARR') hC = "bg-emerald-200 text-emerald-800 font-bold px-1 py-0.5 rounded";
-                    else if (targetType === 'ALTN') hC = "bg-amber-200 text-amber-800 font-bold px-1 py-0.5 rounded";
-                    else hC = "bg-indigo-200 text-indigo-800 font-bold px-1 py-0.5 rounded";
-                } else if (hEdto) hC = "bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded"; 
+                    if (targetType === 'DEP') hC = "bg-blue-200 text-blue-800 font-bold px-1 py-0.5 rounded shadow-sm";
+                    else if (targetType === 'ARR') hC = "bg-emerald-200 text-emerald-800 font-bold px-1 py-0.5 rounded shadow-sm";
+                    else if (targetType === 'ALTN') hC = "bg-amber-200 text-amber-800 font-bold px-1 py-0.5 rounded shadow-sm";
+                    else hC = "bg-indigo-200 text-indigo-800 font-bold px-1 py-0.5 rounded shadow-sm";
+                } else if (hEdto) hC = "bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded shadow-sm"; 
                 if (hC) return <React.Fragment key={idx}><span className={`inline-block ${hC}`}>{pl.line}</span>{'\n'}</React.Fragment>;
                 return <React.Fragment key={idx}>{pl.line}{'\n'}</React.Fragment>;
             });
@@ -264,7 +346,7 @@
                 for (let p of proxies) {
                     try {
                         const controller = new AbortController();
-                        const id = setTimeout(() => controller.abort(), 4000); // ★ 改為 4 秒超時
+                        const id = setTimeout(() => controller.abort(), 4000); // ★ 4 秒防呆
                         const res = await fetch(p, { signal: controller.signal, cache: 'no-store' });
                         clearTimeout(id);
                         if (res.ok) { const text = await res.text(); if (!text.includes("<html") && !text.includes("<body")) return text; }
@@ -285,7 +367,7 @@
                         const tText = await fetchRawViaProxy(`https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw&cb=${cb}`);
                         let combined = "";
                         if (mText && mText.trim()) combined += mText.trim() + "\n\n";
-                        if (tText && tText.trim()) combined += tText.trim().replace(/\s+(FM\d{6}|PROB\d{2}|TEMPO|BECMG)/g, '\n$1');
+                        if (tText && tText.trim()) combined += tText.trim();
                         newWx[icao] = combined || `連線逾時 (4秒)，請切換回 OFP 原本查看。`;
                     }));
                     setLiveWxData(newWx); setIsFetchingWx(false);
@@ -394,7 +476,7 @@
                                         else if (isArr) badges.push({ text: `ARR${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-emerald-600' });
                                         else if (isAltn) badges.push({ text: `ALTN${isEdto ? '+EDTO' : ''}`, bg: isEdto ? 'bg-fuchsia-600' : 'bg-amber-500' });
                                         else if (isEdto) badges.push({ text: `EDTO`, bg: 'bg-indigo-500' });
-                                        const displayWxRaw = useLiveWx ? (liveWxData[wx.icao] || (isFetchingWx ? "連線更新中..." : "無資料")) : wx.raw;
+                                        const displayWxRaw = useLiveWx ? (liveWxData[wx.icao] || (isFetchingWx ? "正在連線抓取中..." : "無資料")) : wx.raw;
                                         return (
                                             <div key={idx} className={`bg-slate-50 rounded-lg border overflow-hidden shadow-sm flex flex-col transition-colors ${useLiveWx ? 'border-blue-200' : 'border-slate-200'}`}>
                                                 <div className={`px-3 py-2 flex flex-row justify-between items-center border-b gap-2 ${useLiveWx ? 'bg-blue-50 border-blue-100' : 'bg-slate-100 border-slate-200'}`}>
@@ -403,12 +485,12 @@
                                                         <span className="text-[10px] font-bold text-slate-500 block truncate" title={wx.name}>{wx.name}</span>
                                                     </div>
                                                     <div className="text-right shrink-0 flex flex-col gap-1 items-end">
-                                                        {targetType && targetTimeZ !== 'N/A' && targetType !== 'EDTO' && ( <div><span className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">{targetType === 'DEP' ? 'ETD' : 'ETA'}</span><span className={`block text-[10px] font-black px-1.5 py-0.5 rounded ${targetType === 'DEP' ? 'bg-blue-100 text-blue-700' : targetType === 'ARR' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{targetTimeZ}</span></div> )}
-                                                        {isEdto && ( <div><span className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">VALID</span><div className="flex flex-col items-end gap-0.5">{windows.map((w, i) => ( <span key={i} className={`block text-[10px] font-black px-1.5 py-0.5 rounded ${targetType !== 'EDTO' && targetType ? 'bg-fuchsia-100 text-fuchsia-800' : 'bg-yellow-100 text-red-700'}`}>{w.start}-{w.end}</span> ))}</div></div> )}
+                                                        {targetType && targetTimeZ !== 'N/A' && targetType !== 'EDTO' && ( <div><span className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">{targetType === 'DEP' ? 'ETD' : 'ETA'}</span><span className={`block text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm ${targetType === 'DEP' ? 'bg-blue-100 text-blue-700' : targetType === 'ARR' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{targetTimeZ}</span></div> )}
+                                                        {isEdto && ( <div><span className="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">VALID</span><div className="flex flex-col items-end gap-0.5">{windows.map((w, i) => ( <span key={i} className={`block text-[10px] font-black px-1.5 py-0.5 rounded shadow-sm ${targetType !== 'EDTO' && targetType ? 'bg-fuchsia-100 text-fuchsia-800' : 'bg-yellow-100 text-red-700'}`}>{w.start}-{w.end}</span> ))}</div></div> )}
                                                     </div>
                                                 </div>
                                                 <div className="p-2.5 overflow-x-auto text-[11px] sm:text-xs font-mono text-slate-700 leading-snug whitespace-pre relative">
-                                                    {useLiveWx && isFetchingWx && !liveWxData[wx.icao] ? ( <div className="text-blue-600 font-bold animate-pulse flex items-center gap-2 mt-1"><Clock className="w-4 h-4 animate-spin" /> 連線抓取中...</div> ) : ( highlightTAF(displayWxRaw, windows, targetMins, targetType, data.baseDate) )}
+                                                    {useLiveWx && isFetchingWx && !liveWxData[wx.icao] ? ( <div className="text-blue-600 font-bold animate-pulse flex items-center gap-2 mt-1 ml-1"><Clock className="w-4 h-4 animate-spin" /> 連線抓取中...</div> ) : ( highlightTAF(displayWxRaw, windows, targetMins, targetType, data.baseDate) )}
                                                 </div>
                                             </div>
                                         );
@@ -426,4 +508,5 @@
     </script>
 </body>
 </html>
+
 
