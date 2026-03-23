@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIDO OFP 助理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <style>
+        /* ===== DARK MODE GLOBAL STYLES ===== */
+        .dm body, .dm { background-color: #0d0f14 !important; color: #c9d1d9 !important; }
+
+```
+    /* Nav */
+    .dm .dm-nav { background-color: #010409 !important; border-color: #30363d !important; }
+    .dm .dm-nav-btn-inactive { background-color: #161b22 !important; color: #8b949e !important; }
+    .dm .dm-nav-btn-inactive:hover { background-color: #21262d !important; color: #c9d1d9 !important; }
+
+    /* Cards / panels */
+    .dm .dm-card { background-color: #161b22 !important; border-color: #30363d !important; color: #c9d1d9 !important; }
+    .dm .dm-card-inner { background-color: #0d1117 !important; border-color: #30363d !important; }
+    .dm .dm-card-subtle { background-color: #1c2128 !important; border-color: #30363d !important; }
+
+    /* Text */
+    .dm .dm-text-primary { color: #e6edf3 !important; }
+    .dm .dm-text-secondary { color: #8b949e !important; }
+    .dm .dm-text-muted { color: #6e7681 !important; }
+
+    /* Inputs / selects */
+    .dm select, .dm .dm-select { background-color: #21262d !important; border-color: #30363d !important; color: #c9d1d9 !important; }
+
+    /* NOTAM cards */
+    .dm .dm-notam-bg { background-color: #161b22 !important; border-color: #30363d !important; }
+    .dm .dm-notam-filtered { background-color: #0d1117 !important; border-color: #21262d !important; }
+
+    /* Pre / mono text */
+    .dm pre { color: #b3c0cc !important; }
+
+    /* Highlight boxes for dark mode */
+    .dm .rwy-hl { background-color: rgba(202,138,4,0.25) !important; border-color: rgba(202,138,4,0.5) !important; color: #fde047 !important; }
+    .dm .ils-hl { color: #e2e8f0 !important; }
+
+    /* Weather block */
+    .dm .dm-wx-header { background-color: #1c2128 !important; border-color: #30363d !important; }
+    .dm .dm-wx-body { background-color: #0d1117 !important; }
+
+    /* Toggle button */
+    .dm .dm-toggle-track-off { background-color: #30363d !important; }
+
+    /* Upload screen */
+    .dm .dm-upload-bg { background-color: #161b22 !important; border-color: #30363d !important; }
+
+    /* Export modal */
+    .dm .dm-modal { background-color: #161b22 !important; border-color: #30363d !important; }
+    .dm .dm-modal-textarea { background-color: #0d1117 !important; border-color: #30363d !important; color: #b3c0cc !important; }
+    .dm .dm-modal-overlay { background-color: rgba(0,0,0,0.85) !important; }
+
+    /* Page bg */
+    .dm .dm-page { background-color: #0d0f14 !important; }
+    .dm .dm-slate-bg { background-color: #161b22 !important; }
+    .dm .dm-slate-bg-2 { background-color: #0d1117 !important; }
+
+    /* Dividers */
+    .dm .dm-border { border-color: #30363d !important; }
+
+    /* Crosswind badge */
+    .xwind-ok   { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .xwind-warn { background:#fff7ed; color:#9a3412; border:1px solid #fdba74; }
+    .xwind-crit { background:#fef2f2; color:#991b1b; border:1px solid #fca5a5; }
+    .dm .xwind-ok   { background:rgba(22,101,52,0.3);  color:#86efac; border:1px solid rgba(134,239,172,0.4); }
+    .dm .xwind-warn { background:rgba(154,52,18,0.3);  color:#fdba74; border:1px solid rgba(253,186,116,0.4); }
+    .dm .xwind-crit { background:rgba(153,27,27,0.3);  color:#fca5a5; border:1px solid rgba(252,165,165,0.4); }
+
+    /* Flight category */
+    .cat-vfr  { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .cat-mvfr { background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; }
+    .cat-ifr  { background:#fff7ed; color:#9a3412; border:1px solid #fdba74; }
+    .cat-lifr { background:#fdf2f8; color:#9d174d; border:1px solid #f0abfc; }
+    .dm .cat-vfr  { background:rgba(22,101,52,0.3);  color:#86efac; border:1px solid rgba(134,239,172,0.4); }
+    .dm .cat-mvfr { background:rgba(30,58,138,0.4);  color:#93c5fd; border:1px solid rgba(147,197,253,0.4); }
+    .dm .cat-ifr  { background:rgba(154,52,18,0.3);  color:#fdba74; border:1px solid rgba(253,186,116,0.4); }
+    .dm .cat-lifr { background:rgba(157,23,77,0.3);  color:#f0abfc; border:1px solid rgba(240,171,252,0.4); }
+
+    /* Dark mode transition */
+    *, *::before, *::after { transition: background-color 0.2s, border-color 0.2s, color 0.1s; }
+</style>
+```
+
+</head>
+<body class="bg-slate-200">
+    <div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect, useRef, Fragment, useCallback } = React;
+
+    // ==========================================
+    // 圖示庫 (原生 SVG)
+    // ==========================================
+    const IconBase = ({ children, className = "w-6 h-6", fill = "none" }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {children}
+      </svg>
+    );
+
+    const UploadCloud  = ({ className }) => <IconBase className={className}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></IconBase>;
+    const CheckCircle  = ({ className }) => <IconBase className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>;
+    const XCircle      = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></IconBase>;
+    const Clock        = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconBase>;
+    const PlaneTakeoff = ({ className }) => <IconBase className={className}><path d="M2 22h20"/><path d="M6.36 17.4 4 17l-2-4 1.1-.55a2 2 0 0 1 1.8 0l.17.1a2 2 0 0 0 1.8 0L8 12l5-5 1.5-1.5a2.5 2.5 0 1 1 3.53 3.53L16.5 10.5 12 14l-.4 1.6 4.3 2.15a2 2 0 0 1 1.05 1.74v.01c-.01.54-.42.98-.96 1L6.36 17.4Z"/></IconBase>;
+    const PlaneLanding = ({ className }) => <IconBase className={className}><path d="M2 22h20"/><path d="M13.4 17.2 16 17l2-4-1.1-.55a2 2 0 0 0-1.8 0l-.17.1a2 2 0 0 1-1.8 0L12 12l-5-5-1.5-1.5a2.5 2.5 0 1 0-3.53 3.53L3.5 10.5 8 14l.4 1.6-4.3 2.15a2 2 0 0 0-1.05 1.74v.01c.01.54.42.98.96 1l9.63 1.6Z"/></IconBase>;
+    const AlertTriangle= ({ className }) => <IconBase className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconBase>;
+    const ChevronDown  = ({ className }) => <IconBase className={className}><polyline points="6 9 12 15 18 9"/></IconBase>;
+    const ChevronUp    = ({ className }) => <IconBase className={className}><polyline points="18 15 12 9 6 15"/></IconBase>;
+    const AlertOctagon = ({ className }) => <IconBase className={className}><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></IconBase>;
+    const MapIcon      = ({ className }) => <IconBase className={className}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></IconBase>;
+    const MountainSnow = ({ className }) => <IconBase className={className}><path d="m8 3 4 8 5-5 5 15H2L8 3z"/><path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.24.19"/></IconBase>;
+    const Target       = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></IconBase>;
+    const LightbulbOff = ({ className }) => <IconBase className={className}><path d="M16.8 9.2c-.5-1.9-2-3.4-3.9-3.9"/><path d="m2 2 20 20"/><path d="M8.8 3.2c1.9-.5 4.3.1 5.8 1.6"/><path d="M9 18h6"/><path d="M10 22h4"/><path d="M5.3 10.6c-.6 1-.9 2.2-.9 3.4 0 3.2 2.8 5 4.6 6h6"/></IconBase>;
+    const Fuel         = ({ className }) => <IconBase className={className}><line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></IconBase>;
+    const Weight       = ({ className }) => <IconBase className={className}><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.5 8z"/></IconBase>;
+    const Wind         = ({ className }) => <IconBase className={className}><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></IconBase>;
+    const ChevronRight = ({ className }) => <IconBase className={className}><path d="m9 18 6-6-6-6"/></IconBase>;
+    const FileText     = ({ className }) => <IconBase className={className}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></IconBase>;
+    const CloudLightning=({ className }) => <IconBase className={className}><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></IconBase>;
+    const Star         = ({ className, fill="none" }) => <IconBase className={className} fill={fill}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>;
+    const Bird         = ({ className }) => <IconBase className={className}><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/></IconBase>;
+    const SendKite     = ({ className }) => <IconBase className={className}><polygon points="3 11 22 2 13 21 11 13 3 11"/></IconBase>;
+    const Tractor      = ({ className }) => <IconBase className={className}><path d="M3 4h9l1 7"/><path d="M4 11V4"/><path d="M8 10V4"/><path d="M18 5c-.6 0-1 .4-1 1v5.6"/><path d="m10 11 11 .9c.6 0 .9.5.8 1.1l-.8 5h-1"/><circle cx="7" cy="15" r="5"/><circle cx="18" cy="18" r="2"/></IconBase>;
+    const Building     = ({ className }) => <IconBase className={className}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></IconBase>;
+    const CornerUpRight= ({ className }) => <IconBase className={className}><path d="M4 21v-7a4 4 0 0 1 4-4h12"/><polyline points="15 15 20 10 15 5"/></IconBase>;
+    const Moon         = ({ className }) => <IconBase className={className}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></IconBase>;
+    const Sun          = ({ className }) => <IconBase className={className}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></IconBase>;
+    const Download     = ({ className }) => <IconBase className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconBase>;
+    const Copy         = ({ className }) => <IconBase className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></IconBase>;
+    const X            = ({ className }) => <IconBase className={className}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>;
+
+    // ==========================================
+    // 🌬️ 側風 / 飛行類別計算工具函數
+    // ==========================================
+    /**
+     * 從跑道號碼取得磁航向
+     * RWY 24 => 240°, RWY 06L => 060°
+     */
+    const rwyToHeading = (rwyStr) => {
+        if (!rwyStr || rwyStr === 'N/A') return null;
+        const num = parseInt(rwyStr.replace(/[LRC]/i, ''), 10);
+        if (isNaN(num)) return null;
+        return (num * 10) % 360;
+    };
+
+    /**
+     * 計算側風與順逆風分量
+     * windDir: 風來的方向 (磁北方向)
+     * windSpd: 風速 KT
+     * rwyHdg:  跑道磁航向
+     */
+    const calcCrosswind = (windDir, windSpd, rwyHdg) => {
+        if (windDir === null || windSpd === null || rwyHdg === null) return null;
+        const angle = (windDir - rwyHdg) * Math.PI / 180;
+        const xwind = Math.abs(Math.round(windSpd * Math.sin(angle)));
+        const hwind = Math.round(windSpd * Math.cos(angle)); // + = headwind, - = tailwind
+        return { xwind, hwind };
+    };
+
+    /**
+     * 解析 METAR 中的風
+     * 回傳 { dir, spd, gust, isVRB }
+     * 例: "27015G25KT" => { dir:270, spd:15, gust:25, isVRB:false }
+     */
+    const parseMetarWind = (metarText) => {
+        if (!metarText) return null;
+        // 取第一行（METAR 主體行）
+        const lines = metarText.split('\n');
+        let metarLine = '';
+        for (let l of lines) {
+            if (/^(METAR|SPECI|SA|SP)\s/i.test(l.trim()) || /^[A-Z]{4}\s+\d{6}Z\s/i.test(l.trim())) {
+                metarLine = l; break;
+            }
+        }
+        if (!metarLine) metarLine = lines[0] || '';
+
+        const windReg = /\b(VRB|\d{3})(\d{2,3})(?:G(\d{2,3}))?KT\b/i;
+        const m = metarLine.match(windReg);
+        if (!m) return null;
+        const isVRB = m[1].toUpperCase() === 'VRB';
+        return {
+            dir: isVRB ? null : parseInt(m[1], 10),
+            spd: parseInt(m[2], 10),
+            gust: m[3] ? parseInt(m[3], 10) : null,
+            isVRB
+        };
+    };
+
+    /**
+     * 判斷飛行類別 (VFR / MVFR / IFR / LIFR)
+     * 依據能見度 (SM 或 meters) 和雲幕高 (ft)
+     */
+    const getFlightCategory = (metarText) => {
+        if (!metarText) return null;
+        const lines = metarText.split('\n');
+        let metarLine = '';
+        for (let l of lines) {
+            if (/^(METAR|SPECI|SA|SP)\s/i.test(l.trim()) || /^[A-Z]{4}\s+\d{6}Z\s/i.test(l.trim())) {
+                metarLine = l; break;
+            }
+        }
+        if (!metarLine) metarLine = lines.find(l => /\d{3}\/\d{2}/.test(l) || /\bKT\b/.test(l)) || lines[0] || '';
+
+        // 能見度 (SM)
+        let visSM = null;
+        const visSmMatch = metarLine.match(/\b(\d+)(?:\s+(\d+)\/(\d+))?\s*SM\b/);
+        const visSmFrac = metarLine.match(/\b(\d+)\/(\d+)\s*SM\b/);
+        if (visSmMatch) {
+            visSM = parseInt(visSmMatch[1]);
+            if (visSmMatch[2]) visSM += parseInt(visSmMatch[2]) / parseInt(visSmMatch[3]);
+        } else if (visSmFrac) {
+            visSM = parseInt(visSmFrac[1]) / parseInt(visSmFrac[2]);
+        }
+
+        // 能見度 (meters / ICAO格式: 9999 or 1500)
+        let visM = null;
+        const visMMatch = metarLine.match(/\b(\d{4})\b/);
+        if (visMMatch && !visSmMatch) {
+            const v = parseInt(visMMatch[1]);
+            if (v >= 100 && v <= 9999) visM = v;
+        }
+
+        // 雲幕高 (最低 BKN/OVC 層)
+        let ceilingFt = 99999;
+        const cloudReg = /\b(BKN|OVC)(\d{3})\b/gi;
+        let cm;
+        while ((cm = cloudReg.exec(metarLine)) !== null) {
+            const ft = parseInt(cm[2]) * 100;
+            if (ft < ceilingFt) ceilingFt = ft;
+        }
+
+        // CAVOK / SKC / CLR / NSC = ceiling unlimited
+        if (/\b(CAVOK|SKC|CLR|NSC)\b/.test(metarLine)) ceilingFt = 99999;
+
+        // 決定類別
+        // LIFR: ceiling < 500ft OR vis < 1SM (or vis < 1600m)
+        // IFR:  ceiling 500-999ft OR vis 1-3SM (or 1600-4800m)
+        // MVFR: ceiling 1000-3000ft OR vis 3-5SM
+        // VFR:  ceiling > 3000ft AND vis > 5SM
+        const effVisSM = visSM !== null ? visSM : (visM !== null ? visM / 1609.34 : 99);
+
+        if (ceilingFt < 500 || effVisSM < 1) return 'LIFR';
+        if (ceilingFt < 1000 || effVisSM < 3) return 'IFR';
+        if (ceilingFt < 3000 || effVisSM < 5) return 'MVFR';
+        return 'VFR';
+    };
+
+    const FC_CONFIG = {
+        VFR:  { label: 'VFR',  cls: 'cat-vfr',  emoji: '🟢' },
+        MVFR: { label: 'MVFR', cls: 'cat-mvfr', emoji: '🔵' },
+        IFR:  { label: 'IFR',  cls: 'cat-ifr',  emoji: '🟠' },
+        LIFR: { label: 'LIFR', cls: 'cat-lifr',  emoji: '🔴' },
+    };
+
+    // ==========================================
+    // FilterToggle UI 元件
+    // ==========================================
+    const FilterToggle = ({ active, onClick, icon: Icon, label, activeColorClass, inactiveColorClass, dotColor }) => (
+      <div onClick={onClick} className={`flex items-center gap-1.5 border py-1.5 px-3 rounded-lg shadow-sm cursor-pointer transition-colors select-none ${active ? activeColorClass : inactiveColorClass}`}>
+        <Icon className={`w-4 h-4 ${active ? '' : 'opacity-60'}`} />
+        <label className="text-sm font-bold whitespace-nowrap cursor-pointer">{label}</label>
+        <div className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ml-1 ${active ? dotColor : 'bg-slate-300 dm-toggle-track-off'}`}>
+          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${active ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+        </div>
+      </div>
+    );
+
+    // ==========================================
+    // 匯出精華版 Modal
+    // ==========================================
+    function ExportModal({ onClose, ofpData, depNotams, destNotams, selectedNotams, crosswindDep, crosswindDest, flightCatDep, flightCatDest }) {
+        const [copied, setCopied] = useState(false);
+
+        const buildText = () => {
+            const line = (n=40) => '─'.repeat(n);
+            const dbl  = (n=40) => '═'.repeat(n);
+            let out = [];
+
+            out.push(dbl(52));
+            out.push(`  ✈  LIDO OFP 駕駛艙精華版`);
+            if (ofpData) {
+                out.push(`  ${ofpData.flightNo}  |  ${ofpData.route}  |  ${ofpData.date}`);
+                if (ofpData.fleetInfo) out.push(`  機型: ${ofpData.reg} (${ofpData.fleetInfo})`);
+            }
+            out.push(dbl(52));
+            out.push('');
+
+            if (ofpData) {
+                out.push('【時間】');
+                out.push(`  STD  ${ofpData.stdZ}  (LCL ${ofpData.stdL})`);
+                out.push(`  STA  ${ofpData.staZ}  (LCL ${ofpData.staL})`);
+                out.push(`  飛行時間: ${ofpData.flightTime}   航段時間: ${ofpData.blockTime}`);
+                out.push('');
+                out.push('【重量】');
+                out.push(`  ZFW  計畫 ${ofpData.zfwPlanned}  / 限制 ${ofpData.zfwLimit}`);
+                out.push(`  LDW  計畫 ${ofpData.ldwPlanned}  / 限制 ${ofpData.ldwLimit}`);
+                out.push(`  TOW  計畫 ${ofpData.towPlanned}  / 限制 ${ofpData.towLimit}`);
+                out.push('');
+                out.push('【油量/效能】');
+                out.push(`  Total Fuel    : ${ofpData.totalFuel}`);
+                out.push(`  ALTN+FIN RES  : ${ofpData.reserveFuelSum}`);
+                out.push(`  CI: ${ofpData.ci}   FL: ${ofpData.fl}`);
+                out.push('');
+                out.push('【起降跑道/程序】');
+                out.push(`  DEP ${ofpData.depIcao}  RWY ${ofpData.tkofRwy}  SID ${ofpData.sid}`);
+                out.push(`  ARR ${ofpData.arrIcao}  RWY ${ofpData.ldgRwy}  STAR ${ofpData.star}`);
+                out.push('');
+            }
+
+            // 側風區塊
+            const hasXW = crosswindDep || crosswindDest || flightCatDep || flightCatDest;
+            if (hasXW) {
+                out.push('【側風 / 天氣類別】');
+                if (ofpData && crosswindDep) {
+                    const xw = crosswindDep;
+                    const hw = xw.hwind >= 0 ? `↑ 逆風 ${xw.hwind}KT` : `↓ 順風 ${Math.abs(xw.hwind)}KT`;
+                    out.push(`  DEP ${ofpData.depIcao} RWY${ofpData.tkofRwy}  側風 ${xw.xwind}KT  ${hw}${xw.xwind >= 20 ? '  ⚠ 側風偏大' : xw.xwind >= 15 ? '  ⚡ 注意側風' : ''}`);
+                }
+                if (ofpData && crosswindDest) {
+                    const xw = crosswindDest;
+                    const hw = xw.hwind >= 0 ? `↑ 逆風 ${xw.hwind}KT` : `↓ 順風 ${Math.abs(xw.hwind)}KT`;
+                    out.push(`  ARR ${ofpData.arrIcao} RWY${ofpData.ldgRwy}  側風 ${xw.xwind}KT  ${hw}${xw.xwind >= 20 ? '  ⚠ 側風偏大' : xw.xwind >= 15 ? '  ⚡ 注意側風' : ''}`);
+                }
+                if (flightCatDep && ofpData)  out.push(`  DEP ${ofpData.depIcao}  飛行類別: ${flightCatDep}`);
+                if (flightCatDest && ofpData) out.push(`  ARR ${ofpData.arrIcao}  飛行類別: ${flightCatDest}`);
+                out.push('');
+            }
+
+            // 釘選 NOTAM
+            const allNotams = [...(depNotams||[]), ...(destNotams||[])];
+            const pinned = allNotams.filter(n => selectedNotams.includes(n.id));
+            if (pinned.length > 0) {
+                out.push('【⭐ 標記的重要 NOTAMs】');
+                pinned.forEach(n => {
+                    out.push(line(52));
+                    out.push(`  ${n.id}`);
+                    out.push(n.text.split('\n').map(l => '  ' + l).join('\n'));
+                });
+                out.push(line(52));
+                out.push('');
+            }
+
+            out.push(dbl(52));
+            out.push(`  Generated by LIDO OFP 助理`);
+            out.push(dbl(52));
+
+            return out.join('\n');
+        };
+
+        const text = buildText();
+
+        const handleCopy = () => {
+            navigator.clipboard.writeText(text).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            });
+        };
+
+        return (
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 dm-modal-overlay" style={{backgroundColor:'rgba(0,0,0,0.7)'}}>
+                <div className="bg-white dm-modal rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] border border-slate-200">
+                    <div className="flex items-center justify-between p-5 border-b border-slate-200 dm-border">
+                        <h2 className="font-black text-xl text-slate-800 dm-text-primary flex items-center gap-2">
+                            <Download className="w-6 h-6 text-emerald-600" />
+                            匯出駕駛艙精華版
+                        </h2>
+                        <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="p-5 flex-1 overflow-hidden flex flex-col gap-3">
+                        <p className="text-sm text-slate-500 dm-text-secondary">以下為精華版純文字，可直接複製貼上至記事本或列印成 A4 帶上飛機。</p>
+                        <textarea
+                            readOnly
+                            value={text}
+                            className="flex-1 min-h-[340px] font-mono text-xs bg-slate-50 dm-modal-textarea border border-slate-200 rounded-xl p-4 resize-none focus:outline-none leading-relaxed"
+                        />
+                    </div>
+                    <div className="p-5 border-t border-slate-200 dm-border flex gap-3 justify-end">
+                        <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm">
+                            關閉
+                        </button>
+                        <button onClick={handleCopy} className={`px-5 py-2.5 rounded-xl font-bold text-white transition-all text-sm flex items-center gap-2 ${copied ? 'bg-emerald-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                            <Copy className="w-4 h-4" />
+                            {copied ? '✓ 已複製！' : '複製全文'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // 模組 1: NOTAM Filter
+    // ==========================================
+    function NotamFilterApp({ rawText, darkMode, selectedNotams, setSelectedNotams, onNotamsReady }) {
+        const [parsedData, setParsedData] = useState(null);
+        const [flightInfo, setFlightInfo] = useState(null);
+        const [activeTab, setActiveTab] = useState('DEP');
+        const [showFiltered, setShowFiltered] = useState(true);
+        const [bufferHours, setBufferHours] = useState(1);
+        const [localError, setLocalError] = useState(null);
+
+        const [hideObstacles, setHideObstacles] = useState(true);
+        const [hideBirds, setHideBirds] = useState(true);
+        const [hideUAS, setHideUAS] = useState(true);
+        const [hideMowing, setHideMowing] = useState(true);
+
+        const toggleNotamSelection = (id) => {
+            setSelectedNotams(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+        };
+
+        useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [activeTab]);
+
+        useEffect(() => {
+            if (!rawText) { setParsedData(null); setFlightInfo(null); setLocalError(null); return; }
+            try {
+                const cleanText = sanitizeText(rawText);
+                processBriefingText(cleanText);
+                setLocalError(null);
+            } catch (err) {
+                console.error("NOTAM parsing error", err);
+                setLocalError("無法在文件中找到完整的航班資訊，NOTAM 模組無法啟用。");
+            }
+        }, [rawText]);
+
+        const sanitizeText = (raw) => {
+            let c = raw;
+            c = c.replace(/---\s*PAGE\s*\d+\s*---/gi, '\n');
+            c = c.replace(/PAGE\s*[\n\r]*\s*\d+\s*[\n\r]*\s*OF\s*[\n\r]*\s*\d+/gi, '\n');
+            c = c.replace(/\b\d+\s*[\n\r]*\s*OF\s*[\n\r]*\s*\d+\b/gi, '\n');
+            c = c.replace(/\bPAGE\s*[\n\r]*\s*\d+\b/gi, '\n');
+            c = c.replace(/BR\s+\d{3}\/\d{2}[A-Za-z]{3}\d{2}\/[A-Z]{3}-[A-Z]{3}.*?OFP:\s*\d+\/\d+\/\d+/gi, '\n');
+            c = c.replace(/Reg:\s*[A-Z0-9-]+\s*[\n\r]*\s*OFP:\s*\d+\/\d+\/\d+/gi, '\n');
+            c = c.replace(/\+{5,}\s*[A-Z\s]+\s*\+{5,}/gi, '\n');
+            return c;
+        };
+
+        const parseZTime = (dateStr, timeStr) => {
+            const months = { JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5, JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11 };
+            const m = dateStr.match(/(\d{2})([A-Z]{3})(\d{2})/i);
+            if (!m) return new Date();
+            return new Date(Date.UTC(2000+parseInt(m[3]), months[m[2].toUpperCase()], parseInt(m[1]), parseInt(timeStr.substring(0,2)), parseInt(timeStr.substring(2,4))));
+        };
+
+        const parseToBlocks = (rawText) => {
+            if (!rawText) return [];
+            const blocks = rawText.split(/(?=\b[A-Z0-9]+\/\d{2}\s+(?:VALID:|COMPANY\s+NOTAM))/i);
+            const parsed = blocks.filter(b => b.trim()).map(block => {
+                const idMatch = block.match(/^([A-Z0-9]+\/\d{2})\s+(?:VALID:|COMPANY\s+NOTAM)/i);
+                if (!idMatch) return null;
+                let text = block.trim();
+                const hi = text.search(/BR\s+\d{3}\/\d{2}[A-Za-z]{3}\d{2}/i);
+                if (hi !== -1 && hi > 20) text = text.substring(0, hi).trim();
+                text = text.replace(/\+{5,}\s*[A-Z\s]+\s*\+{5,}/gi, '').trim();
+                text = text.replace(/(\n\s*){2,}/g, '\n');
+                return { id: idMatch[1], text };
+            }).filter(Boolean);
+
+            const map = new Map();
+            parsed.forEach(b => {
+                if (map.has(b.id)) { let e = map.get(b.id); if (!e.text.includes(b.text)) e.text += '\n' + b.text; }
+                else map.set(b.id, { ...b });
+            });
+            return Array.from(map.values());
+        };
+
+        const processBriefingText = (text) => {
+            const routeMatch = text.match(/([A-Z]{4})\/([A-Z]{4})/);
+            const dateMatch  = text.match(/(\d{2}[A-Z]{3}\d{2})/i);
+            const stdMatch   = text.match(/STD\s+\d{4}L\s+(\d{4})Z/i);
+            const staMatch   = text.match(/STA\s+\d{4}L\s+(\d{4})Z/i);
+            if (!routeMatch || !dateMatch || !stdMatch || !staMatch) throw new Error("Missing critical flight info");
+
+            const depAirport = routeMatch[1]; const destAirport = routeMatch[2];
+            const stdDate = parseZTime(dateMatch[1], stdMatch[1]);
+            const staDate = parseZTime(dateMatch[1], staMatch[1]);
+            if (staDate < stdDate) staDate.setUTCDate(staDate.getUTCDate() + 1);
+
+            const depSecM  = text.match(/={3,}\s*DEPARTURE AIRPORT\s*={3,}([\s\S]*?)(?=={3,}\s*DESTINATION AIRPORT\s*={3,})/i);
+            const destSecM = text.match(/={3,}\s*DESTINATION AIRPORT\s*={3,}([\s\S]*?)(?=={3,}\s*DESTINATION ALTERNATE\(S\)\s*={3,}|={3,}\s*ENROUTE AIRPORT\(S\)\s*={3,})/i);
+
+            setParsedData({
+                depAirport, destAirport, std: stdDate, sta: staDate,
+                depBlocks:  parseToBlocks(depSecM  ? depSecM[1]  : ''),
+                destBlocks: parseToBlocks(destSecM ? destSecM[1] : '')
+            });
+        };
+
+        const categorizeNotam = (text) => {
+            const u = text.toUpperCase();
+            const isClsd = /\b(?:CLSD|CLOSED)\b/.test(u);
+            if (isClsd) {
+                const rwy = u.match(/\b(?:RWY|RUNWAY)\b/);
+                const twy = u.match(/\b(?:TWY|TAXIWAY|TXL|RAMP|APRON|PRKG|PARKING|BAY|STAND)\b/);
+                if (rwy && twy) return rwy.index < twy.index ? 'RWY_CLSD' : 'TWY_CLSD';
+                if (rwy) return 'RWY_CLSD';
+                if (twy) return 'TWY_CLSD';
+            }
+            if (/\bCOMPANY\s+NOTAM\b/.test(u)) return 'COMPANY_NOTAM';
+            if (/\b(?:MISSED\s+APPROACH|MISSED\s+APCH|MAPT|MAPC)\b/.test(u)) return 'MISSED_APPROACH';
+            if (/\b(?:TAKEOFF\s+MINIMUMS?|TAKEOFF\s+MINIMA|TKOF\s+MINIMUMS?|TKOF\s+MINIMA)\b/.test(u)) return 'TAKEOFF_MINIMUM';
+            const isLdgMin = /\b(?:APP\s+MINIMUM|APPROACH\s+MINIMUM|MINIMA|MINIMUMS?|DA\/MDA|OCA\/H|DA\s+\d+|HAT\s+\d+|VISIBILITY\s+RVR|RVR\s+\d+|CAT\s+II|CAT\s+III)\b/.test(u) ||
+                             /\b(?:ILS|LOC|RNAV|RNP|VOR|NDB|GLS).*RWY.*\b(?:AMDT|ORIG)\b/.test(u);
+            if (isLdgMin) return 'LANDING_MINIMUM';
+            if (/\b(?:LGT|LIGHT|LIGHTS|NAV|ILS|VOR|NDB|GP|LOC|DME|PAPI|VASI|ALS|RADAR)\b/.test(u) && /\b(?:U\/S|UNSERVICEABLE|OUT\s+OF\s+SERVICE|OTS)\b/.test(u)) return 'EQUIP_US';
+            if (/\b(?:BIRD|BIRDS|WILDLIFE|FOWL|FLOCK|AVIAN)\b/.test(u)) return 'BIRD_HAZARD';
+            if (/\b(?:UAS|UNMANNED|DRONE|KITE|BALLOON|FIREWORK|LASER|PARACHUTE|UAV)\b/.test(u)) return 'UAS_KITE';
+            if (/\b(?:MOWING|GRASS CUTTING|WEED|SWEEPING|LAWN)\b/.test(u) && !/\b(?:CLSD|CLOSED)\b/.test(u)) return 'MAINTENANCE';
+            if (/\b(?:CRANE|CRANES|OBST|OBSTACLE|IRREGULAR\s+SFC|IRREGULAR\s+SURFACE)\b/.test(u)) return 'OBSTACLE_ETC';
+            return 'NORMAL';
+        };
+
+        useEffect(() => {
+            if (!parsedData) return;
+            const { depAirport, destAirport, std, sta, depBlocks, destBlocks } = parsedData;
+
+            const processBlocks = (blocks, flightTime) => blocks.map(block => {
+                let { keep, reason } = checkNotamRelevance(block.text, flightTime, bufferHours);
+                const category = categorizeNotam(block.text);
+                if (keep) {
+                    if (category === 'OBSTACLE_ETC' && hideObstacles) { keep = false; reason = '依設定自動隱藏 (障礙物/不平整表面)'; }
+                    if (category === 'BIRD_HAZARD'  && hideBirds)    { keep = false; reason = '依設定自動隱藏 (鳥類/野生動物警告)'; }
+                    if (category === 'UAS_KITE'     && hideUAS)       { keep = false; reason = '依設定自動隱藏 (無人機/氣球/煙火活動)'; }
+                    if (category === 'MAINTENANCE'  && hideMowing)    { keep = false; reason = '依設定自動隱藏 (周邊除草/例行維護)'; }
+                }
+                return { ...block, keep, reason, category };
+            });
+
+            const di = processBlocks(depBlocks, std);
+            const de = processBlocks(destBlocks, sta);
+            setFlightInfo({ depAirport, destAirport, std, sta, depNotams: di, destNotams: de });
+            if (onNotamsReady) onNotamsReady(di, de);
+        }, [parsedData, bufferHours, hideObstacles, hideBirds, hideUAS, hideMowing]);
+
+        // Notify parent when flight info changes
+        useEffect(() => {
+            if (flightInfo && onNotamsReady) onNotamsReady(flightInfo.depNotams, flightInfo.destNotams);
+        }, [flightInfo]);
+
+        const checkNotamRelevance = (notamText, flightTime, buffer) => {
+            const winStart = new Date(flightTime.getTime() - buffer * 3600 * 1000);
+            const winEnd   = new Date(flightTime.getTime() + buffer * 3600 * 1000);
+
+            const validMatch = notamText.match(/VALID:\s*(\d{10})\s*(?:-\s*(\d{10}|PERM|UFN|EST))?/i);
+            if (validMatch) {
+                const p = (s) => new Date(Date.UTC(2000+parseInt(s.slice(0,2)), parseInt(s.slice(2,4))-1, parseInt(s.slice(4,6)), parseInt(s.slice(6,8)), parseInt(s.slice(8,10))));
+                const fromDate = p(validMatch[1]);
+                let toDate = new Date(Date.UTC(2099, 11, 31));
+                if (validMatch[2] && /^\d{10}$/.test(validMatch[2])) toDate = p(validMatch[2]);
+                if (winEnd < fromDate) return { keep: false, reason: '在航班起飛前尚未生效' };
+                if (winStart > toDate)  return { keep: false, reason: '在航班到達前已失效' };
+            }
+
+            const dailyRegex = /\b(\d{4})Z?\s*-\s*(\d{4})Z?\b/ig;
+            let dm; const dailyRanges = [];
+            while ((dm = dailyRegex.exec(notamText)) !== null) {
+                const sm = parseInt(dm[1].slice(0,2))*60 + parseInt(dm[1].slice(2,4));
+                const em = parseInt(dm[2].slice(0,2))*60 + parseInt(dm[2].slice(2,4));
+                if (sm <= 1440 && em <= 1440) dailyRanges.push({ start: sm, end: em, raw: dm[0] });
+            }
+            if (dailyRanges.length > 0) {
+                let overlaps = false;
+                for (let r of dailyRanges) {
+                    const rS = new Date(flightTime); rS.setUTCHours(Math.floor(r.start/60), r.start%60, 0, 0);
+                    const rE = new Date(flightTime); rE.setUTCHours(Math.floor(r.end/60),   r.end%60,   0, 0);
+                    if (rE < rS) {
+                        rE.setUTCDate(rE.getUTCDate() + 1);
+                        const rSP = new Date(rS); rSP.setUTCDate(rSP.getUTCDate() - 1);
+                        const rEP = new Date(rE); rEP.setUTCDate(rEP.getUTCDate() - 1);
+                        if ((winStart <= rEP && winEnd >= rSP) || (winStart <= rE && winEnd >= rS)) { overlaps = true; break; }
+                    } else {
+                        if (winStart <= rE && winEnd >= rS) { overlaps = true; break; }
+                    }
+                }
+                if (!overlaps) return { keep: false, reason: `每日時間區間不重疊 (${dailyRanges.map(r=>r.raw).join(', ')})` };
+            }
+            return { keep: true, reason: '符合航班時間' };
+        };
+
+        const formatZTime = (date) =>
+            `${date.getUTCDate().toString().padStart(2,'0')}${date.toLocaleString('en-US',{month:'short',timeZone:'UTC'}).toUpperCase()}${date.getUTCFullYear().toString().slice(-2)} ${date.getUTCHours().toString().padStart(2,'0')}${date.getUTCMinutes().toString().padStart(2,'0')}Z`;
+
+        const cardBase  = darkMode ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200';
+        const tabBg     = darkMode ? 'bg-[#0d1117]' : 'bg-slate-50';
+        const textPrim  = darkMode ? 'text-[#e6edf3]' : 'text-slate-800';
+        const textSec   = darkMode ? 'text-[#8b949e]' : 'text-slate-500';
+        const selectCls = darkMode ? 'bg-[#21262d] border-[#30363d] text-[#c9d1d9]' : 'bg-white border-slate-300 text-slate-700';
+        const innerCard = darkMode ? 'bg-[#0d1117] border-[#30363d]' : 'bg-slate-50 border-slate-200';
+
+        const FilterControls = () => (
+            <div className="flex flex-col gap-3 w-full xl:w-auto mt-4 xl:mt-0 pt-4 xl:pt-0 border-t xl:border-t-0 border-slate-100">
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                    <div className={`flex items-center gap-2 ${innerCard} border py-1.5 px-3 rounded-lg shadow-sm`}>
+                        <Clock className="w-4 h-4 text-blue-600" />
+                        <label className={`text-sm font-bold ${textPrim} whitespace-nowrap`}>過濾彈性時間:</label>
+                        <select value={bufferHours} onChange={(e) => setBufferHours(Number(e.target.value))} className={`${selectCls} border rounded text-sm py-0.5 px-2 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500`}>
+                            <option value={0}>0 小時</option><option value={1}>1 小時 (預設)</option><option value={2}>2 小時</option>
+                            <option value={3}>3 小時</option><option value={4}>4 小時</option><option value={6}>6 小時</option>
+                        </select>
+                    </div>
+                </div>
+                <div className="flex flex-wrap justify-end gap-2">
+                    <FilterToggle active={hideObstacles} onClick={() => setHideObstacles(!hideObstacles)} icon={MountainSnow} label="障礙物/吊車" activeColorClass="bg-indigo-50 border-indigo-200 text-indigo-700" inactiveColorClass={`${innerCard} border text-slate-500`} dotColor="bg-indigo-500" />
+                    <FilterToggle active={hideBirds}     onClick={() => setHideBirds(!hideBirds)}     icon={Bird}         label="鳥類/動物"   activeColorClass="bg-cyan-50 border-cyan-200 text-cyan-700"     inactiveColorClass={`${innerCard} border text-slate-500`} dotColor="bg-cyan-500" />
+                    <FilterToggle active={hideUAS}       onClick={() => setHideUAS(!hideUAS)}         icon={SendKite}     label="氣球/無人機" activeColorClass="bg-violet-50 border-violet-200 text-violet-700" inactiveColorClass={`${innerCard} border text-slate-500`} dotColor="bg-violet-500" />
+                    <FilterToggle active={hideMowing}    onClick={() => setHideMowing(!hideMowing)}   icon={Tractor}      label="除草/維護"   activeColorClass="bg-lime-50 border-lime-200 text-lime-700"     inactiveColorClass={`${innerCard} border text-slate-500`} dotColor="bg-lime-500" />
+                </div>
+            </div>
+        );
+
+        const formatNotamText = (text, isDimmed) => {
+            const regex = /(\b(?:RWY|RUNWAY)\s+[0-3]?\d[LRC]?(?:\s*\/\s*[0-3]?\d[LRC]?)?\b|\b(?:TWY|TAXIWAY|TXL)\s+[A-Z0-9]+\b|\bILS(?:(?:\s+OR\s+LOC)?\s+(?:RWY|RUNWAY)?\s*[0-3]?\d[LRC]?)?\b)/gi;
+            const parts = text.split(regex);
+            return parts.map((part, idx) => {
+                if (!part) return null;
+                const up = part.toUpperCase();
+                if (/^\b(?:RWY|RUNWAY)\b/.test(up)) {
+                    return darkMode
+                        ? <span key={idx} className={`font-black px-1 py-0.5 rounded-md shadow-sm border rwy-hl`}>{part}</span>
+                        : <span key={idx} className={`font-black text-black px-1 py-0.5 rounded-md shadow-sm border ${isDimmed ? 'bg-yellow-100/50 border-yellow-200' : 'bg-yellow-200/70 border-yellow-300'}`}>{part}</span>;
+                } else if (/^\b(?:TWY|TAXIWAY|TXL)\b/.test(up) || up.startsWith('ILS')) {
+                    return <span key={idx} className={`font-black ils-hl ${isDimmed ? (darkMode ? 'text-[#8b949e]' : 'text-slate-600') : (darkMode ? 'text-[#e2e8f0]' : 'text-slate-900')}`}>{part}</span>;
+                }
+                return <Fragment key={idx}>{part}</Fragment>;
+            });
+        };
+
+        const NotamCard = ({ notam, isSelected, onToggle }) => {
+            let borderClass = darkMode ? 'border-[#30363d] bg-[#161b22]' : 'border-slate-200';
+            let badge = null;
+            const dm = darkMode;
+
+            if (notam.keep || isSelected) {
+                if (notam.category === 'RWY_CLSD')       { borderClass = dm ? 'border-l-4 border-l-rose-500 border-[#30363d] bg-rose-900/20'   : 'border-l-4 border-l-rose-500 border-y-rose-200 border-r-rose-200 bg-rose-50/30';   badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">🚨 跑道關閉</span>; }
+                else if (notam.category === 'TWY_CLSD')  { borderClass = dm ? 'border-l-4 border-l-amber-500 border-[#30363d] bg-amber-900/20'  : 'border-l-4 border-l-amber-500 border-y-amber-200 border-r-amber-200 bg-amber-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">🚧 滑行道/停機坪關閉</span>; }
+                else if (notam.category === 'COMPANY_NOTAM') { borderClass = dm ? 'border-l-4 border-l-teal-500 border-[#30363d] bg-teal-900/20' : 'border-l-4 border-l-teal-500 border-y-teal-200 border-r-teal-200 bg-teal-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 border border-teal-200"><Building className="w-3 h-3 mr-1"/> 公司通報</span>; }
+                else if (notam.category === 'MISSED_APPROACH') { borderClass = dm ? 'border-l-4 border-l-purple-500 border-[#30363d] bg-purple-900/20' : 'border-l-4 border-l-purple-500 border-y-purple-200 border-r-purple-200 bg-purple-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200"><CornerUpRight className="w-3 h-3 mr-1"/> 誤失進場更改</span>; }
+                else if (notam.category === 'TAKEOFF_MINIMUM') { borderClass = dm ? 'border-l-4 border-l-pink-500 border-[#30363d] bg-pink-900/20' : 'border-l-4 border-l-pink-500 border-y-pink-200 border-r-pink-200 bg-pink-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800 border border-pink-200"><PlaneTakeoff className="w-3 h-3 mr-1"/> 起飛標準更改</span>; }
+                else if (notam.category === 'LANDING_MINIMUM') { borderClass = dm ? 'border-l-4 border-l-fuchsia-500 border-[#30363d] bg-fuchsia-900/20' : 'border-l-4 border-l-fuchsia-500 border-y-fuchsia-200 border-r-fuchsia-200 bg-fuchsia-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200"><PlaneLanding className="w-3 h-3 mr-1"/> 降落標準更改</span>; }
+                else if (notam.category === 'EQUIP_US')   { borderClass = dm ? 'border-l-4 border-l-orange-400 border-[#30363d] bg-orange-900/20' : 'border-l-4 border-l-orange-400 border-y-orange-100 border-r-orange-100 bg-orange-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200"><LightbulbOff className="w-3 h-3 mr-1"/> 設備無法使用</span>; }
+                else if (notam.category === 'OBSTACLE_ETC') { borderClass = dm ? 'border-l-4 border-l-indigo-400 border-[#30363d] bg-indigo-900/20' : 'border-l-4 border-l-indigo-400 border-y-indigo-100 border-r-indigo-100 bg-indigo-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200"><MountainSnow className="w-3 h-3 mr-1"/> 障礙物/不平整</span>; }
+                else if (notam.category === 'BIRD_HAZARD')  { borderClass = dm ? 'border-l-4 border-l-cyan-400 border-[#30363d] bg-cyan-900/20' : 'border-l-4 border-l-cyan-400 border-y-cyan-100 border-r-cyan-100 bg-cyan-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200"><Bird className="w-3 h-3 mr-1"/> 鳥擊/野生動物</span>; }
+                else if (notam.category === 'UAS_KITE')     { borderClass = dm ? 'border-l-4 border-l-violet-400 border-[#30363d] bg-violet-900/20' : 'border-l-4 border-l-violet-400 border-y-violet-100 border-r-violet-100 bg-violet-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200"><SendKite className="w-3 h-3 mr-1"/> 無人機/氣球/煙火</span>; }
+                else if (notam.category === 'MAINTENANCE')  { borderClass = dm ? 'border-l-4 border-l-lime-400 border-[#30363d] bg-lime-900/20' : 'border-l-4 border-l-lime-400 border-y-lime-100 border-r-lime-100 bg-lime-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-lime-100 text-lime-800 border border-lime-200"><Tractor className="w-3 h-3 mr-1"/> 除草/周邊維護</span>; }
+                else { badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200"><CheckCircle className="w-3 h-3 mr-1"/> 一般資訊</span>; }
+            } else {
+                borderClass = dm ? 'bg-[#0d1117] border-[#21262d] opacity-70 hover:opacity-100' : 'bg-slate-50 border-slate-200 opacity-70 hover:opacity-100';
+                if (notam.reason.includes('障礙物'))  badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-500 border border-indigo-100"><MountainSnow className="w-3 h-3 mr-1"/> 隱藏的障礙物</span>;
+                else if (notam.reason.includes('鳥類')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-cyan-50 text-cyan-600 border border-cyan-100"><Bird className="w-3 h-3 mr-1"/> 隱藏的動物警告</span>;
+                else if (notam.reason.includes('無人機')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-violet-50 text-violet-600 border border-violet-100"><SendKite className="w-3 h-3 mr-1"/> 隱藏的空中活動</span>;
+                else if (notam.reason.includes('除草')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-lime-50 text-lime-600 border border-lime-100"><Tractor className="w-3 h-3 mr-1"/> 隱藏的除草/維護</span>;
+                else badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-200 text-slate-600"><XCircle className="w-3 h-3 mr-1"/> 已依時間過濾</span>;
+            }
+
+            const isDimmed = !(notam.keep || isSelected);
+
+            return (
+                <div className={`p-4 rounded-xl border mb-3 shadow-sm transition-all relative ${borderClass} ${isSelected ? 'ring-2 ring-amber-400 border-amber-400 !opacity-100 ' + (dm ? 'bg-amber-900/20' : 'bg-amber-50/10') : ''}`}>
+                    <div className="flex justify-between items-start mb-2 pr-10">
+                        <h4 className={`font-bold text-lg flex flex-wrap items-center gap-y-1 ${textPrim}`}>{notam.id}{badge}</h4>
+                    </div>
+                    <button onClick={onToggle} title={isSelected ? "取消標記" : "標記為重要"} className={`absolute top-4 right-4 p-1.5 rounded-lg transition-all transform active:scale-90 ${isSelected ? 'text-amber-500 bg-amber-100 hover:bg-amber-200 shadow-sm' : (dm ? 'text-[#30363d] hover:text-amber-400 hover:bg-[#21262d]' : 'text-slate-300 hover:text-amber-400 hover:bg-slate-100')}`}>
+                        <Star className="w-5 h-5" fill={isSelected ? "currentColor" : "none"} />
+                    </button>
+                    {isDimmed && <div className={`text-sm font-medium mb-2 flex items-center ${textSec}`}><AlertTriangle className="w-4 h-4 mr-1.5"/>原因: {notam.reason}</div>}
+                    <pre className={`text-sm whitespace-pre-wrap font-mono leading-relaxed ${isDimmed ? textSec : textPrim}`}>
+                        {formatNotamText(notam.text, isDimmed)}
+                    </pre>
+
+```
+            </div>
+        );
+    };
+
+    if (localError) return (
+        <div className="max-w-5xl mx-auto px-4 mt-8">
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5"/><p className="font-bold">{localError}</p>
+            </div>
+        </div>
+    );
+    if (!flightInfo) return null;
+
+    return (
+        <div className="max-w-5xl mx-auto px-4 mt-6 pb-12">
+            <div className="space-y-6">
+                <div className={`${cardBase} rounded-2xl shadow-md p-6 border flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6`}>
+                    <div className="flex items-center gap-8 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
+                        <div className="shrink-0">
+                            <div className={`text-sm ${textSec} font-medium mb-1 flex items-center`}><PlaneTakeoff className="w-4 h-4 mr-1.5"/> 起飛 (DEP)</div>
+                            <div className={`text-2xl font-bold ${textPrim}`}>{flightInfo.depAirport}</div>
+                            <div className="text-sm text-blue-500 font-medium mt-1">STD {formatZTime(flightInfo.std)}</div>
+                        </div>
+                        <div className="w-16 h-px bg-slate-300 relative hidden md:block shrink-0"><div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 border-t-2 border-r-2 border-slate-400 rotate-45"></div></div>
+                        <div className="shrink-0">
+                            <div className={`text-sm ${textSec} font-medium mb-1 flex items-center`}><PlaneLanding className="w-4 h-4 mr-1.5"/> 降落 (DEST)</div>
+                            <div className={`text-2xl font-bold ${textPrim}`}>{flightInfo.destAirport}</div>
+                            <div className="text-sm text-blue-500 font-medium mt-1">STA {formatZTime(flightInfo.sta)}</div>
+                        </div>
+                    </div>
+                    <FilterControls />
+                </div>
+
+                <div className={`${cardBase} rounded-2xl shadow-md border overflow-hidden`}>
+                    <div className={`flex border-b ${darkMode ? 'border-[#30363d]' : 'border-slate-200'}`}>
+                        <button onClick={() => setActiveTab('DEP')}  className={`flex-1 py-4 text-center font-bold text-lg transition-colors ${activeTab === 'DEP'  ? (darkMode ? 'bg-blue-900/30 text-blue-400 border-b-2 border-blue-500' : 'bg-blue-50 text-blue-700 border-b-2 border-blue-600') : (darkMode ? 'text-[#8b949e] hover:bg-[#21262d]' : 'text-slate-500 hover:bg-slate-50')}`}>起飛機場 ({flightInfo.depAirport})</button>
+                        <button onClick={() => setActiveTab('DEST')} className={`flex-1 py-4 text-center font-bold text-lg transition-colors ${activeTab === 'DEST' ? (darkMode ? 'bg-blue-900/30 text-blue-400 border-b-2 border-blue-500' : 'bg-blue-50 text-blue-700 border-b-2 border-blue-600') : (darkMode ? 'text-[#8b949e] hover:bg-[#21262d]' : 'text-slate-500 hover:bg-slate-50')}`}>降落機場 ({flightInfo.destAirport})</button>
+                    </div>
+                    <div className={`p-6 ${tabBg} min-h-[500px]`}>
+                        {(() => {
+                            const currentNotams = activeTab === 'DEP' ? flightInfo.depNotams : flightInfo.destNotams;
+                            const pinnedNotams   = currentNotams.filter(n => selectedNotams.includes(n.id));
+                            const unpinnedNotams = currentNotams.filter(n => !selectedNotams.includes(n.id));
+                            const unpinnedActive = unpinnedNotams.filter(n => n.keep);
+                            const filteredNotams = unpinnedNotams.filter(n => !n.keep);
+
+                            const rwyClsd  = unpinnedActive.filter(n => n.category === 'RWY_CLSD');
+                            const twyClsd  = unpinnedActive.filter(n => n.category === 'TWY_CLSD');
+                            const comp     = unpinnedActive.filter(n => n.category === 'COMPANY_NOTAM');
+                            const missed   = unpinnedActive.filter(n => n.category === 'MISSED_APPROACH');
+                            const tkofMin  = unpinnedActive.filter(n => n.category === 'TAKEOFF_MINIMUM');
+                            const ldgMin   = unpinnedActive.filter(n => n.category === 'LANDING_MINIMUM');
+                            const equipUS  = unpinnedActive.filter(n => n.category === 'EQUIP_US');
+                            const obst     = unpinnedActive.filter(n => n.category === 'OBSTACLE_ETC');
+                            const bird     = unpinnedActive.filter(n => n.category === 'BIRD_HAZARD');
+                            const uas      = unpinnedActive.filter(n => n.category === 'UAS_KITE');
+                            const maint    = unpinnedActive.filter(n => n.category === 'MAINTENANCE');
+                            const normal   = unpinnedActive.filter(n => n.category === 'NORMAL');
+                            const activeCount = unpinnedActive.length + pinnedNotams.length;
+
+                            const SectionHead = ({ color, icon: Icon, title }) => (
+                                <h4 className={`${color} font-bold text-lg mb-3 flex items-center gap-2 border-b ${darkMode ? 'border-[#30363d]' : ''} pb-2`}>
+                                    <Icon className="w-5 h-5"/>{title}
+                                </h4>
+                            );
+
+                            return (
+                                <div>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className={`font-bold ${textPrim} text-lg`}>有效的 NOTAMs ({activeCount})</h3>
+                                        {filteredNotams.length > 0 && (
+                                            <button onClick={() => setShowFiltered(!showFiltered)} className={`flex items-center gap-1 text-sm font-medium ${textSec} hover:${textPrim} transition-colors ${cardBase} border px-3 py-1.5 rounded border-slate-200 shadow-sm`}>
+                                                {showFiltered ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
+                                                {showFiltered ? '隱藏' : '顯示'}已過濾項目 ({filteredNotams.length})
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {activeCount === 0 ? (
+                                        <div className={`text-center py-12 ${textSec} ${cardBase} rounded-xl border border-dashed ${darkMode ? 'border-[#30363d]' : 'border-slate-300'}`}>
+                                            <CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-50"/>
+                                            <p>目前設定的時間內，沒有需要注意的 NOTAM</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-8">
+                                            {pinnedNotams.length > 0 && (
+                                                <section className="mb-8">
+                                                    <h4 className="text-amber-500 font-black text-xl mb-3 flex items-center gap-2 border-b-2 border-amber-200 pb-2">
+                                                        <Star className="w-6 h-6 text-amber-500" fill="currentColor"/>
+                                                        標記的重要資訊 (Pinned) - {pinnedNotams.length} 筆
+                                                    </h4>
+                                                    <div>{pinnedNotams.map((n,i) => <NotamCard key={`pinned-${i}`} notam={n} isSelected={true} onToggle={() => toggleNotamSelection(n.id)}/>)}</div>
+                                                </section>
+                                            )}
+                                            {rwyClsd.length  > 0 && <section><SectionHead color="text-rose-600"    icon={AlertOctagon}  title={`跑道關閉 (Runway Closed) - ${rwyClsd.length} 筆`}/><div>{rwyClsd.map((n,i)  => <NotamCard key={`rwy-${i}`}    notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {twyClsd.length  > 0 && <section><SectionHead color="text-amber-600"   icon={MapIcon}        title={`滑行道/停機坪關閉 - ${twyClsd.length} 筆`}/><div>{twyClsd.map((n,i)  => <NotamCard key={`twy-${i}`}    notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {comp.length     > 0 && <section><SectionHead color="text-teal-600"    icon={Building}       title={`公司通報 (Company NOTAMs) - ${comp.length} 筆`}/><div>{comp.map((n,i)     => <NotamCard key={`comp-${i}`}   notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {missed.length   > 0 && <section><SectionHead color="text-purple-600"  icon={CornerUpRight}  title={`誤失進場程序更改 - ${missed.length} 筆`}/><div>{missed.map((n,i)   => <NotamCard key={`miss-${i}`}   notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {equipUS.length  > 0 && <section><SectionHead color="text-orange-600"  icon={LightbulbOff}   title={`設備無法使用 - ${equipUS.length} 筆`}/><div>{equipUS.map((n,i)  => <NotamCard key={`equip-${i}`}  notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {tkofMin.length  > 0 && <section><SectionHead color="text-pink-600"    icon={PlaneTakeoff}   title={`起飛標準更改 - ${tkofMin.length} 筆`}/><div>{tkofMin.map((n,i)  => <NotamCard key={`tmin-${i}`}   notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {ldgMin.length   > 0 && <section><SectionHead color="text-fuchsia-600" icon={PlaneLanding}   title={`降落標準更改 - ${ldgMin.length} 筆`}/><div>{ldgMin.map((n,i)   => <NotamCard key={`lmin-${i}`}   notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                            {(obst.length > 0 || bird.length > 0 || uas.length > 0 || maint.length > 0) && (
+                                                <section>
+                                                    <SectionHead color={darkMode ? 'text-[#8b949e]' : 'text-slate-600'} icon={Wind} title="環境與常態活動 (Environment & Activities)"/>
+                                                    <div>
+                                                        {obst.map((n,i)  => <NotamCard key={`obst-${i}`}  notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}
+                                                        {bird.map((n,i)  => <NotamCard key={`bird-${i}`}  notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}
+                                                        {uas.map((n,i)   => <NotamCard key={`uas-${i}`}   notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}
+                                                        {maint.map((n,i) => <NotamCard key={`maint-${i}`} notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}
+                                                    </div>
+                                                </section>
+                                            )}
+                                            {normal.length > 0 && <section><SectionHead color={darkMode ? 'text-[#8b949e]' : 'text-slate-600'} icon={FileText} title={`一般資訊 (Other Info) - ${normal.length} 筆`}/><div>{normal.map((n,i) => <NotamCard key={`norm-${i}`} notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}</div></section>}
+                                        </div>
+                                    )}
+
+                                    {showFiltered && filteredNotams.length > 0 && (
+                                        <div className={`mt-8 pt-6 border-t ${darkMode ? 'border-[#30363d]' : 'border-slate-300'}`}>
+                                            <h3 className={`font-bold ${textSec} text-lg mb-4 flex items-center`}>已過濾的 NOTAMs <span className="ml-2 text-xs font-normal opacity-60">(依據時間或設定排除)</span></h3>
+                                            <div className="space-y-4 opacity-75">
+                                                {filteredNotams.map((n,i) => <NotamCard key={`flt-${i}`} notam={n} isSelected={false} onToggle={() => toggleNotamSelection(n.id)}/>)}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ==========================================
+// 模組 2: OFP Summary
+// ==========================================
+const getAbsMinsFromZ = (hhmmZ, baseDate, stdMinsRaw) => {
+    let hh = parseInt(hhmmZ.substring(0,2)); let mm = parseInt(hhmmZ.substring(2,4)); let day = baseDate;
+    if (hh*60+mm < stdMinsRaw-360) day += 1;
+    return day*24*60+hh*60+mm;
+};
+
+const parseOFP = (text) => {
+    const data = { flightNo:'N/A', date:'N/A', route:'N/A', reg:'N/A', fleetInfo:'', depIcao:'N/A', arrIcao:'N/A', altnIcao:'N/A', stdL:'N/A', stdZ:'N/A', staL:'N/A', staZ:'N/A', altnEtaZ:'N/A', stdMins:null, staMins:null, altnEtaMins:null, flightTime:'N/A', blockTime:'N/A', zfwLimit:'N/A', zfwPlanned:'N/A', ldwLimit:'N/A', ldwPlanned:'N/A', towLimit:'N/A', towPlanned:'N/A', totalFuel:'N/A', reserveFuelSum:'N/A', ci:'N/A', fl:'N/A', tkofRwy:'N/A', sid:'N/A', ldgRwy:'N/A', star:'N/A', weather:[], validityWindows:{}, baseDate:1 };
+    try {
+        const topText = text.substring(0, 15000);
+        const headerMatch = topText.match(/([A-Z0-9\s]+)\/(\d{2}[A-Za-z]{3}\d{2})\/([A-Z]{3,4}-[A-Z]{3,4})\s+Reg:\s*([A-Z0-9-]+)/i);
+        if (headerMatch) {
+            data.flightNo = headerMatch[1].replace(/\s+/g, ''); data.date = headerMatch[2].toUpperCase(); data.route = headerMatch[3]; data.reg = headerMatch[4];
+            let regNum = data.reg.replace(/[^0-9]/g, '');
+            const fleet77M = ['16703','16705','16706','16707','16708','16709','16710','16711','16712','16713','16715','16716','16717'];
+            const fleet77A = ['16718','16719','16720','16721','16722','16723','16725','16726','16727','16728','16729'];
+            const fleet77B = ['16730','16731','16732','16733','16735','16736','16737','16738','16739','16740'];
+            const fleet77F = ['16781','16782','16783','16785','16786','16787','16788','16789','16790'];
+            if (fleet77M.includes(regNum)) data.fleetInfo = '77M (323)'; else if (fleet77A.includes(regNum)) data.fleetInfo = '77A (333)'; else if (fleet77B.includes(regNum)) data.fleetInfo = '77B (353)'; else if (fleet77F.includes(regNum)) data.fleetInfo = '77F (Cargo)';
+        }
+        const depArrMatch = topText.match(/([A-Z]{4})\/([A-Z]{4})/); if (depArrMatch) { data.depIcao = depArrMatch[1]; data.arrIcao = depArrMatch[2]; }
+        const dateMatch = topText.match(/(\d{2})[A-Za-z]{3}\d{2}/i); if (dateMatch) data.baseDate = parseInt(dateMatch[1]);
+        let stdMinsRaw = 0; const stdMatch = topText.match(/STD\s+(\d{4}L)\s+(\d{4}Z)/); if (stdMatch) { data.stdL = stdMatch[1]; data.stdZ = stdMatch[2]; stdMinsRaw = parseInt(data.stdZ.substring(0,2))*60+parseInt(data.stdZ.substring(2,4)); data.stdMins = data.baseDate*24*60+stdMinsRaw; }
+        const staMatch = topText.match(/STA\s+(\d{4}L)\s+(\d{4}[Zz27])/); if (staMatch) { data.staL = staMatch[1]; data.staZ = staMatch[2].replace(/[27]$/, 'Z'); if (data.stdMins !== null) data.staMins = getAbsMinsFromZ(data.staZ, data.baseDate, stdMinsRaw); }
+        if (data.stdZ !== 'N/A' && data.staZ !== 'N/A') { let diff = data.staMins - data.stdMins; let hh = Math.floor(diff/60).toString().padStart(2,'0'); let mm = (diff%60).toString().padStart(2,'0'); data.blockTime = `${hh}:${mm}`; }
+        const eteMatch = topText.match(/ETE[\s\n]*(\d{2}\.\d{2})/); if (eteMatch) data.flightTime = eteMatch[1].replace('.', ':');
+        const fuelMatch = topText.match(/TOTAL[\s\n]*(\d{5,6})/); if (fuelMatch) data.totalFuel = fuelMatch[1];
+        const zfwMatch = topText.match(/ZFW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/); if (zfwMatch) { data.zfwLimit = zfwMatch[1]; data.zfwPlanned = zfwMatch[2]; }
+        const ldwMatch = topText.match(/LDW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/); if (ldwMatch) { data.ldwLimit = ldwMatch[1]; data.ldwPlanned = ldwMatch[2]; }
+        const towMatch = topText.match(/TOW\s+(\d+\.\d+)\s*\/\s*(\d+\.\d+)/); if (towMatch) { data.towLimit = towMatch[1]; data.towPlanned = towMatch[2]; }
+        let altnFuel = 0, finalResFuel = 0;
+        const altnMatch = topText.match(/ALTN\s+([A-Z]{4})?\s*(\d{3,6})\s+(\d{2})\.(\d{2})/);
+        if (altnMatch) { if (altnMatch[1]) data.altnIcao = altnMatch[1]; altnFuel = parseInt(altnMatch[2], 10); let addH = parseInt(altnMatch[3]); let addM = parseInt(altnMatch[4]); if (data.staMins !== null) { data.altnEtaMins = data.staMins + addH*60 + addM; let hE = Math.floor(data.altnEtaMins/60)%24; let mE = data.altnEtaMins%60; data.altnEtaZ = hE.toString().padStart(2,'0') + mE.toString().padStart(2,'0') + 'Z'; } }
+        const finalResMatch = topText.match(/FINAL RES[^\d]+(\d{3,6})/); if (finalResMatch) finalResFuel = parseInt(finalResMatch[1]);
+        if (altnFuel || finalResFuel) data.reserveFuelSum = (altnFuel + finalResFuel).toString();
+        const ciMatch = topText.match(/CRZ\s+CI(\d+)/); if (ciMatch) data.ci = ciMatch[1];
+
+        let fplStart = text.indexOf('(FPL-');
+        if (fplStart !== -1) {
+            let fplChunk = text.substring(fplStart, fplStart+3000);
+            const flMatches = [...fplChunk.matchAll(/(?:-|\/)[NMK]\d{3,4}([FSM])(\d{3,4})/g)];
+            if (flMatches.length > 0) {
+                const uFLs = []; flMatches.forEach(m => { let t=m[1],v=parseInt(m[2]),s=(t==='F'?'FL':t)+m[2]; if(!uFLs.find(x=>x.str===s)) uFLs.push({type:t,val:v,str:s}); });
+                let res = []; ['S','M','F'].forEach(t => { let list=uFLs.filter(x=>x.type===t).map(x=>x.val); if(list.length>0){let init=list[0],max=Math.max(...list),pfx=t==='F'?'FL':t; res.push(init<max?`${pfx}${init} - ${max}`:`${pfx}${init}`);} }); data.fl = res.join(' / ');
+            }
+        }
+
+        let navLogStart = text.indexOf('NAVIGATION LOG'); if (navLogStart===-1) navLogStart=0;
+        if (data.depIcao !== 'N/A') { const dR = new RegExp(data.depIcao+'\\/([0-3]\\d[LRC]?)'); const dM = text.substring(navLogStart).match(dR); if (dM) { data.tkofRwy=dM[1]; let after=text.substring(navLogStart+dM.index, navLogStart+dM.index+1000); let words=after.split(/[\s\n]+/); for(let w of words){if(/^[A-Z]{3,6}\d{1,2}[A-Z]?$/.test(w)){data.sid=w;break;}} } }
+        if (data.arrIcao !== 'N/A') { const aR = new RegExp(data.arrIcao+'\\/([0-3]\\d[LRC]?)','g'); const aMs=[...text.substring(navLogStart).matchAll(aR)]; if(aMs.length>0){let last=aMs[aMs.length-1]; data.ldgRwy=last[1]; let before=text.substring(navLogStart+Math.max(0,last.index-1000),navLogStart+last.index); let words=before.split(/[\s\n]+/); for(let i=words.length-1;i>=0;i--){if(/^[A-Z]{3,6}\d{1,2}[A-Z]?$/.test(words[i])){data.star=words[i];break;}}} }
+        if (data.sid==='N/A' || data.star==='N/A') {
+            let fi = text.indexOf('(FPL-');
+            if (fi !== -1) {
+                let fc = text.substring(fi, fi+4000).replace(/[\r\n]+/g,' ');
+                if (data.sid==='N/A') { const m=fc.match(/-(?:N|K|M)\d{4}(?:F|S|M)\d{3,4}\s+([A-Z0-9]{2,7})\b/); if(m&&m[1]!=='DCT') data.sid=m[1]; }
+                if (data.star==='N/A') { const r=new RegExp(`([A-Z0-9]{2,7})\\s+-${data.arrIcao}`); const m=fc.match(r); if(m&&m[1]!=='DCT') data.star=m[1]; }
+            }
+        }
+
+        let valStart = text.indexOf('ALTERNATE VALIDITY TIMES');
+        if (valStart !== -1) {
+            let valChunk = text.substring(valStart, valStart+6000); const valLines = valChunk.split('\n'); let curApt=null;
+            valLines.forEach(line => {
+                const am = line.match(/\b([A-Z]{4})\b/); if(am && !line.includes('TO')) curApt=am[1]; if(am && line.includes('VALIDITY WINDOW')) curApt=am[1];
+                const tR = /(\d{2}:\d{2}[Zz27]?)\s+(?:TO|T[O0Ο])\s+(\d{2}:\d{2}[Zz27]?)/gi; let tm;
+                while ((tm=tR.exec(line))!==null && curApt) {
+                    const sS=tm[1].toUpperCase().replace(/[27]$/,'Z'); const eS=tm[2].toUpperCase().replace(/[27]$/,'Z');
+                    let cS=sS.replace(/[^0-9]/g,''); let cE=eS.replace(/[^0-9]/g,'');
+                    let hS=parseInt(cS.substring(0,2)),mS=parseInt(cS.substring(2,4)),dayS=data.baseDate; if(hS*60+mS<stdMinsRaw-360)dayS+=1; let sMins=dayS*24*60+hS*60+mS;
+                    let hE=parseInt(cE.substring(0,2)),mE=parseInt(cE.substring(2,4)),dayE=data.baseDate; if(hE*60+mE<stdMinsRaw-360)dayE+=1; let eMins=dayE*24*60+hE*60+mE;
+                    if(eMins<sMins) eMins+=24*60;
+                    if(!data.validityWindows[curApt]) data.validityWindows[curApt]=[];
+                    data.validityWindows[curApt].push({start:sS,end:eS,startMins:sMins,endMins:eMins});
+                }
+            });
+        }
+
+        let wxStartIdx = text.indexOf('DESTINATION AIRPORT:');
+        if (wxStartIdx !== -1) {
+            let wxEnd = text.length;
+            for (let m of ['AIRPORTLIST ENDED','N O T A M','NOTAM','WIND SUMMARY','ATC FLIGHT PLAN','FLIGHT LOG']) { let i=text.indexOf(m,wxStartIdx+20); if(i!==-1&&i<wxEnd) wxEnd=i; }
+            let wxChunk = text.substring(wxStartIdx, wxEnd); const rawWx=[]; const wxLines=wxChunk.split('\n'); let curIcao=null,curName='',curWxLines=[],isCollecting=false;
+            wxLines.forEach(line => {
+                let l=line.trim(); if(!l) return; let uL=l.toUpperCase(); let cL=uL.replace(/\s+/g,'');
+                if(cL.includes('REG:')||cL.includes('OFP:')||cL.includes('PAGE')) return;
+                if(data.flightNo!=='N/A'&&cL.includes(data.flightNo.toUpperCase())) return;
+                if(data.reg!=='N/A'&&cL.includes(data.reg.toUpperCase().replace('-',''))) return;
+                if(cL.includes('DESTINATIONAIRPORT')||cL.includes('DESTINATIONALTERNATE')||cL.includes('ENROUTEAIRPORT')||cL.includes('ETOPSAIRPORT')||cL.includes('DEPARTUREAIRPORT')){isCollecting=false;return;}
+                const tM=l.match(/^([A-Z]{4})\/([A-Z]{3})\s+(.*)/);
+                if(tM){if(curIcao&&curWxLines.length>0)rawWx.push({icao:curIcao,name:curName.trim(),raw:curWxLines.join('\n').trim()});curIcao=tM[1];curName=tM[3].trim();curWxLines=[];isCollecting=false;}
+                else if(curIcao){if(/\d/.test(l)||/^(?:FT|SA|FC|METAR|TAF|SPECI|TEMPO|BECMG|PROB|FM)/.test(l)){isCollecting=true;curWxLines.push(l);}else{if(!isCollecting){if(curName.length<50)curName+=' '+l;}else{curWxLines.push(l);}}}
+            });
+            if(curIcao&&curWxLines.length>0) rawWx.push({icao:curIcao,name:curName.trim(),raw:curWxLines.join('\n').trim()});
+            const reqApts=new Set([data.depIcao,data.arrIcao,data.altnIcao,...Object.keys(data.validityWindows)]); reqApts.delete('N/A');
+            data.weather=rawWx.filter(wx=>reqApts.has(wx.icao));
+        }
+    } catch(e) { console.error(e); }
+    return data;
+};
+
+const highlightTAF = (wxText, windows, targetMins, targetType, baseDate) => {
+    if (!wxText) return null;
+    const normDay = d => { if(d<baseDate-15) return d+30; if(d>baseDate+15) return d-30; return d; };
+    const lines = wxText.split('\n');
+    const pLines = lines.map(line => {
+        let start=-1,end=-1,isFm=false;
+        const pM=line.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/); const fM=line.match(/FM(\d{2})(\d{2})(\d{2})/);
+        if(pM){start=normDay(parseInt(pM[1]))*24*60+parseInt(pM[2])*60;end=normDay(parseInt(pM[3]))*24*60+parseInt(pM[4])*60;}
+        else if(fM){start=normDay(parseInt(fM[1]))*24*60+parseInt(fM[2])*60+parseInt(fM[3]);isFm=true;}
+        return {line,start,end,isFm,finalStart:-1,finalEnd:-1};
+    });
+    let mainStart=-1,mainEnd=-1;
+    for(let pl of pLines){if(pl.line.trim().match(/^(FT|FC|TAF|TAF\s+K[A-Z]{3})\b/)&&!pl.isFm&&pl.start!==-1&&pl.end!==-1){mainStart=pl.start;mainEnd=pl.end;break;}}
+    if(mainStart===-1){for(let pl of pLines){if(!pl.isFm&&pl.start!==-1&&pl.end!==-1){mainStart=pl.start;mainEnd=pl.end;break;}}}
+    let curFmS=-1,inT=false; let hasM=wxText.match(/^(SA|SP|METAR|SPECI)\b/m); if(!hasM) inT=true;
+    for(let i=0;i<pLines.length;i++){
+        let pl=pLines[i],rL=pl.line.trim();
+        if(rL.match(/^(FT|FC|TAF)\b/)) inT=true; else if(rL.match(/^(SA|SP|METAR|SPECI)\b/)) inT=false;
+        if(!inT){pl.finalStart=-1;pl.finalEnd=-1;continue;}
+        if(pl.isFm){curFmS=pl.start;let nFmS=mainEnd!==-1?mainEnd:curFmS+12*60;for(let j=i+1;j<pLines.length;j++){if(pLines[j].isFm){nFmS=pLines[j].start;break;}}pl.finalStart=curFmS;pl.finalEnd=nFmS;}
+        else if(pl.start!==-1&&pl.end!==-1){pl.finalStart=pl.start;pl.finalEnd=pl.end;}
+        else{if(curFmS!==-1){pl.finalStart=curFmS;let nFmS=mainEnd!==-1?mainEnd:curFmS+12*60;for(let j=i+1;j<pLines.length;j++){if(pLines[j].isFm){nFmS=pLines[j].start;break;}}pl.finalEnd=nFmS;}else{pl.finalStart=mainStart;pl.finalEnd=mainEnd;}}
+    }
+    return pLines.map((pl,idx) => {
+        let hT=targetMins!==null&&pl.finalStart!==-1&&pl.finalEnd!==-1&&targetMins>=pl.finalStart&&targetMins<=pl.finalEnd;
+        let hE=false; if(windows&&windows.length>0&&pl.finalStart!==-1&&pl.finalEnd!==-1){hE=windows.some(w=>Math.max(pl.finalStart,w.startMins)<Math.min(pl.finalEnd,w.endMins));}
+        let hC='';
+        if(hT&&hE) hC='bg-fuchsia-200 text-fuchsia-800 font-bold px-1 py-0.5 rounded shadow-sm';
+        else if(hT){
+            if(targetType==='DEP')  hC='bg-blue-200 text-blue-800 font-bold px-1 py-0.5 rounded shadow-sm';
+            else if(targetType==='ARR')  hC='bg-emerald-200 text-emerald-800 font-bold px-1 py-0.5 rounded shadow-sm';
+            else if(targetType==='ALTN') hC='bg-amber-200 text-amber-800 font-bold px-1 py-0.5 rounded shadow-sm';
+            else hC='bg-indigo-200 text-indigo-800 font-bold px-1 py-0.5 rounded shadow-sm';
+        } else if(hE) hC='bg-yellow-200 text-red-700 font-bold px-1 py-0.5 rounded shadow-sm';
+        if(hC) return <Fragment key={idx}><span className={`inline-block ${hC}`}>{pl.line}</span>{'\n'}</Fragment>;
+        return <Fragment key={idx}>{pl.line}{'\n'}</Fragment>;
+    });
+};
+
+function OfpSummaryApp({ rawText, darkMode, onOfpDataReady, onCrosswindReady }) {
+    const [data, setData] = useState(null);
+    const [useLiveWx, setUseLiveWx] = useState(false);
+    const [liveWxData, setLiveWxData] = useState({});
+    const [isFetchingWx, setIsFetchingWx] = useState(false);
+    const [localError, setLocalError] = useState(null);
+
+    useEffect(() => {
+        if (!rawText) { setData(null); setLocalError(null); return; }
+        try {
+            const nd = parseOFP(rawText);
+            if (nd.flightNo === 'N/A' || !nd.weather || nd.weather.length === 0) throw new Error("Missing OFP data");
+            setData(nd);
+            if (onOfpDataReady) onOfpDataReady(nd);
+            setLocalError(null);
+        } catch(err) {
+            console.error("OFP parsing error:", err);
+            setLocalError("無法解析 OFP 摘要結構，請確認檔案格式是否正確。");
+        }
+    }, [rawText]);
+
+    // 計算側風並通知父層
+    useEffect(() => {
+        if (!data || !onCrosswindReady) return;
+        // DEP crosswind from first METAR of depIcao
+        const depWx = data.weather.find(w => w.icao === data.depIcao);
+        const arrWx = data.weather.find(w => w.icao === data.arrIcao);
+
+        const depWind  = depWx ? parseMetarWind(depWx.raw) : null;
+        const arrWind  = arrWx ? parseMetarWind(arrWx.raw) : null;
+        const depHdg   = rwyToHeading(data.tkofRwy);
+        const arrHdg   = rwyToHeading(data.ldgRwy);
+
+        const xwDep  = (depWind && !depWind.isVRB && depHdg !== null) ? calcCrosswind(depWind.dir, depWind.spd, depHdg) : null;
+        const xwArr  = (arrWind && !arrWind.isVRB && arrHdg !== null) ? calcCrosswind(arrWind.dir, arrWind.spd, arrHdg) : null;
+
+        const fcDep  = depWx ? getFlightCategory(depWx.raw) : null;
+        const fcArr  = arrWx ? getFlightCategory(arrWx.raw) : null;
+
+        onCrosswindReady({ xwDep, xwArr, fcDep, fcArr });
+    }, [data]);
+
+    const fetchRawViaProxy = async (url) => {
+        const proxies = [`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`];
+        for (let p of proxies) {
+            try {
+                const ctrl = new AbortController();
+                const id = setTimeout(() => ctrl.abort(), 4000);
+                const res = await fetch(p, { signal: ctrl.signal, cache: 'no-store' });
+                clearTimeout(id);
+                if (res.ok) { const t = await res.text(); if (!t.includes('<html') && !t.includes('<body')) return t; }
+            } catch(e) {}
+        }
+        return '';
+    };
+
+    const handleToggleLiveWx = async (mode) => {
+        if (mode === useLiveWx) return;
+        setUseLiveWx(mode);
+        if (mode && Object.keys(liveWxData).length === 0 && data && data.weather) {
+            setIsFetchingWx(true);
+            const icaos = data.weather.map(w => w.icao); const newWx = { ...liveWxData };
+            await Promise.all(icaos.map(async (icao) => {
+                const cb = Date.now();
+                const mT = await fetchRawViaProxy(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&cb=${cb}`);
+                const tT = await fetchRawViaProxy(`https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw&cb=${cb}`);
+                let combined = '';
+                if (mT && mT.trim()) combined += mT.trim() + '\n\n';
+                if (tT && tT.trim()) combined += tT.trim();
+                newWx[icao] = combined || '連線逾時 (4秒)，請切換回 OFP 原本查看。';
+            }));
+            setLiveWxData(newWx); setIsFetchingWx(false);
+            // Re-calculate crosswind with live data
+            if (onCrosswindReady && data) {
+                const depIcao = data.depIcao; const arrIcao = data.arrIcao;
+                const depWind  = parseMetarWind(newWx[depIcao] || '');
+                const arrWind  = parseMetarWind(newWx[arrIcao] || '');
+                const xwDep = (depWind && !depWind.isVRB) ? calcCrosswind(depWind.dir, depWind.spd, rwyToHeading(data.tkofRwy)) : null;
+                const xwArr = (arrWind && !arrWind.isVRB) ? calcCrosswind(arrWind.dir, arrWind.spd, rwyToHeading(data.ldgRwy)) : null;
+                const fcDep = getFlightCategory(newWx[depIcao] || '');
+                const fcArr = getFlightCategory(newWx[arrIcao] || '');
+                onCrosswindReady({ xwDep, xwArr, fcDep, fcArr });
+            }
+        }
+    };
+
+    if (localError) return (
+        <div className="max-w-6xl mx-auto px-4 mt-8">
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5"/><p className="font-bold">{localError}</p>
+            </div>
+        </div>
+    );
+    if (!data) return null;
+
+    const dm = darkMode;
+    const cardBase  = dm ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200';
+    const textPrim  = dm ? 'text-[#e6edf3]' : 'text-slate-800';
+    const textSec   = dm ? 'text-[#8b949e]'  : 'text-slate-500';
+    const innerSub  = dm ? 'bg-[#0d1117] border-[#30363d]' : 'bg-slate-50 border-slate-200';
+    const innerBl   = dm ? 'bg-blue-900/30 border-blue-800' : 'bg-blue-50/50 border-blue-100';
+    const innerGr   = dm ? 'bg-emerald-900/30 border-emerald-800' : 'bg-emerald-50/50 border-emerald-100';
+
+    return (
+        <div className={`${dm ? 'bg-[#0d0f14]' : 'bg-slate-50'} text-slate-800 font-sans p-2 sm:p-4 pb-12`}>
+            <header className={`max-w-6xl w-full mx-auto flex flex-row justify-between items-start sm:items-center mb-6 ${cardBase} border p-4 sm:px-6 rounded-2xl shadow-sm gap-2`}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                    <h1 className={`text-2xl font-black text-emerald-${dm?'400':'700'} tracking-tight flex items-center gap-2`}>
+                        <PlaneTakeoff className="w-7 h-7"/> {data.flightNo}
+                    </h1>
+                    <div className={`flex flex-wrap items-center gap-2 text-xs font-black ${textSec}`}>
+                        <span className={`${innerSub} border px-3 py-1.5 rounded-lg shadow-sm flex items-center`}>
+                            Reg: <span className={textPrim}>&nbsp;{data.reg}</span>
+                            {data.fleetInfo && <span className="ml-2 text-blue-600 bg-blue-100 px-2 py-0.5 rounded text-[10px]">{data.fleetInfo}</span>}
+                        </span>
+                        <span className={`${innerSub} border px-3 py-1.5 rounded-lg shadow-sm ${textPrim}`}>{data.route}</span>
+                        <span className={`${innerSub} border px-3 py-1.5 rounded-lg shadow-sm ${textPrim}`}>{data.date}</span>
+                    </div>
+                </div>
+            </header>
+
+            <div className="max-w-6xl w-full mx-auto space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* 時間卡 */}
+                    <div className={`${cardBase} border p-5 rounded-2xl shadow-sm relative overflow-hidden`}>
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+                        <div className={`flex items-center gap-2 ${textSec} mb-4 pb-3 border-b ${dm?'border-[#30363d]':'border-slate-100'}`}><Clock className="w-5 h-5 text-blue-500"/> <h3 className={`text-base font-bold ${textPrim}`}>時間 (Timings)</h3></div>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-end"><span className={`text-sm font-semibold ${textSec}`}>STD</span><div className="text-right"><span className={`block font-black text-2xl ${textPrim} tracking-tight leading-none`}>{data.stdZ}</span><span className={`text-xs font-bold ${textSec} ${innerSub} border px-2 py-0.5 rounded mt-1.5 inline-block`}>LCL {data.stdL}</span></div></div>
+                            <div className="flex justify-between items-end"><span className={`text-sm font-semibold ${textSec}`}>STA</span><div className="text-right"><span className={`block font-black text-2xl ${textPrim} tracking-tight leading-none`}>{data.staZ}</span><span className={`text-xs font-bold ${textSec} ${innerSub} border px-2 py-0.5 rounded mt-1.5 inline-block`}>LCL {data.staL}</span></div></div>
+                            <div className="grid grid-cols-2 gap-3 mt-4">
+                                <div className={`flex flex-col ${dm?'bg-blue-900/30 border-blue-800':'bg-blue-50 border-blue-100'} border p-3 rounded-xl`}><span className={`text-xs font-bold ${dm?'text-blue-400':'text-blue-800'} mb-1`}>Flight Time</span><span className={`font-black text-xl ${dm?'text-blue-300':'text-blue-900'}`}>{data.flightTime}</span></div>
+                                <div className={`flex flex-col ${dm?'bg-indigo-900/30 border-indigo-800':'bg-indigo-50 border-indigo-100'} border p-3 rounded-xl`}><span className={`text-xs font-bold ${dm?'text-indigo-400':'text-indigo-800'} mb-1`}>Block Time</span><span className={`font-black text-xl ${dm?'text-indigo-300':'text-indigo-900'}`}>{data.blockTime}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* 重量卡 */}
+                    <div className={`${cardBase} border p-5 rounded-2xl shadow-sm relative overflow-hidden`}>
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-orange-400"></div>
+                        <div className={`flex items-center gap-2 ${textSec} mb-3 pb-3 border-b ${dm?'border-[#30363d]':'border-slate-100'}`}><Weight className="w-5 h-5 text-orange-500"/> <h3 className={`text-base font-bold ${textPrim}`}>重量 (Weights)</h3></div>
+                        <div className={`grid grid-cols-3 gap-2 text-center text-xs font-bold ${textSec} mb-3`}><div className="text-left">TYPE</div><div>LIMIT</div><div>PLANNED</div></div>
+                        <div className="space-y-3">
+                            {[['ZFW',data.zfwLimit,data.zfwPlanned],['LDW',data.ldwLimit,data.ldwPlanned],['TOW',data.towLimit,data.towPlanned]].map(([k,lim,plan],i) => (
+                                <div key={k} className={`grid grid-cols-3 items-center gap-2 ${i<2?`border-b ${dm?'border-[#30363d]':'border-slate-50'} pb-2`:''}`}>
+                                    <span className={`text-sm font-bold ${textPrim}`}>{k}</span>
+                                    <span className={`text-center font-mono text-sm font-bold ${textSec}`}>{lim}</span>
+                                    <span className={`text-center font-mono text-base font-black ${textPrim} ${dm?'bg-orange-900/30 border-orange-800':'bg-orange-50 border-orange-100'} border rounded py-1`}>{plan}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    {/* 效能卡 */}
+                    <div className={`${cardBase} border p-5 rounded-2xl shadow-sm relative overflow-hidden`}>
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+                        <div className={`flex items-center gap-2 ${textSec} mb-4 pb-3 border-b ${dm?'border-[#30363d]':'border-slate-100'}`}><Fuel className="w-5 h-5 text-emerald-500"/> <h3 className={`text-base font-bold ${textPrim}`}>效能 (Perf)</h3></div>
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className={`flex flex-col ${dm?'bg-emerald-900/30 border-emerald-800':'bg-emerald-50 border-emerald-100'} border p-3 rounded-xl`}><span className={`text-xs font-bold ${dm?'text-emerald-400':'text-emerald-800'} mb-1`}>Total Fuel</span><span className={`font-black text-2xl ${dm?'text-emerald-300':'text-emerald-900'} leading-none`}>{data.totalFuel}</span></div>
+                                <div className={`flex flex-col ${dm?'bg-teal-900/30 border-teal-800':'bg-teal-50 border-teal-100'} border p-3 rounded-xl`}><span className={`text-xs font-bold ${dm?'text-teal-400':'text-teal-800'} mb-1`}>ALTN+FIN RES</span><span className={`font-black text-2xl ${dm?'text-teal-300':'text-teal-900'} leading-none`}>{data.reserveFuelSum}</span></div>
+                            </div>
+                            <div className="flex gap-3">
+                                <div className={`${innerSub} border p-3 rounded-xl w-1/3`}><span className={`block text-xs font-bold ${textSec} mb-1`}>CI</span><span className={`font-black text-xl ${textPrim}`}>{data.ci}</span></div>
+                                <div className={`${dm?'bg-blue-900/30 border-blue-800':'bg-blue-50 border-blue-100'} border p-3 rounded-xl w-2/3 flex flex-col justify-center overflow-hidden`}><span className={`block text-xs font-bold ${dm?'text-blue-400':'text-blue-500'} mb-1`}>Flight Level</span><span className={`font-black text-xl ${dm?'text-blue-300':'text-blue-700'} tracking-tight`}>{data.fl}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* DEP / ARR 卡 */}
+                <div className={`${cardBase} border p-4 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4`}>
+                    <div className={`flex-1 w-full ${innerBl} border p-4 rounded-xl`}>
+                        <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><PlaneTakeoff className="w-6 h-6 text-blue-500"/> <span className={`font-black text-xl ${textPrim}`}>DEP</span></div><span className={`${dm?'bg-blue-800 text-blue-200 border-blue-700':'bg-blue-200 text-blue-900 border-blue-300'} font-black text-base px-3 py-1 rounded-lg border`}>{data.depIcao}</span></div>
+                        <div className="flex gap-6"><div><span className={`block text-xs font-bold ${textSec} mb-1`}>RWY</span><span className={`font-black text-2xl ${textPrim} leading-none`}>{data.tkofRwy}</span></div><div><span className={`block text-xs font-bold ${textSec} mb-1`}>SID</span><span className={`font-black text-2xl text-blue-${dm?'400':'700'} leading-none`}>{data.sid}</span></div></div>
+                    </div>
+                    <ChevronRight className={`w-8 h-8 ${textSec} hidden md:block`} />
+                    <div className={`flex-1 w-full ${innerGr} border p-4 rounded-xl`}>
+                        <div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><PlaneLanding className="w-6 h-6 text-emerald-500"/> <span className={`font-black text-xl ${textPrim}`}>ARR</span></div><span className={`${dm?'bg-emerald-800 text-emerald-200 border-emerald-700':'bg-emerald-200 text-emerald-900 border-emerald-300'} font-black text-base px-3 py-1 rounded-lg border`}>{data.arrIcao}</span></div>
+                        <div className="flex gap-6"><div><span className={`block text-xs font-bold ${textSec} mb-1`}>RWY</span><span className={`font-black text-2xl ${textPrim} leading-none`}>{data.ldgRwy}</span></div><div><span className={`block text-xs font-bold ${textSec} mb-1`}>STAR</span><span className={`font-black text-2xl text-emerald-${dm?'400':'700'} leading-none`}>{data.star}</span></div></div>
+                    </div>
+                </div>
+
+                {/* 天氣區塊 */}
+                <div className={`${cardBase} border p-5 rounded-2xl shadow-sm`}>
+                    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b ${dm?'border-[#30363d]':'border-slate-100'}`}>
+                        <div className={`flex items-center gap-2 ${textPrim}`}><Wind className="w-6 h-6 text-cyan-500"/> <h2 className="font-black text-xl">天氣預報</h2></div>
+                        <div className={`${innerSub} border p-1 rounded-xl flex items-center gap-1 shadow-inner`}>
+                            <button onClick={() => handleToggleLiveWx(false)} className={`px-4 py-2 rounded-lg text-sm font-black transition-all ${!useLiveWx ? (dm?'bg-[#21262d] text-[#e6edf3] shadow-md border border-[#30363d]':'bg-white text-slate-700 shadow-md border border-slate-200') : `${textSec} hover:text-slate-600`}`}>📜 OFP 原本</button>
+                            <button onClick={() => handleToggleLiveWx(true)}  className={`px-4 py-2 rounded-lg text-sm font-black transition-all flex items-center gap-1.5 ${useLiveWx  ? 'bg-blue-500 text-white shadow-md border border-blue-600' : `${textSec}`}`}>{isFetchingWx?<Clock className="w-4 h-4 animate-spin"/>:<CloudLightning className="w-4 h-4"/>} ⚡ 即時 Live 更新</button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {data.weather.map((wx, idx) => {
+                            const windows = data.validityWindows[wx.icao] || [];
+                            const isDep=wx.icao===data.depIcao, isArr=wx.icao===data.arrIcao, isAltn=wx.icao===data.altnIcao, isEdto=windows.length>0;
+                            let targetMins=null,targetType='',targetTimeZ='';
+                            if(isDep){targetMins=data.stdMins;targetType='DEP';targetTimeZ=data.stdZ;}
+                            else if(isArr){targetMins=data.staMins;targetType='ARR';targetTimeZ=data.staZ;}
+                            else if(isAltn){targetMins=data.altnEtaMins;targetType='ALTN';targetTimeZ=data.altnEtaZ;}
+                            else if(isEdto){targetMins=windows[0].startMins;targetType='EDTO';}
+                            let badges = [];
+                            if(isDep) badges.push({text:`DEP${isEdto?'+EDTO':''}`,bg:isEdto?'bg-fuchsia-600':'bg-blue-600'});
+                            else if(isArr) badges.push({text:`ARR${isEdto?'+EDTO':''}`,bg:isEdto?'bg-fuchsia-600':'bg-emerald-600'});
+                            else if(isAltn) badges.push({text:`ALTN${isEdto?'+EDTO':''}`,bg:isEdto?'bg-fuchsia-600':'bg-amber-500'});
+                            else if(isEdto) badges.push({text:'EDTO',bg:'bg-indigo-500'});
+
+                            const displayRaw = useLiveWx ? (liveWxData[wx.icao] || (isFetchingWx ? '正在連線抓取中...' : '無資料')) : wx.raw;
+
+                            // ★ 側風 & 飛行類別計算 ★
+                            const wxForCalc = useLiveWx ? (liveWxData[wx.icao] || wx.raw) : wx.raw;
+                            const windInfo = parseMetarWind(wxForCalc);
+                            let xwInfo = null;
+                            if (windInfo && !windInfo.isVRB) {
+                                const rwyForThis = isDep ? data.tkofRwy : isArr ? data.ldgRwy : null;
+                                const hdg = rwyToHeading(rwyForThis);
+                                if (hdg !== null) xwInfo = calcCrosswind(windInfo.dir, windInfo.spd, hdg);
+                            }
+                            const fc = getFlightCategory(wxForCalc);
+                            const fcCfg = fc ? FC_CONFIG[fc] : null;
+
+                            let xwClass = '';
+                            if (xwInfo) {
+                                if (xwInfo.xwind >= 20) xwClass = 'xwind-crit';
+                                else if (xwInfo.xwind >= 15) xwClass = 'xwind-warn';
+                                else xwClass = 'xwind-ok';
+                            }
+
+                            return (
+                                <div key={idx} className={`${dm?'bg-[#0d1117] border-[#30363d]':'bg-slate-50 border-slate-200'} rounded-xl border overflow-hidden shadow-sm flex flex-col transition-colors ${useLiveWx?(dm?'border-blue-700':'border-blue-300'):''}`}>
+                                    <div className={`px-4 py-3 flex flex-row justify-between items-center border-b gap-3 ${useLiveWx?(dm?'bg-blue-900/30 border-blue-800':'bg-blue-50 border-blue-200'):(dm?'bg-[#161b22] border-[#30363d]':'bg-slate-100 border-slate-200')}`}>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className={`font-black text-lg ${textPrim} flex items-center gap-2`}>
+                                                {wx.icao}
+                                                {badges.map((b,i) => <span key={i} className={`text-xs ${b.bg} text-white px-1.5 py-0.5 rounded shadow-sm`}>{b.text}</span>)}
+                                                {/* 飛行類別徽章 */}
+                                                {fcCfg && <span className={`text-xs px-2 py-0.5 rounded-full font-black ${fcCfg.cls}`}>{fcCfg.emoji} {fcCfg.label}</span>}
+                                            </h4>
+                                            <span className={`text-xs font-bold ${textSec} block truncate`} title={wx.name}>{wx.name}</span>
+                                            {/* 側風資訊列 */}
+                                            {xwInfo && (isDep || isArr) && (
+                                                <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                                    <span className={`inline-flex items-center gap-1 text-xs font-black px-2 py-0.5 rounded-full ${xwClass}`}>
+                                                        <Wind className="w-3 h-3"/>
+                                                        側風 {xwInfo.xwind}KT
+                                                        {xwInfo.xwind >= 20 && ' ⚠'}
+                                                        {xwInfo.xwind >= 15 && xwInfo.xwind < 20 && ' ⚡'}
+                                                    </span>
+                                                    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${dm?'bg-[#21262d] text-[#8b949e] border border-[#30363d]':'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                                        {xwInfo.hwind >= 0 ? `↑ 逆風 ${xwInfo.hwind}KT` : `↓ 順風 ${Math.abs(xwInfo.hwind)}KT`}
+                                                    </span>
+                                                    {windInfo && <span className={`text-xs ${textSec}`}>(風向 {windInfo.dir}° / {windInfo.spd}KT{windInfo.gust?`G${windInfo.gust}`:''} | RWY {isDep?data.tkofRwy:data.ldgRwy})</span>}
+                                                </div>
+                                            )}
+                                            {windInfo && windInfo.isVRB && (isDep || isArr) && (
+                                                <span className={`mt-1.5 inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${dm?'bg-yellow-900/30 text-yellow-400 border border-yellow-700':'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+                                                    VRB 風向不定，無法計算側風
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-right shrink-0 flex flex-col gap-1 items-end">
+                                            {targetType && targetTimeZ !== 'N/A' && targetType !== 'EDTO' && (
+                                                <div>
+                                                    <span className={`block text-[10px] font-bold ${textSec} uppercase mb-1`}>{targetType==='DEP'?'ETD':'ETA'}</span>
+                                                    <span className={`block text-xs font-black px-2 py-1 rounded shadow-sm border ${targetType==='DEP'?(dm?'bg-blue-900/40 text-blue-300 border-blue-700':'bg-blue-100 text-blue-800 border-blue-200'):targetType==='ARR'?(dm?'bg-emerald-900/40 text-emerald-300 border-emerald-700':'bg-emerald-100 text-emerald-800 border-emerald-200'):(dm?'bg-amber-900/40 text-amber-300 border-amber-700':'bg-amber-100 text-amber-800 border-amber-200')}`}>{targetTimeZ}</span>
+                                                </div>
+                                            )}
+                                            {isEdto && (
+                                                <div>
+                                                    <span className={`block text-[10px] font-bold ${textSec} uppercase mb-1`}>VALID</span>
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        {windows.map((w,i) => <span key={i} className={`block text-xs font-black px-2 py-1 rounded shadow-sm border ${targetType!=='EDTO'&&targetType?(dm?'bg-fuchsia-900/40 text-fuchsia-300 border-fuchsia-700':'bg-fuchsia-100 text-fuchsia-900 border-fuchsia-200'):(dm?'bg-yellow-900/40 text-yellow-300 border-yellow-700':'bg-yellow-100 text-red-800 border-yellow-200')}`}>{w.start}-{w.end}</span>)}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className={`p-4 overflow-x-auto text-sm font-mono ${dm?'text-[#8b949e]':'text-slate-700'} leading-relaxed whitespace-pre relative min-h-[100px] ${dm?'bg-[#0d1117]':''}`}>
+                                        {useLiveWx && isFetchingWx && !liveWxData[wx.icao]
+                                            ? <div className="text-blue-500 font-bold animate-pulse flex items-center gap-2 mt-2 ml-2"><Clock className="w-5 h-5 animate-spin"/> 連線抓取中...</div>
+                                            : highlightTAF(displayRaw, windows, targetMins, targetType, data.baseDate)
+                                        }
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ==========================================
+// 主程式
+// ==========================================
+function App() {
+    const [activeMainTab, setActiveMainTab] = useState('OFP');
+    const [sharedRawText, setSharedRawText] = useState(null);
+    const [globalLoading, setGlobalLoading] = useState(false);
+    const [globalError, setGlobalError] = useState(null);
+    const [showTopBtn, setShowTopBtn] = useState(false);
+    const [darkMode, setDarkMode] = useState(false);
+
+    // 共享狀態：NOTAM 釘選
+    const [selectedNotams, setSelectedNotams] = useState([]);
+    // 共享狀態：NOTAM 資料（供匯出用）
+    const [depNotams, setDepNotams] = useState([]);
+    const [destNotams, setDestNotams] = useState([]);
+    // 共享狀態：OFP 資料
+    const [ofpData, setOfpData] = useState(null);
+    // 共享狀態：側風資料
+    const [crosswindData, setCrosswindData] = useState({ xwDep: null, xwArr: null, fcDep: null, fcArr: null });
+    // 匯出 modal
+    const [showExport, setShowExport] = useState(false);
+
+    // Dark mode: apply/remove class on <html>
+    useEffect(() => {
+        if (darkMode) document.documentElement.classList.add('dm');
+        else document.documentElement.classList.remove('dm');
+    }, [darkMode]);
+
+    useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [activeMainTab]);
+    useEffect(() => {
+        const h = () => setShowTopBtn(window.scrollY > 300);
+        window.addEventListener('scroll', h); return () => window.removeEventListener('scroll', h);
+    }, []);
+
+    const handleGlobalFileUpload = (event) => {
+        const file = event.target.files[0]; if (!file) return;
+        setGlobalLoading(true); setGlobalError(null);
+        setTimeout(async () => {
+            try {
+                const pdfjsLib = window.pdfjsLib;
+                const ab = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+                let fullText = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    let lMap = new Map();
+                    content.items.forEach(item => {
+                        let y = Math.round(item.transform[5]/4)*4;
+                        if (!lMap.has(y)) lMap.set(y, []);
+                        lMap.get(y).push(item);
+                    });
+                    let yKeys = Array.from(lMap.keys()).sort((a,b) => b-a);
+                    let pageText = yKeys.map(y => {
+                        let li = lMap.get(y); li.sort((a,b) => a.transform[4]-b.transform[4]);
+                        let ls = ''; let lx = -1;
+                        li.forEach(it => { if(lx!==-1&&(it.transform[4]-lx>10))ls+=' '; ls+=it.str; lx=it.transform[4]+it.width; });
+                        return ls.trim();
+                    }).join('\n');
+                    fullText += pageText + '\n';
+                }
+                setSharedRawText(fullText);
+                setSelectedNotams([]); setDepNotams([]); setDestNotams([]); setOfpData(null);
+                setCrosswindData({ xwDep: null, xwArr: null, fcDep: null, fcArr: null });
+            } catch(err) {
+                console.error("Global PDF Error:", err);
+                setGlobalError("讀取 PDF 失敗，請確認是否為有效 LIDO 文件。");
+            } finally { setGlobalLoading(false); }
+        }, 50);
+    };
+
+    const handleReset = () => {
+        setSharedRawText(null); setGlobalError(null); setActiveMainTab('OFP');
+        setSelectedNotams([]); setDepNotams([]); setDestNotams([]); setOfpData(null);
+        setCrosswindData({ xwDep: null, xwArr: null, fcDep: null, fcArr: null });
+    };
+
+    const navBg = darkMode ? 'bg-[#010409] border-b border-[#30363d]' : 'bg-slate-900 shadow-lg border-b border-slate-800';
+    const pageBg = darkMode ? 'bg-[#0d0f14]' : 'bg-slate-200';
+
+    return (
+        <div className={`min-h-screen font-sans flex flex-col ${pageBg}`}>
+            {!sharedRawText ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-6">
+                    <div className={`max-w-xl w-full p-10 rounded-2xl shadow-xl border text-center ${darkMode ? 'bg-[#161b22] border-[#30363d]' : 'bg-white border-slate-200'}`}>
+                        <div className="flex justify-center mb-6 gap-4 text-blue-500">
+                            <AlertTriangle className="w-12 h-12"/>
+                            <FileText className="w-12 h-12 text-emerald-500"/>
+                        </div>
+                        <h1 className={`text-3xl font-black mb-2 ${darkMode ? 'text-[#e6edf3]' : 'text-slate-800'}`}>LIDO OFP 助理</h1>
+                        <p className={`font-medium mb-8 ${darkMode ? 'text-[#8b949e]' : 'text-slate-500'}`}>NOTAM 篩選與 OFP 天氣摘要</p>
+                        <label className={`relative cursor-pointer bg-blue-600 text-white px-6 py-5 rounded-xl font-bold hover:bg-blue-700 transition-all flex flex-col items-center justify-center gap-3 w-full shadow-lg shadow-blue-600/20 ${globalLoading ? 'opacity-70 pointer-events-none' : ''}`}>
+                            {globalLoading ? (<><Clock className="w-8 h-8 animate-spin"/> <span className="text-lg">系統解析中，請稍候...</span></>) : (<><UploadCloud className="w-10 h-10"/> <span className="text-lg tracking-wide">選擇 LIDO OFP 檔案 (PDF)</span></>)}
+                            <input type="file" accept="application/pdf" className="hidden" onChange={handleGlobalFileUpload} disabled={globalLoading}/>
+                        </label>
+                        {/* 上傳頁的 dark mode 切換 */}
+                        <div className="mt-6 flex justify-center">
+                            <button onClick={() => setDarkMode(!darkMode)} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all border ${darkMode ? 'bg-[#21262d] border-[#30363d] text-[#c9d1d9] hover:bg-[#30363d]' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'}`}>
+                                {darkMode ? <Sun className="w-4 h-4 text-yellow-400"/> : <Moon className="w-4 h-4 text-slate-500"/>}
+                                {darkMode ? '切換日間模式' : '切換夜間模式'}
+                            </button>
+                        </div>
+                        {globalError && (
+                            <div className="mt-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-start gap-3 text-left">
+                                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5"/><p className="font-bold">{globalError}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <Fragment>
+                    <nav className={`${navBg} sticky top-0 z-50`}>
+                        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+                            <div className="flex gap-2">
+                                <button onClick={() => setActiveMainTab('OFP')}   className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab==='OFP'   ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : (darkMode?'bg-[#161b22] text-[#8b949e] hover:bg-[#21262d]':'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200')}`}><FileText className="w-4 h-4"/> OFP 摘要</button>
+                                <button onClick={() => setActiveMainTab('NOTAM')} className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab==='NOTAM' ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]'  : (darkMode?'bg-[#161b22] text-[#8b949e] hover:bg-[#21262d]':'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200')}`}><AlertTriangle className="w-4 h-4"/> NOTAM 過濾</button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {/* 匯出按鈕 */}
+                                <button onClick={() => setShowExport(true)} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-600 shadow-sm">
+                                    <Download className="w-4 h-4"/> 匯出精華版
+                                </button>
+                                {/* 夜間模式切換 */}
+                                <button onClick={() => setDarkMode(!darkMode)} title={darkMode?'切換日間模式':'切換夜間模式'} className={`p-2.5 rounded-full transition-all border ${darkMode ? 'bg-yellow-400/20 border-yellow-500/40 text-yellow-300 hover:bg-yellow-400/30' : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'}`}>
+                                    {darkMode ? <Sun className="w-4 h-4"/> : <Moon className="w-4 h-4"/>}
+                                </button>
+                                <button onClick={handleReset} className={`text-sm font-bold transition-colors px-4 py-2 rounded-full border ${darkMode?'text-[#8b949e] hover:text-[#c9d1d9] bg-[#161b22] border-[#30363d]':'text-slate-400 hover:text-white bg-slate-800 border-slate-700'}`}>重新上傳</button>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <div className={`flex-1 ${activeMainTab==='OFP' ? 'block' : 'hidden'}`}>
+                        <OfpSummaryApp
+                            rawText={sharedRawText}
+                            darkMode={darkMode}
+                            onOfpDataReady={setOfpData}
+                            onCrosswindReady={setCrosswindData}
+                        />
+                    </div>
+                    <div className={`flex-1 ${activeMainTab==='NOTAM' ? 'block' : 'hidden'}`}>
+                        <NotamFilterApp
+                            rawText={sharedRawText}
+                            darkMode={darkMode}
+                            selectedNotams={selectedNotams}
+                            setSelectedNotams={setSelectedNotams}
+                            onNotamsReady={(dep, dest) => { setDepNotams(dep); setDestNotams(dest); }}
+                        />
+                    </div>
+
+                    {showExport && (
+                        <ExportModal
+                            onClose={() => setShowExport(false)}
+                            ofpData={ofpData}
+                            depNotams={depNotams}
+                            destNotams={destNotams}
+                            selectedNotams={selectedNotams}
+                            crosswindDep={crosswindData.xwDep}
+                            crosswindDest={crosswindData.xwArr}
+                            flightCatDep={crosswindData.fcDep}
+                            flightCatDest={crosswindData.fcArr}
+                        />
+                    )}
+                </Fragment>
+            )}
+
+            {showTopBtn && (
+                <button onClick={() => window.scrollTo({top:0,behavior:'smooth'})} className={`fixed bottom-8 right-8 sm:bottom-12 sm:right-12 p-3 sm:px-5 sm:py-3.5 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.5)] hover:-translate-y-1 transition-all duration-300 z-[999] opacity-90 hover:opacity-100 flex items-center gap-2 ${darkMode?'bg-[#21262d] text-[#c9d1d9] hover:bg-[#30363d]':'bg-slate-800 text-white hover:bg-slate-700'}`} title="回到最上方">
+                    <ChevronUp className="w-6 h-6"/>
+                    <span className="hidden sm:inline font-bold tracking-wider">TOP</span>
+                </button>
+            )}
+        </div>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+```
+
+</script>
+</body>
+</html>
