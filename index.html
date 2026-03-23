@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIDO Toolkit Integrated</title>
+    <title>LIDO OFP 助理</title>
     
     <!-- 載入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
     <!-- 載入 Babel 編譯器 -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- 靜態載入 PDF.js 核心 (徹底解決轉圈圈當機問題) -->
+    <!-- 靜態載入 PDF.js 核心 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -30,8 +30,8 @@
         // ==========================================
         // 圖示庫 (原生 SVG)
         // ==========================================
-        const IconBase = ({ children, className = "w-6 h-6" }) => (
-          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        const IconBase = ({ children, className = "w-6 h-6", fill = "none" }) => (
+          <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {children}
           </svg>
         );
@@ -57,25 +57,54 @@
         const Upload = ({ className }) => <IconBase className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></IconBase>;
         const FileText = ({ className }) => <IconBase className={className}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></IconBase>;
         const CloudLightning = ({ className }) => <IconBase className={className}><path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/></IconBase>;
+        const Star = ({ className, fill = "none" }) => <IconBase className={className} fill={fill}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>;
+        const Bird = ({ className }) => <IconBase className={className}><path d="M16 7h.01"/><path d="M3.4 18H12a8 8 0 0 0 8-8V7a4 4 0 0 0-7.28-2.3L2 20"/><path d="m20 7 2 .5-2 .5"/><path d="M10 18v3"/><path d="M14 17.75V21"/><path d="M7 18a6 6 0 0 0 3.84-10.61"/></IconBase>;
+        const SendKite = ({ className }) => <IconBase className={className}><polygon points="3 11 22 2 13 21 11 13 3 11"/></IconBase>;
+        const Tractor = ({ className }) => <IconBase className={className}><path d="M3 4h9l1 7"/><path d="M4 11V4"/><path d="M8 10V4"/><path d="M18 5c-.6 0-1 .4-1 1v5.6"/><path d="m10 11 11 .9c.6 0 .9.5.8 1.1l-.8 5h-1"/><circle cx="7" cy="15" r="5"/><circle cx="18" cy="18" r="2"/></IconBase>;
+        const Building = ({ className }) => <IconBase className={className}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></IconBase>;
+        const CornerUpRight = ({ className }) => <IconBase className={className}><path d="M4 21v-7a4 4 0 0 1 4-4h12"/><polyline points="15 15 20 10 15 5"/></IconBase>;
 
         // ==========================================
-        // 模組 1: Norma Filter v2 (只處理顯示邏輯)
+        // UI 元件：過濾開關
+        // ==========================================
+        const FilterToggle = ({ active, onClick, icon: Icon, label, activeColorClass, inactiveColorClass, dotColor }) => (
+          <div onClick={onClick} className={`flex items-center gap-1.5 border py-1.5 px-3 rounded-lg shadow-sm cursor-pointer transition-colors select-none ${active ? activeColorClass : inactiveColorClass}`}>
+            <Icon className={`w-4 h-4 ${active ? '' : 'opacity-60'}`} />
+            <label className="text-sm font-bold whitespace-nowrap cursor-pointer">{label}</label>
+            <div className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ml-1 ${active ? dotColor : 'bg-slate-300'}`}>
+              <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${active ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+            </div>
+          </div>
+        );
+
+        // ==========================================
+        // 模組 1: Norma Filter v2 (處理顯示邏輯與多重高亮)
         // ==========================================
         function NotamFilterApp({ rawText }) {
           const [parsedData, setParsedData] = useState(null); 
           const [flightInfo, setFlightInfo] = useState(null); 
           const [activeTab, setActiveTab] = useState('DEP');
-          const [showFiltered, setShowFiltered] = useState(true);
+          const [showFiltered, setShowFiltered] = useState(true); 
           const [bufferHours, setBufferHours] = useState(1); 
-          const [hideObstacles, setHideObstacles] = useState(true);
           const [localError, setLocalError] = useState(null);
+          const [selectedNotams, setSelectedNotams] = useState([]);
+
+          const [hideObstacles, setHideObstacles] = useState(true);
+          const [hideBirds, setHideBirds] = useState(true);
+          const [hideUAS, setHideUAS] = useState(true);
+          const [hideMowing, setHideMowing] = useState(true);
+
+          const toggleNotamSelection = (id) => {
+            setSelectedNotams(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+          };
+
+          useEffect(() => {
+            window.scrollTo({ top: 0, behavior: 'auto' });
+          }, [activeTab]);
 
           useEffect(() => {
             if (!rawText) {
-                setParsedData(null);
-                setFlightInfo(null);
-                setLocalError(null);
-                return;
+                setParsedData(null); setFlightInfo(null); setLocalError(null); return;
             }
             try {
                 const cleanText = sanitizeText(rawText);
@@ -103,18 +132,15 @@
             const months = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
             const dateMatch = dateStr.match(/(\d{2})([A-Z]{3})(\d{2})/i);
             if (!dateMatch) return new Date();
-            const day = parseInt(dateMatch[1]);
-            const month = months[dateMatch[2].toUpperCase()];
-            const year = 2000 + parseInt(dateMatch[3]);
-            const hr = parseInt(timeStr.substring(0, 2));
-            const min = parseInt(timeStr.substring(2, 4));
+            const day = parseInt(dateMatch[1]); const month = months[dateMatch[2].toUpperCase()]; const year = 2000 + parseInt(dateMatch[3]);
+            const hr = parseInt(timeStr.substring(0, 2)); const min = parseInt(timeStr.substring(2, 4));
             return new Date(Date.UTC(year, month, day, hr, min));
           };
 
           const parseToBlocks = (rawText) => {
             if (!rawText) return [];
             const blocks = rawText.split(/(?=\b[A-Z0-9]+\/\d{2}\s+(?:VALID:|COMPANY\s+NOTAM))/i);
-            return blocks.filter(b => b.trim()).map(block => {
+            const parsed = blocks.filter(b => b.trim()).map(block => {
                 const idMatch = block.match(/^([A-Z0-9]+\/\d{2})\s+(?:VALID:|COMPANY\s+NOTAM)/i);
                 if (!idMatch) return null; 
                 let text = block.trim();
@@ -123,7 +149,20 @@
                 text = text.replace(/\+{5,}\s*[A-Z\s]+\s*\+{5,}/gi, '').trim();
                 text = text.replace(/(\n\s*){2,}/g, '\n');
                 return { id: idMatch[1], text: text };
-              }).filter(Boolean); 
+            }).filter(Boolean); 
+
+            const mergedMap = new Map();
+            parsed.forEach(b => {
+                if (mergedMap.has(b.id)) {
+                    let existing = mergedMap.get(b.id);
+                    if (!existing.text.includes(b.text)) {
+                        existing.text += '\n' + b.text;
+                    }
+                } else {
+                    mergedMap.set(b.id, { ...b });
+                }
+            });
+            return Array.from(mergedMap.values());
           };
 
           const processBriefingText = (text) => {
@@ -132,14 +171,10 @@
             const stdMatch = text.match(/STD\s+\d{4}L\s+(\d{4})Z/i);
             const staMatch = text.match(/STA\s+\d{4}L\s+(\d{4})Z/i);
 
-            if (!routeMatch || !dateMatch || !stdMatch || !staMatch) {
-              throw new Error("Missing critical flight info");
-            }
+            if (!routeMatch || !dateMatch || !stdMatch || !staMatch) throw new Error("Missing critical flight info");
 
-            const depAirport = routeMatch[1];
-            const destAirport = routeMatch[2];
-            const stdDate = parseZTime(dateMatch[1], stdMatch[1]);
-            const staDate = parseZTime(dateMatch[1], staMatch[1]);
+            const depAirport = routeMatch[1]; const destAirport = routeMatch[2];
+            const stdDate = parseZTime(dateMatch[1], stdMatch[1]); const staDate = parseZTime(dateMatch[1], staMatch[1]);
             if (staDate < stdDate) staDate.setUTCDate(staDate.getUTCDate() + 1);
 
             const depSectionMatch = text.match(/={3,}\s*DEPARTURE AIRPORT\s*={3,}([\s\S]*?)(?=={3,}\s*DESTINATION AIRPORT\s*={3,})/i);
@@ -154,27 +189,60 @@
 
           const categorizeNotam = (text) => {
             const upperText = text.toUpperCase();
-            if (/\b(?:RWY|RUNWAY)\b/.test(upperText) && /\b(?:CLSD|CLOSED)\b/.test(upperText)) return 'RWY_CLSD';
-            if (/\b(?:TWY|TAXIWAY|TXL|RAMP|APRON|PRKG|PARKING|BAY|STAND)\b/.test(upperText) && /\b(?:CLSD|CLOSED)\b/.test(upperText)) return 'TWY_CLSD';
-            if (/\b(?:APP\s+MINIMUM|APPROACH\s+MINIMUM|MINIMA|MINIMUMS?|AMDT|INSTRUMENT\s+APPROACH|ILS\s+OR\s+LOC|RNAV|TAKEOFF\s+MINIMUMS?)\b/.test(upperText)) return 'APP_MINIMUM';
-            if (/\b(?:LGT|LIGHT|LIGHTS|NAV|ILS|VOR|NDB|GP|LOC|DME|PAPI|VASI|ALS)\b/.test(upperText) && /\b(?:U\/S|UNSERVICEABLE|OUT\s+OF\s+SERVICE|OTS)\b/.test(upperText)) return 'EQUIP_US';
+            
+            const isClsd = /\b(?:CLSD|CLOSED)\b/.test(upperText);
+            if (isClsd) {
+                const rwyMatch = upperText.match(/\b(?:RWY|RUNWAY)\b/);
+                const twyMatch = upperText.match(/\b(?:TWY|TAXIWAY|TXL|RAMP|APRON|PRKG|PARKING|BAY|STAND)\b/);
+                if (rwyMatch && twyMatch) {
+                    if (rwyMatch.index < twyMatch.index) return 'RWY_CLSD';
+                    else return 'TWY_CLSD';
+                } else if (rwyMatch) {
+                    return 'RWY_CLSD';
+                } else if (twyMatch) {
+                    return 'TWY_CLSD';
+                }
+            }
+
+            if (/\bCOMPANY\s+NOTAM\b/.test(upperText)) return 'COMPANY_NOTAM';
+            if (/\b(?:MISSED\s+APPROACH|MISSED\s+APCH|MAPT|MAPC)\b/.test(upperText)) return 'MISSED_APPROACH';
+            if (/\b(?:TAKEOFF\s+MINIMUMS?|TAKEOFF\s+MINIMA|TKOF\s+MINIMUMS?|TKOF\s+MINIMA)\b/.test(upperText)) return 'TAKEOFF_MINIMUM';
+            
+            const isLandingMin = /\b(?:APP\s+MINIMUM|APPROACH\s+MINIMUM|MINIMA|MINIMUMS?|DA\/MDA|OCA\/H|DA\s+\d+|HAT\s+\d+|VISIBILITY\s+RVR|RVR\s+\d+|CAT\s+II|CAT\s+III)\b/.test(upperText) || 
+                             /\b(?:ILS|LOC|RNAV|RNP|VOR|NDB|GLS).*RWY.*\b(?:AMDT|ORIG)\b/.test(upperText);
+            if (isLandingMin) return 'LANDING_MINIMUM';
+            
+            if (/\b(?:LGT|LIGHT|LIGHTS|NAV|ILS|VOR|NDB|GP|LOC|DME|PAPI|VASI|ALS|RADAR)\b/.test(upperText) && /\b(?:U\/S|UNSERVICEABLE|OUT\s+OF\s+SERVICE|OTS)\b/.test(upperText)) return 'EQUIP_US';
+            if (/\b(?:BIRD|BIRDS|WILDLIFE|FOWL|FLOCK|AVIAN)\b/.test(upperText)) return 'BIRD_HAZARD';
+            if (/\b(?:UAS|UNMANNED|DRONE|KITE|BALLOON|FIREWORK|LASER|PARACHUTE|UAV)\b/.test(upperText)) return 'UAS_KITE';
+            if (/\b(?:MOWING|GRASS CUTTING|WEED|SWEEPING|LAWN)\b/.test(upperText) && !/\b(?:CLSD|CLOSED)\b/.test(upperText)) return 'MAINTENANCE';
             if (/\b(?:CRANE|CRANES|OBST|OBSTACLE|IRREGULAR\s+SFC|IRREGULAR\s+SURFACE)\b/.test(upperText)) return 'OBSTACLE_ETC';
+            
             return 'NORMAL';
           };
 
           useEffect(() => {
             if (!parsedData) return;
             const { depAirport, destAirport, std, sta, depBlocks, destBlocks } = parsedData;
+            
             const processBlocks = (blocks, flightTime) => {
               return blocks.map(block => {
                 let { keep, reason } = checkNotamRelevance(block.text, flightTime, bufferHours);
                 const category = categorizeNotam(block.text);
-                if (keep && category === 'OBSTACLE_ETC' && hideObstacles) { keep = false; reason = '依設定自動隱藏 (障礙物/吊車/不平整表面)'; }
+                
+                if (keep) {
+                  if (category === 'OBSTACLE_ETC' && hideObstacles) { keep = false; reason = '依設定自動隱藏 (障礙物/不平整表面)'; }
+                  if (category === 'BIRD_HAZARD' && hideBirds) { keep = false; reason = '依設定自動隱藏 (鳥類/野生動物警告)'; }
+                  if (category === 'UAS_KITE' && hideUAS) { keep = false; reason = '依設定自動隱藏 (無人機/氣球/煙火活動)'; }
+                  if (category === 'MAINTENANCE' && hideMowing) { keep = false; reason = '依設定自動隱藏 (周邊除草/例行維護)'; }
+                }
+
                 return { ...block, keep, reason, category };
               });
             };
+
             setFlightInfo({ depAirport, destAirport, std, sta, depNotams: processBlocks(depBlocks, std), destNotams: processBlocks(destBlocks, sta) });
-          }, [parsedData, bufferHours, hideObstacles]);
+          }, [parsedData, bufferHours, hideObstacles, hideBirds, hideUAS, hideMowing]);
 
           const checkNotamRelevance = (notamText, flightTime, buffer) => {
             const winStart = new Date(flightTime.getTime() - buffer * 3600 * 1000);
@@ -221,46 +289,106 @@
           const formatZTime = (date) => `${date.getUTCDate().toString().padStart(2, '0')}${date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }).toUpperCase()}${date.getUTCFullYear().toString().slice(-2)} ${date.getUTCHours().toString().padStart(2, '0')}${date.getUTCMinutes().toString().padStart(2, '0')}Z`;
 
           const FilterControls = () => (
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 py-1.5 px-3 rounded-lg shadow-sm">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <label className="text-sm font-bold text-slate-700 whitespace-nowrap">過濾彈性時間:</label>
-                <select value={bufferHours} onChange={(e) => setBufferHours(Number(e.target.value))} className="bg-white border border-slate-300 rounded text-sm py-1 px-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value={0}>0 小時</option><option value={1}>1 小時 (預設)</option><option value={2}>2 小時</option>
-                  <option value={3}>3 小時</option><option value={4}>4 小時</option><option value={6}>6 小時</option>
-                  <option value={12}>12 小時</option><option value={24}>24 小時</option>
-                </select>
-              </div>
-              <div className={`flex items-center gap-2 border py-1.5 px-3 rounded-lg shadow-sm cursor-pointer transition-colors select-none ${hideObstacles ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'}`} onClick={() => setHideObstacles(!hideObstacles)}>
-                <MountainSnow className={`w-4 h-4 ${hideObstacles ? 'text-indigo-600' : 'text-slate-400'}`} />
-                <label className={`text-sm font-bold whitespace-nowrap cursor-pointer ${hideObstacles ? 'text-indigo-700' : 'text-slate-500'}`}>過濾障礙物/不平整</label>
-                <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ml-1 ${hideObstacles ? 'bg-indigo-500' : 'bg-slate-300'}`}>
-                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${hideObstacles ? 'translate-x-4.5' : 'translate-x-1'}`} style={{ transform: `translateX(${hideObstacles ? '1.1rem' : '0.2rem'})` }}/>
+            <div className="flex flex-col gap-3 w-full xl:w-auto mt-4 xl:mt-0 pt-4 xl:pt-0 border-t xl:border-t-0 border-slate-100">
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 py-1.5 px-3 rounded-lg shadow-sm">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  <label className="text-sm font-bold text-slate-700 whitespace-nowrap">過濾彈性時間:</label>
+                  <select value={bufferHours} onChange={(e) => setBufferHours(Number(e.target.value))} className="bg-white border border-slate-300 rounded text-sm py-0.5 px-2 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value={0}>0 小時</option><option value={1}>1 小時 (預設)</option><option value={2}>2 小時</option>
+                    <option value={3}>3 小時</option><option value={4}>4 小時</option><option value={6}>6 小時</option>
+                  </select>
                 </div>
+              </div>
+              <div className="flex flex-wrap justify-end gap-2">
+                <FilterToggle active={hideObstacles} onClick={() => setHideObstacles(!hideObstacles)} icon={MountainSnow} label="障礙物/吊車" activeColorClass="bg-indigo-50 border-indigo-200 text-indigo-700" inactiveColorClass="bg-slate-50 border-slate-200 text-slate-500" dotColor="bg-indigo-500" />
+                <FilterToggle active={hideBirds} onClick={() => setHideBirds(!hideBirds)} icon={Bird} label="鳥類/動物" activeColorClass="bg-cyan-50 border-cyan-200 text-cyan-700" inactiveColorClass="bg-slate-50 border-slate-200 text-slate-500" dotColor="bg-cyan-500" />
+                <FilterToggle active={hideUAS} onClick={() => setHideUAS(!hideUAS)} icon={SendKite} label="氣球/無人機" activeColorClass="bg-violet-50 border-violet-200 text-violet-700" inactiveColorClass="bg-slate-50 border-slate-200 text-slate-500" dotColor="bg-violet-500" />
+                <FilterToggle active={hideMowing} onClick={() => setHideMowing(!hideMowing)} icon={Tractor} label="除草/維護" activeColorClass="bg-lime-50 border-lime-200 text-lime-700" inactiveColorClass="bg-slate-50 border-slate-200 text-slate-500" dotColor="bg-lime-500" />
               </div>
             </div>
           );
 
-          const NotamCard = ({ notam }) => {
+          // ★ 修正 3：多重高亮引擎 (RWY 黃底黑字，TWY 與 ILS 粗體黑字) ★
+          const formatNotamText = (text, isDimmed) => {
+            // 強化 Regex：包含 ILS 後方加上跑道 (例如 ILS OR LOC RWY 25L, ILS 24R) 的捕捉能力
+            const regex = /(\b(?:RWY|RUNWAY)\s+[0-3]?\d[LRC]?(?:\s*\/\s*[0-3]?\d[LRC]?)?\b|\b(?:TWY|TAXIWAY|TXL)\s+[A-Z0-9]+\b|\bILS(?:(?:\s+OR\s+LOC)?\s+(?:RWY|RUNWAY)?\s*[0-3]?\d[LRC]?)?\b)/gi;
+            const parts = text.split(regex);
+            
+            return parts.map((part, idx) => {
+                if (!part) return null;
+                const upperPart = part.toUpperCase();
+                
+                // 跑道 (黃底)
+                if (/^\b(?:RWY|RUNWAY)\b/.test(upperPart)) {
+                    return (
+                        <span key={idx} className={`font-black text-black px-1 py-0.5 rounded-md shadow-sm border ${isDimmed ? 'bg-yellow-100/50 border-yellow-200' : 'bg-yellow-200/70 border-yellow-300'}`}>
+                            {part}
+                        </span>
+                    );
+                } 
+                // 滑行道或 ILS 相關組合 (無底色，僅粗黑體)
+                else if (/^\b(?:TWY|TAXIWAY|TXL)\b/.test(upperPart) || upperPart.startsWith('ILS')) {
+                    return (
+                        <span key={idx} className={`font-black ${isDimmed ? 'text-slate-600' : 'text-slate-900'}`}>
+                            {part}
+                        </span>
+                    );
+                }
+                
+                // 一般文字
+                return <Fragment key={idx}>{part}</Fragment>;
+            });
+          };
+
+          const NotamCard = ({ notam, isSelected, onToggle }) => {
             let borderClass = 'border-slate-200'; let badge = null;
-            if (notam.keep) {
+            if (notam.keep || isSelected) {
               if (notam.category === 'RWY_CLSD') { borderClass = 'border-l-4 border-l-rose-500 border-y-rose-200 border-r-rose-200 bg-rose-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">🚨 跑道關閉</span>; } 
               else if (notam.category === 'TWY_CLSD') { borderClass = 'border-l-4 border-l-amber-500 border-y-amber-200 border-r-amber-200 bg-amber-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">🚧 滑行道/停機坪關閉</span>; } 
-              else if (notam.category === 'APP_MINIMUM') { borderClass = 'border-l-4 border-l-fuchsia-500 border-y-fuchsia-200 border-r-fuchsia-200 bg-fuchsia-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200"><Target className="w-3 h-3 mr-1" /> 起降標準更改</span>; } 
+              else if (notam.category === 'COMPANY_NOTAM') { borderClass = 'border-l-4 border-l-teal-500 border-y-teal-200 border-r-teal-200 bg-teal-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 border border-teal-200"><Building className="w-3 h-3 mr-1" /> 公司通報</span>; } 
+              else if (notam.category === 'MISSED_APPROACH') { borderClass = 'border-l-4 border-l-purple-500 border-y-purple-200 border-r-purple-200 bg-purple-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200"><CornerUpRight className="w-3 h-3 mr-1" /> 誤失進場更改</span>; } 
+              else if (notam.category === 'TAKEOFF_MINIMUM') { borderClass = 'border-l-4 border-l-pink-500 border-y-pink-200 border-r-pink-200 bg-pink-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800 border border-pink-200"><PlaneTakeoff className="w-3 h-3 mr-1" /> 起飛標準更改</span>; } 
+              else if (notam.category === 'LANDING_MINIMUM') { borderClass = 'border-l-4 border-l-fuchsia-500 border-y-fuchsia-200 border-r-fuchsia-200 bg-fuchsia-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200"><PlaneLanding className="w-3 h-3 mr-1" /> 降落標準更改</span>; } 
               else if (notam.category === 'EQUIP_US') { borderClass = 'border-l-4 border-l-orange-400 border-y-orange-100 border-r-orange-100 bg-orange-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200"><LightbulbOff className="w-3 h-3 mr-1" /> 設備無法使用</span>; } 
               else if (notam.category === 'OBSTACLE_ETC') { borderClass = 'border-l-4 border-l-indigo-400 border-y-indigo-100 border-r-indigo-100 bg-indigo-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200"><MountainSnow className="w-3 h-3 mr-1" /> 障礙物/不平整</span>; } 
+              else if (notam.category === 'BIRD_HAZARD') { borderClass = 'border-l-4 border-l-cyan-400 border-y-cyan-100 border-r-cyan-100 bg-cyan-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200"><Bird className="w-3 h-3 mr-1" /> 鳥擊/野生動物</span>; } 
+              else if (notam.category === 'UAS_KITE') { borderClass = 'border-l-4 border-l-violet-400 border-y-violet-100 border-r-violet-100 bg-violet-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200"><SendKite className="w-3 h-3 mr-1" /> 無人機/氣球/煙火</span>; } 
+              else if (notam.category === 'MAINTENANCE') { borderClass = 'border-l-4 border-l-lime-400 border-y-lime-100 border-r-lime-100 bg-lime-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-lime-100 text-lime-800 border border-lime-200"><Tractor className="w-3 h-3 mr-1" /> 除草/周邊維護</span>; } 
               else { badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200"><CheckCircle className="w-3 h-3 mr-1" /> 一般資訊</span>; }
             } else {
-              borderClass = 'bg-slate-50 border-slate-200 opacity-75';
-              if (notam.reason.includes('障礙物') || notam.reason.includes('不平整')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-400 border border-indigo-100"><MountainSnow className="w-3 h-3 mr-1" /> 已隱藏</span>;
-              else badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200 text-slate-600"><XCircle className="w-3 h-3 mr-1" /> 已過濾</span>;
+              borderClass = 'bg-slate-50 border-slate-200 opacity-70 hover:opacity-100';
+              if (notam.reason.includes('障礙物')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-500 border border-indigo-100"><MountainSnow className="w-3 h-3 mr-1" /> 隱藏的障礙物</span>;
+              else if (notam.reason.includes('鳥類')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-cyan-50 text-cyan-600 border border-cyan-100"><Bird className="w-3 h-3 mr-1" /> 隱藏的動物警告</span>;
+              else if (notam.reason.includes('無人機')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-violet-50 text-violet-600 border border-violet-100"><SendKite className="w-3 h-3 mr-1" /> 隱藏的空中活動</span>;
+              else if (notam.reason.includes('除草')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-lime-50 text-lime-600 border border-lime-100"><Tractor className="w-3 h-3 mr-1" /> 隱藏的除草/維護</span>;
+              else badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-200 text-slate-600"><XCircle className="w-3 h-3 mr-1" /> 已依時間過濾</span>;
             }
 
+            const isDimmed = !(notam.keep || isSelected);
+
             return (
-              <div className={`p-4 rounded-xl border mb-3 shadow-sm transition-all ${borderClass}`}>
-                <div className="flex justify-between items-start mb-2"><h4 className="font-bold text-slate-800 text-lg flex items-center">{notam.id}{badge}</h4></div>
-                {!notam.keep && <div className={`text-sm font-medium mb-2 flex items-center ${notam.reason.includes('障礙物') || notam.reason.includes('不平整') ? 'text-indigo-500' : 'text-rose-600'}`}><AlertTriangle className="w-4 h-4 mr-1.5" />原因: {notam.reason}</div>}
-                <pre className={`text-sm whitespace-pre-wrap font-mono leading-relaxed ${notam.keep ? 'text-slate-800' : 'text-slate-500'}`}>{notam.text}</pre>
+              <div className={`p-4 rounded-xl border mb-3 shadow-sm transition-all relative ${borderClass} ${isSelected ? 'ring-2 ring-amber-400 border-amber-400 !opacity-100 bg-amber-50/10' : ''}`}>
+                <div className="flex justify-between items-start mb-2 pr-10">
+                  <h4 className="font-bold text-slate-800 text-lg flex flex-wrap items-center gap-y-1">
+                    {notam.id}{badge}
+                  </h4>
+                </div>
+                
+                <button 
+                  onClick={onToggle}
+                  title={isSelected ? "取消標記" : "標記為重要"}
+                  className={`absolute top-4 right-4 p-1.5 rounded-lg transition-all transform active:scale-90 ${isSelected ? 'text-amber-500 bg-amber-100 hover:bg-amber-200 shadow-sm' : 'text-slate-300 hover:text-amber-400 hover:bg-slate-100'}`}
+                >
+                  <Star className="w-5 h-5" fill={isSelected ? "currentColor" : "none"} />
+                </button>
+
+                {isDimmed && <div className="text-sm font-medium mb-2 flex items-center text-slate-500"><AlertTriangle className="w-4 h-4 mr-1.5" />原因: {notam.reason}</div>}
+                
+                {/* 透過自訂函數套用跑道/滑行道/ILS 的自動高亮 */}
+                <pre className={`text-sm whitespace-pre-wrap font-mono leading-relaxed ${isDimmed ? 'text-slate-500' : 'text-slate-800'}`}>
+                    {formatNotamText(notam.text, isDimmed)}
+                </pre>
               </div>
             );
           };
@@ -280,16 +408,15 @@
           return (
             <div className="max-w-5xl mx-auto px-4 mt-6 pb-12">
                 <div className="space-y-6">
-                  <div className="bg-white rounded-2xl shadow-md p-6 border border-slate-200 flex flex-col xl:flex-row justify-between items-center gap-6">
+                  <div className="bg-white rounded-2xl shadow-md p-6 border border-slate-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
                     <div className="flex items-center gap-8 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
                       <div className="shrink-0"><div className="text-sm text-slate-500 font-medium mb-1 flex items-center"><PlaneTakeoff className="w-4 h-4 mr-1.5"/> 起飛 (DEP)</div><div className="text-2xl font-bold text-slate-800">{flightInfo.depAirport}</div><div className="text-sm text-blue-600 font-medium mt-1">STD {formatZTime(flightInfo.std)}</div></div>
                       <div className="w-16 h-px bg-slate-300 relative hidden md:block shrink-0"><div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 border-t-2 border-r-2 border-slate-400 rotate-45"></div></div>
                       <div className="shrink-0"><div className="text-sm text-slate-500 font-medium mb-1 flex items-center"><PlaneLanding className="w-4 h-4 mr-1.5"/> 降落 (DEST)</div><div className="text-2xl font-bold text-slate-800">{flightInfo.destAirport}</div><div className="text-sm text-blue-600 font-medium mt-1">STA {formatZTime(flightInfo.sta)}</div></div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto justify-end border-t xl:border-t-0 border-slate-100 pt-4 xl:pt-0">
-                      <FilterControls />
-                    </div>
+                    <FilterControls />
                   </div>
+                  
                   <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
                     <div className="flex border-b border-slate-200">
                       <button onClick={() => setActiveTab('DEP')} className={`flex-1 py-4 text-center font-bold text-lg transition-colors ${activeTab === 'DEP' ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}>起飛機場 ({flightInfo.depAirport})</button>
@@ -298,14 +425,27 @@
                     <div className="p-6 bg-slate-50 min-h-[500px]">
                       {(() => {
                         const currentNotams = activeTab === 'DEP' ? flightInfo.depNotams : flightInfo.destNotams;
-                        const rwyClsdNotams = currentNotams.filter(n => n.keep && n.category === 'RWY_CLSD');
-                        const twyClsdNotams = currentNotams.filter(n => n.keep && n.category === 'TWY_CLSD');
-                        const equipUSNotams = currentNotams.filter(n => n.keep && n.category === 'EQUIP_US');
-                        const obstNotams = currentNotams.filter(n => n.keep && n.category === 'OBSTACLE_ETC');
-                        const normalNotams = currentNotams.filter(n => n.keep && n.category === 'NORMAL');
-                        const appMinNotams = currentNotams.filter(n => n.keep && n.category === 'APP_MINIMUM'); 
-                        const activeCount = rwyClsdNotams.length + twyClsdNotams.length + appMinNotams.length + equipUSNotams.length + obstNotams.length + normalNotams.length;
-                        const filteredNotams = currentNotams.filter(n => !n.keep);
+                        
+                        const pinnedNotams = currentNotams.filter(n => selectedNotams.includes(n.id));
+                        const unpinnedNotams = currentNotams.filter(n => !selectedNotams.includes(n.id));
+
+                        const unpinnedActiveNotams = unpinnedNotams.filter(n => n.keep);
+                        const filteredNotams = unpinnedNotams.filter(n => !n.keep);
+
+                        const rwyClsdNotams = unpinnedActiveNotams.filter(n => n.category === 'RWY_CLSD');
+                        const twyClsdNotams = unpinnedActiveNotams.filter(n => n.category === 'TWY_CLSD');
+                        const compNotams = unpinnedActiveNotams.filter(n => n.category === 'COMPANY_NOTAM');
+                        const missedAppNotams = unpinnedActiveNotams.filter(n => n.category === 'MISSED_APPROACH');
+                        const takeoffMinNotams = unpinnedActiveNotams.filter(n => n.category === 'TAKEOFF_MINIMUM'); 
+                        const landingMinNotams = unpinnedActiveNotams.filter(n => n.category === 'LANDING_MINIMUM'); 
+                        const equipUSNotams = unpinnedActiveNotams.filter(n => n.category === 'EQUIP_US');
+                        const obstNotams = unpinnedActiveNotams.filter(n => n.category === 'OBSTACLE_ETC');
+                        const birdNotams = unpinnedActiveNotams.filter(n => n.category === 'BIRD_HAZARD');
+                        const uasNotams = unpinnedActiveNotams.filter(n => n.category === 'UAS_KITE');
+                        const maintNotams = unpinnedActiveNotams.filter(n => n.category === 'MAINTENANCE');
+                        const normalNotams = unpinnedActiveNotams.filter(n => n.category === 'NORMAL');
+                        
+                        const activeCount = unpinnedActiveNotams.length + pinnedNotams.length;
 
                         return (
                           <div>
@@ -313,22 +453,60 @@
                               <h3 className="font-bold text-slate-700 text-lg">有效的 NOTAMs ({activeCount})</h3>
                               {filteredNotams.length > 0 && <button onClick={() => setShowFiltered(!showFiltered)} className="flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm">{showFiltered ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}{showFiltered ? '隱藏' : '顯示'}已過濾項目 ({filteredNotams.length})</button>}
                             </div>
+
                             {activeCount === 0 ? (
                               <div className="text-center py-12 text-slate-400 bg-white rounded-xl border border-dashed border-slate-300"><CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>目前設定的時間內，沒有需要注意的 NOTAM</p></div>
                             ) : (
                               <div className="space-y-8">
-                                {rwyClsdNotams.length > 0 && <section><h4 className="text-rose-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-rose-200 pb-2"><AlertOctagon className="w-5 h-5" />跑道關閉 (Runway Closed) - {rwyClsdNotams.length} 筆</h4><div>{rwyClsdNotams.map((notam, idx) => <NotamCard key={`rwy-${idx}`} notam={notam} />)}</div></section>}
-                                {twyClsdNotams.length > 0 && <section><h4 className="text-amber-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-amber-200 pb-2"><MapIcon className="w-5 h-5" />滑行道/停機坪關閉 (Taxiway/Apron Closed) - {twyClsdNotams.length} 筆</h4><div>{twyClsdNotams.map((notam, idx) => <NotamCard key={`twy-${idx}`} notam={notam} />)}</div></section>}
-                                {equipUSNotams.length > 0 && <section><h4 className="text-orange-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-orange-200 pb-2"><LightbulbOff className="w-5 h-5" />設備無法使用 (Equipment U/S) - {equipUSNotams.length} 筆</h4><div>{equipUSNotams.map((notam, idx) => <NotamCard key={`equip-${idx}`} notam={notam} />)}</div></section>}
-                                {obstNotams.length > 0 && <section><h4 className="text-indigo-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-indigo-200 pb-2"><MountainSnow className="w-5 h-5" />障礙物/吊車/不平整表面 (Obstacles) - {obstNotams.length} 筆</h4><div>{obstNotams.map((notam, idx) => <NotamCard key={`obst-${idx}`} notam={notam} />)}</div></section>}
-                                {normalNotams.length > 0 && <section><h4 className="text-slate-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">一般資訊 (Other Info) - {normalNotams.length} 筆</h4><div>{normalNotams.map((notam, idx) => <NotamCard key={`normal-${idx}`} notam={notam} />)}</div></section>}
-                                {appMinNotams.length > 0 && <section><h4 className="text-fuchsia-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-fuchsia-200 pb-2"><Target className="w-5 h-5" />起降標準更改 (Approach Minimums) - {appMinNotams.length} 筆</h4><div>{appMinNotams.map((notam, idx) => <NotamCard key={`appmin-${idx}`} notam={notam} />)}</div></section>}
+                                {pinnedNotams.length > 0 && (
+                                  <section className="mb-8">
+                                    <h4 className="text-amber-600 font-black text-xl mb-3 flex items-center gap-2 border-b-2 border-amber-200 pb-2">
+                                      <Star className="w-6 h-6 text-amber-500" fill="currentColor" />
+                                      標記的重要資訊 (Pinned) - {pinnedNotams.length} 筆
+                                    </h4>
+                                    <div className="space-y-3">
+                                      {pinnedNotams.map((notam, idx) => (
+                                        <NotamCard key={`pinned-${idx}`} notam={notam} isSelected={true} onToggle={() => toggleNotamSelection(notam.id)} />
+                                      ))}
+                                    </div>
+                                  </section>
+                                )}
+
+                                {rwyClsdNotams.length > 0 && <section><h4 className="text-rose-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-rose-200 pb-2"><AlertOctagon className="w-5 h-5" />跑道關閉 (Runway Closed) - {rwyClsdNotams.length} 筆</h4><div>{rwyClsdNotams.map((notam, idx) => <NotamCard key={`rwy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {twyClsdNotams.length > 0 && <section><h4 className="text-amber-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-amber-200 pb-2"><MapIcon className="w-5 h-5" />滑行道/停機坪關閉 (Taxiway/Apron Closed) - {twyClsdNotams.length} 筆</h4><div>{twyClsdNotams.map((notam, idx) => <NotamCard key={`twy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {compNotams.length > 0 && <section><h4 className="text-teal-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-teal-200 pb-2"><Building className="w-5 h-5" />公司通報 (Company NOTAMs) - {compNotams.length} 筆</h4><div>{compNotams.map((notam, idx) => <NotamCard key={`comp-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {missedAppNotams.length > 0 && <section><h4 className="text-purple-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-purple-200 pb-2"><CornerUpRight className="w-5 h-5" />誤失進場程序更改 (Missed Approach) - {missedAppNotams.length} 筆</h4><div>{missedAppNotams.map((notam, idx) => <NotamCard key={`missed-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {equipUSNotams.length > 0 && <section><h4 className="text-orange-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-orange-200 pb-2"><LightbulbOff className="w-5 h-5" />設備無法使用 (Equipment U/S) - {equipUSNotams.length} 筆</h4><div>{equipUSNotams.map((notam, idx) => <NotamCard key={`equip-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                
+                                {takeoffMinNotams.length > 0 && <section><h4 className="text-pink-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-pink-200 pb-2"><PlaneTakeoff className="w-5 h-5" />起飛標準更改 (Takeoff Minimums) - {takeoffMinNotams.length} 筆</h4><div>{takeoffMinNotams.map((notam, idx) => <NotamCard key={`tkofmin-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {landingMinNotams.length > 0 && <section><h4 className="text-fuchsia-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-fuchsia-200 pb-2"><PlaneLanding className="w-5 h-5" />降落標準更改 (Landing / Approach Minimums) - {landingMinNotams.length} 筆</h4><div>{landingMinNotams.map((notam, idx) => <NotamCard key={`ldgmin-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                
+                                {(obstNotams.length > 0 || birdNotams.length > 0 || uasNotams.length > 0 || maintNotams.length > 0) && (
+                                  <section>
+                                    <h4 className="text-slate-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                                      環境與常態活動 (Environment & Activities)
+                                    </h4>
+                                    <div>
+                                      {obstNotams.map((notam, idx) => <NotamCard key={`obst-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}
+                                      {birdNotams.map((notam, idx) => <NotamCard key={`bird-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}
+                                      {uasNotams.map((notam, idx) => <NotamCard key={`uas-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}
+                                      {maintNotams.map((notam, idx) => <NotamCard key={`maint-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}
+                                    </div>
+                                  </section>
+                                )}
+
+                                {normalNotams.length > 0 && <section><h4 className="text-slate-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">一般資訊 (Other Info) - {normalNotams.length} 筆</h4><div>{normalNotams.map((notam, idx) => <NotamCard key={`normal-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                               </div>
                             )}
+
                             {showFiltered && filteredNotams.length > 0 && (
                               <div className="mt-8 pt-6 border-t border-slate-300">
                                 <h3 className="font-bold text-slate-500 text-lg mb-4 flex items-center">已過濾的 NOTAMs <span className="ml-2 text-xs font-normal text-slate-400">(依據時間或設定排除)</span></h3>
-                                <div className="space-y-4 opacity-75">{filteredNotams.map((notam, idx) => <NotamCard key={`filtered-${idx}`} notam={notam} />)}</div>
+                                <div className="space-y-4 opacity-75">
+                                  {filteredNotams.map((notam, idx) => (
+                                    <NotamCard key={`filtered-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </div>
@@ -679,11 +857,23 @@
         // ==========================================
         function App() {
           const [activeMainTab, setActiveMainTab] = useState('OFP'); 
-          const [sharedRawText, setSharedRawText] = useState(null); // 共享的文字資料
+          const [sharedRawText, setSharedRawText] = useState(null); 
           const [globalLoading, setGlobalLoading] = useState(false);
           const [globalError, setGlobalError] = useState(null);
+          const [showTopBtn, setShowTopBtn] = useState(false); 
 
-          // 統一的 PDF 解析器
+          useEffect(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }, [activeMainTab]);
+
+          useEffect(() => {
+            const handleScroll = () => setShowTopBtn(window.scrollY > 300);
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
+          }, []);
+
+          const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
           const handleGlobalFileUpload = (event) => {
             const file = event.target.files[0];
             if (!file) return;
@@ -698,7 +888,6 @@
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                 let fullText = '';
                 
-                // 使用最精準的 Y 軸對齊解析，確保兩個工具都能拿到最好的格式
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i); 
                     const content = await page.getTextContent();
@@ -720,8 +909,6 @@
                     }).join('\n'); 
                     fullText += pageText + '\n';
                 }
-                
-                // 派發給底下的組件
                 setSharedRawText(fullText);
               } catch (err) {
                 console.error("Global PDF Error:", err);
@@ -740,8 +927,6 @@
 
           return (
             <div className="min-h-screen font-sans flex flex-col bg-slate-200">
-              
-              {/* 如果還沒上傳檔案，顯示統一的上傳大廳 */}
               {!sharedRawText ? (
                   <div className="flex-1 flex flex-col items-center justify-center p-6">
                       <div className="max-w-xl w-full bg-white p-10 rounded-2xl shadow-xl border border-slate-200 text-center">
@@ -770,7 +955,6 @@
                       </div>
                   </div>
               ) : (
-                  /* 解析完成，顯示雙頁籤介面 */
                   <Fragment>
                       <nav className="bg-slate-900 shadow-lg sticky top-0 z-50 border-b border-slate-800">
                         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
@@ -788,7 +972,6 @@
                         </div>
                       </nav>
 
-                      {/* 子工具區塊，將共用的文字直接餵給它們 */}
                       <div className={`flex-1 ${activeMainTab === 'OFP' ? 'block' : 'hidden'}`}>
                         <OfpSummaryApp rawText={sharedRawText} />
                       </div>
@@ -796,6 +979,17 @@
                         <NotamFilterApp rawText={sharedRawText} />
                       </div>
                   </Fragment>
+              )}
+
+              {showTopBtn && (
+                <button 
+                  onClick={scrollToTop} 
+                  className="fixed bottom-8 right-8 sm:bottom-12 sm:right-12 bg-slate-800 text-white p-3 sm:px-5 sm:py-3.5 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.5)] hover:bg-slate-700 hover:-translate-y-1 transition-all duration-300 z-[999] opacity-90 hover:opacity-100 flex items-center gap-2" 
+                  title="回到最上方"
+                >
+                  <ChevronUp className="w-6 h-6" />
+                  <span className="hidden sm:inline font-bold tracking-wider">TOP</span>
+                </button>
               )}
             </div>
           );
