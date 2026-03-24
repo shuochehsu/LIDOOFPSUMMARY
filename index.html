@@ -65,6 +65,25 @@
         const CornerUpRight = ({ className }) => <IconBase className={className}><path d="M4 21v-7a4 4 0 0 1 4-4h12"/><polyline points="15 15 20 10 15 5"/></IconBase>;
         const Clipboard = ({ className }) => <IconBase className={className}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></IconBase>;
         const Mic = ({ className }) => <IconBase className={className}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/><line x1="8" x2="16" y1="22" y2="22"/></IconBase>;
+        const Shield = ({ className }) => <IconBase className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></IconBase>;
+
+        // ==========================================
+        // 威脅與緩解資料結構
+        // ==========================================
+        const THREATS_DATA = [
+            { category: "AIRPORT/RUNWAY", items: ["Contamination", "Construction", "Congestion", "Signage", "Hotspots", "NOTAM"] },
+            { category: "ATC", items: ["Clearance", "SID/STAR Amendments", "Radio Congestion", "Non-Standards", "Language Difficulty", "Similar Callsign"] },
+            { category: "AIRCRAFT", items: ["MELs/CDLs", "Systems / Equipment", "Automation", "Performance", "Communication"] },
+            { category: "ADVERSE WEATHER", items: ["Visibility", "Winds / Windshear", "Precipitation", "Storms", "Cold Weather OPS", "Hot Weather OPS"] },
+            { category: "ENVIRONMENT", items: ["Terrain", "Traffic", "Night", "Airport Lighting", "Airfield Elevation"] },
+            { category: "GROUND/RAMP", items: ["External Power", "External Air", "Handling", "Tow Truck"] },
+            { category: "DISPATCH", items: ["Slot Time", "Delays", "Crew Scheduling", "Manuals / Charts"] },
+            { category: "OPERATIONAL", items: ["Time Pressure", "Non-Normal Conditions", "Unfamiliar Airport", "Flight Diversion"] },
+            { category: "PHYSIOLOGY", items: ["Fatigue", "Stress", "Hydration", "Nutrition", "Jetlag"] },
+            { category: "CREW", items: ["Experience", "Recency", "First flight of the day", "Route Familiarity"] },
+            { category: "CABIN", items: ["Passengers", "Events / Distraction", "Interruptions", "Cabin crew"] },
+            { category: "OTHER", items: ["Complacency"] }
+        ];
 
         // ==========================================
         // UI 元件：過濾開關
@@ -78,6 +97,49 @@
             </div>
           </div>
         );
+
+        // ==========================================
+        // 模組：Threats And Mitigation 評估面板
+        // ==========================================
+        function ThreatsApp({ selectedThreats, onToggle }) {
+            return (
+                <div className="max-w-6xl mx-auto px-4 mt-6 pb-12">
+                    <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-200">
+                        <div className="bg-[#4878d0] text-white p-4 text-center font-black text-2xl tracking-wider">
+                            THREATS AND MITIGATION
+                        </div>
+                        <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 bg-slate-50">
+                            {THREATS_DATA.map((block, idx) => (
+                                <div key={idx} className="border border-slate-300 rounded-xl overflow-hidden shadow-sm flex flex-col bg-white">
+                                    <div className="bg-[#e6f0ff] border-b border-slate-200 p-2.5 text-center font-black text-slate-800 uppercase tracking-wide">
+                                        {block.category}
+                                    </div>
+                                    <div className="p-3 flex-1 flex flex-col gap-1.5">
+                                        {block.items.map(item => {
+                                            const isSelected = selectedThreats.some(t => t.category === block.category && t.item === item);
+                                            return (
+                                                <button
+                                                    key={item}
+                                                    onClick={() => onToggle(block.category, item)}
+                                                    className={`text-left px-3 py-2 rounded-lg text-[15px] transition-all duration-150 flex items-start gap-2.5 outline-none border border-transparent ${
+                                                        isSelected 
+                                                        ? 'bg-[#b4f25b] text-black font-bold shadow-sm' 
+                                                        : 'bg-transparent text-slate-700 hover:bg-slate-100 font-medium'
+                                                    }`}
+                                                >
+                                                    <span className={`mt-1.5 h-1.5 w-1.5 rounded-full shrink-0 ${isSelected ? 'bg-black' : 'bg-slate-400'}`}></span>
+                                                    <span className="leading-snug">{item}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
         // ==========================================
         // 模組 1: Norma Filter v2 (處理顯示邏輯與多重高亮)
@@ -478,7 +540,6 @@
 
                                 {rwyClsdNotams.length > 0 && <section><h4 className="text-rose-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-rose-200 pb-2"><AlertOctagon className="w-5 h-5" />跑道關閉 (Runway Closed) - {rwyClsdNotams.length} 筆</h4><div>{rwyClsdNotams.map((notam, idx) => <NotamCard key={`rwy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                                 {twyClsdNotams.length > 0 && <section><h4 className="text-amber-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-amber-200 pb-2"><MapIcon className="w-5 h-5" />滑行道/停機坪關閉 (Taxiway/Apron Closed) - {twyClsdNotams.length} 筆</h4><div>{twyClsdNotams.map((notam, idx) => <NotamCard key={`twy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
-                                {compNotams.length > 0 && <section><h4 className="text-teal-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-teal-200 pb-2"><Building className="w-5 h-5" />公司通報 (Company NOTAMs) - {compNotams.length} 筆</h4><div>{compNotams.map((notam, idx) => <NotamCard key={`comp-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                                 {missedAppNotams.length > 0 && <section><h4 className="text-purple-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-purple-200 pb-2"><CornerUpRight className="w-5 h-5" />誤失進場程序更改 (Missed Approach) - {missedAppNotams.length} 筆</h4><div>{missedAppNotams.map((notam, idx) => <NotamCard key={`missed-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                                 {equipUSNotams.length > 0 && <section><h4 className="text-orange-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-orange-200 pb-2"><LightbulbOff className="w-5 h-5" />設備無法使用 (Equipment U/S) - {equipUSNotams.length} 筆</h4><div>{equipUSNotams.map((notam, idx) => <NotamCard key={`equip-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                                 
@@ -498,6 +559,8 @@
                                     </div>
                                   </section>
                                 )}
+
+                                {compNotams.length > 0 && <section><h4 className="text-teal-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-teal-200 pb-2"><Building className="w-5 h-5" />公司通報 (Company NOTAMs) - {compNotams.length} 筆</h4><div>{compNotams.map((notam, idx) => <NotamCard key={`comp-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
 
                                 {normalNotams.length > 0 && <section><h4 className="text-slate-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">一般資訊 (Other Info) - {normalNotams.length} 筆</h4><div>{normalNotams.map((notam, idx) => <NotamCard key={`normal-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                               </div>
@@ -876,8 +939,10 @@
           
           const [parkingBay, setParkingBay] = useState('');
           const [waterQuantity, setWaterQuantity] = useState('');
-          // 新增：備註狀態
           const [customNote, setCustomNote] = useState('');
+          
+          // 新增：紀錄被選取的 Threats 狀態
+          const [selectedThreats, setSelectedThreats] = useState([]);
 
           useEffect(() => {
             window.scrollTo({ top: 0, behavior: 'instant' });
@@ -945,6 +1010,18 @@
             setParkingBay('');
             setWaterQuantity('');
             setCustomNote('');
+            setSelectedThreats([]);
+          };
+
+          const handleThreatToggle = (category, item) => {
+              setSelectedThreats(prev => {
+                  const exists = prev.find(t => t.category === category && t.item === item);
+                  if (exists) {
+                      return prev.filter(t => !(t.category === category && t.item === item));
+                  } else {
+                      return [...prev, { category, item }];
+                  }
+              });
           };
 
           const extractWeatherInfo = (wxData, icao) => {
@@ -1157,6 +1234,21 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                   text += "OFP 資料尚未準備好或解析失敗。\n\n";
               }
 
+              // 新增：匯出選取的 Threats
+              if (selectedThreats.length > 0) {
+                  text += `⚠️ THREATS & MITIGATION\n`;
+                  text += `-----------------------------------------\n`;
+                  const groupedThreats = {};
+                  selectedThreats.forEach(t => {
+                      if (!groupedThreats[t.category]) groupedThreats[t.category] = [];
+                      groupedThreats[t.category].push(t.item);
+                  });
+                  Object.keys(groupedThreats).forEach(cat => {
+                      text += `[${cat}]: ${groupedThreats[cat].join(', ')}\n`;
+                  });
+                  text += `-----------------------------------------\n\n`;
+              }
+
               text += `⭐ PINNED NOTAMS (${pinnedNotamsExport.length} 筆)\n`;
               text += `-----------------------------------------\n`;
               if (pinnedNotamsExport.length === 0) {
@@ -1203,17 +1295,20 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
               ) : (
                   <Fragment>
                       <nav className="bg-slate-900 shadow-lg sticky top-0 z-50 border-b border-slate-800">
-                        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
-                          <div className="flex gap-2">
-                              <button onClick={() => setActiveMainTab('OFP')} className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'OFP' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-                                <FileText className="w-4 h-4" /> OFP 摘要
+                        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center gap-4">
+                          <div className="flex flex-wrap justify-center gap-2">
+                              <button onClick={() => setActiveMainTab('OFP')} className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'OFP' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <FileText className="w-4 h-4 hidden sm:block" /> OFP 摘要
                               </button>
-                              <button onClick={() => setActiveMainTab('NOTAM')} className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'NOTAM' ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-                                <AlertTriangle className="w-4 h-4" /> NOTAM 過濾
+                              <button onClick={() => setActiveMainTab('NOTAM')} className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'NOTAM' ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <AlertTriangle className="w-4 h-4 hidden sm:block" /> NOTAM 篩選
+                              </button>
+                              <button onClick={() => setActiveMainTab('THREATS')} className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'THREATS' ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(217,119,6,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <Shield className="w-4 h-4 hidden sm:block" /> 威脅評估
                               </button>
                           </div>
                           
-                          <div className="flex gap-2 sm:gap-3">
+                          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
                               <button onClick={() => setShowPaModal(true)} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors bg-slate-800 px-4 py-2 rounded-full border border-blue-700/50 flex items-center gap-2">
                                   <Mic className="w-4 h-4" /> PA 廣播稿
                               </button>
@@ -1232,6 +1327,9 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                       </div>
                       <div className={`flex-1 ${activeMainTab === 'NOTAM' ? 'block' : 'hidden'}`}>
                         <NotamFilterApp rawText={sharedRawText} onPinnedUpdate={setPinnedNotamsExport} />
+                      </div>
+                      <div className={`flex-1 ${activeMainTab === 'THREATS' ? 'block' : 'hidden'}`}>
+                        <ThreatsApp selectedThreats={selectedThreats} onToggle={handleThreatToggle} />
                       </div>
                   </Fragment>
               )}
