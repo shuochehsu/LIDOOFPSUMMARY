@@ -63,6 +63,8 @@
         const Tractor = ({ className }) => <IconBase className={className}><path d="M3 4h9l1 7"/><path d="M4 11V4"/><path d="M8 10V4"/><path d="M18 5c-.6 0-1 .4-1 1v5.6"/><path d="m10 11 11 .9c.6 0 .9.5.8 1.1l-.8 5h-1"/><circle cx="7" cy="15" r="5"/><circle cx="18" cy="18" r="2"/></IconBase>;
         const Building = ({ className }) => <IconBase className={className}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></IconBase>;
         const CornerUpRight = ({ className }) => <IconBase className={className}><path d="M4 21v-7a4 4 0 0 1 4-4h12"/><polyline points="15 15 20 10 15 5"/></IconBase>;
+        const Clipboard = ({ className }) => <IconBase className={className}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></IconBase>;
+        const Mic = ({ className }) => <IconBase className={className}><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/><line x1="8" x2="16" y1="22" y2="22"/></IconBase>;
 
         // ==========================================
         // UI 元件：過濾開關
@@ -80,7 +82,7 @@
         // ==========================================
         // 模組 1: Norma Filter v2 (處理顯示邏輯與多重高亮)
         // ==========================================
-        function NotamFilterApp({ rawText }) {
+        function NotamFilterApp({ rawText, onPinnedUpdate }) {
           const [parsedData, setParsedData] = useState(null); 
           const [flightInfo, setFlightInfo] = useState(null); 
           const [activeTab, setActiveTab] = useState('DEP');
@@ -93,6 +95,15 @@
           const [hideBirds, setHideBirds] = useState(true);
           const [hideUAS, setHideUAS] = useState(true);
           const [hideMowing, setHideMowing] = useState(true);
+
+          useEffect(() => {
+            if (onPinnedUpdate && flightInfo) {
+              const allNotams = [...(flightInfo.depNotams || []), ...(flightInfo.destNotams || [])];
+              const pinned = allNotams.filter(n => selectedNotams.includes(n.id));
+              const uniquePinned = Array.from(new Map(pinned.map(item => [item.id, item])).values());
+              onPinnedUpdate(uniquePinned);
+            }
+          }, [selectedNotams, flightInfo]);
 
           const toggleNotamSelection = (id) => {
             setSelectedNotams(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -309,9 +320,7 @@
             </div>
           );
 
-          // ★ 修正 3：多重高亮引擎 (RWY 黃底黑字，TWY 與 ILS 粗體黑字) ★
           const formatNotamText = (text, isDimmed) => {
-            // 強化 Regex：包含 ILS 後方加上跑道 (例如 ILS OR LOC RWY 25L, ILS 24R) 的捕捉能力
             const regex = /(\b(?:RWY|RUNWAY)\s+[0-3]?\d[LRC]?(?:\s*\/\s*[0-3]?\d[LRC]?)?\b|\b(?:TWY|TAXIWAY|TXL)\s+[A-Z0-9]+\b|\bILS(?:(?:\s+OR\s+LOC)?\s+(?:RWY|RUNWAY)?\s*[0-3]?\d[LRC]?)?\b)/gi;
             const parts = text.split(regex);
             
@@ -319,7 +328,6 @@
                 if (!part) return null;
                 const upperPart = part.toUpperCase();
                 
-                // 跑道 (黃底)
                 if (/^\b(?:RWY|RUNWAY)\b/.test(upperPart)) {
                     return (
                         <span key={idx} className={`font-black text-black px-1 py-0.5 rounded-md shadow-sm border ${isDimmed ? 'bg-yellow-100/50 border-yellow-200' : 'bg-yellow-200/70 border-yellow-300'}`}>
@@ -327,7 +335,6 @@
                         </span>
                     );
                 } 
-                // 滑行道或 ILS 相關組合 (無底色，僅粗黑體)
                 else if (/^\b(?:TWY|TAXIWAY|TXL)\b/.test(upperPart) || upperPart.startsWith('ILS')) {
                     return (
                         <span key={idx} className={`font-black ${isDimmed ? 'text-slate-600' : 'text-slate-900'}`}>
@@ -335,8 +342,6 @@
                         </span>
                     );
                 }
-                
-                // 一般文字
                 return <Fragment key={idx}>{part}</Fragment>;
             });
           };
@@ -385,7 +390,6 @@
 
                 {isDimmed && <div className="text-sm font-medium mb-2 flex items-center text-slate-500"><AlertTriangle className="w-4 h-4 mr-1.5" />原因: {notam.reason}</div>}
                 
-                {/* 透過自訂函數套用跑道/滑行道/ILS 的自動高亮 */}
                 <pre className={`text-sm whitespace-pre-wrap font-mono leading-relaxed ${isDimmed ? 'text-slate-500' : 'text-slate-800'}`}>
                     {formatNotamText(notam.text, isDimmed)}
                 </pre>
@@ -666,7 +670,7 @@
           });
         };
 
-        function OfpSummaryApp({ rawText }) {
+        function OfpSummaryApp({ rawText, onOfpDataUpdate }) {
           const [data, setData] = useState(null);
           const [useLiveWx, setUseLiveWx] = useState(false);
           const [liveWxData, setLiveWxData] = useState({});
@@ -685,6 +689,7 @@
                       throw new Error("Missing OFP data");
                   }
                   setData(newData);
+                  if (onOfpDataUpdate) onOfpDataUpdate(newData); 
                   setLocalError(null);
               } catch (err) {
                   console.error("OFP parsing error:", err);
@@ -862,6 +867,18 @@
           const [globalError, setGlobalError] = useState(null);
           const [showTopBtn, setShowTopBtn] = useState(false); 
 
+          const [ofpExportData, setOfpExportData] = useState(null);
+          const [pinnedNotamsExport, setPinnedNotamsExport] = useState([]);
+          
+          // 兩個彈出視窗狀態
+          const [showExportModal, setShowExportModal] = useState(false);
+          const [showPaModal, setShowPaModal] = useState(false);
+          
+          const [parkingBay, setParkingBay] = useState('');
+          const [waterQuantity, setWaterQuantity] = useState('');
+          // 新增：備註狀態
+          const [customNote, setCustomNote] = useState('');
+
           useEffect(() => {
             window.scrollTo({ top: 0, behavior: 'instant' });
           }, [activeMainTab]);
@@ -923,6 +940,235 @@
             setSharedRawText(null);
             setGlobalError(null);
             setActiveMainTab('OFP');
+            setOfpExportData(null);
+            setPinnedNotamsExport([]);
+            setParkingBay('');
+            setWaterQuantity('');
+            setCustomNote('');
+          };
+
+          const extractWeatherInfo = (wxData, icao) => {
+              let wind = 'N/A', temp = 'N/A', qnh = 'N/A';
+              if (!wxData) return { wind, temp, qnh };
+              const aptWx = wxData.find(w => w.icao === icao);
+              if (!aptWx || !aptWx.raw) return { wind, temp, qnh };
+              
+              const lines = aptWx.raw.split('\n');
+              for (const line of lines) {
+                  if (wind === 'N/A') {
+                      const windMatch = line.match(/\b(\d{3}|VRB)\d{2,3}(G\d{2,3})?(KT|MPS)\b/);
+                      if (windMatch) wind = windMatch[0];
+                  }
+                  if (temp === 'N/A') {
+                      const tempMatch = line.match(/\b(M?\d{2})\/(M?\d{2}|[/]{2})\b/);
+                      if (tempMatch) {
+                          temp = tempMatch[1].replace('M', '-') + '°C';
+                      }
+                  }
+                  if (qnh === 'N/A') {
+                      const qnhMatch = line.match(/\b([AQ]\d{4})\b/);
+                      if (qnhMatch) qnh = qnhMatch[1];
+                  }
+                  if (wind !== 'N/A' && temp !== 'N/A' && qnh !== 'N/A') break;
+              }
+              return { wind, temp, qnh };
+          };
+
+          const getAirportFullName = (icao, lang) => {
+              const map = {
+                  'RCTP': { zh: '台北(桃園)', en: 'Taipei' },
+                  'RCSS': { zh: '台北(松山)', en: 'Taipei Songshan' },
+                  'RCKH': { zh: '高雄', en: 'Kaohsiung' },
+                  'CYYZ': { zh: '多倫多', en: 'Toronto' },
+                  'CYVR': { zh: '溫哥華', en: 'Vancouver' },
+                  'KLAX': { zh: '洛杉磯', en: 'Los Angeles' },
+                  'KSFO': { zh: '舊金山', en: 'San Francisco' },
+                  'KSEA': { zh: '西雅圖', en: 'Seattle' },
+                  'KJFK': { zh: '紐約', en: 'New York JFK' },
+                  'KORD': { zh: '芝加哥', en: 'Chicago' },
+                  'KIAH': { zh: '休士頓', en: 'Houston' },
+                  'RJAA': { zh: '東京成田', en: 'Tokyo Narita' },
+                  'RJTT': { zh: '東京羽田', en: 'Tokyo Haneda' },
+                  'RJBB': { zh: '大阪關西', en: 'Osaka Kansai' },
+                  'RJCC': { zh: '札幌', en: 'Sapporo' },
+                  'RJGG': { zh: '名古屋', en: 'Nagoya' },
+                  'ROAH': { zh: '沖繩', en: 'Okinawa' },
+                  'RJFF': { zh: '福岡', en: 'Fukuoka' },
+                  'VHHH': { zh: '香港', en: 'Hong Kong' },
+                  'VMMC': { zh: '澳門', en: 'Macau' },
+                  'ZSPD': { zh: '上海浦東', en: 'Shanghai Pudong' },
+                  'ZSSS': { zh: '上海虹橋', en: 'Shanghai Hongqiao' },
+                  'ZBAA': { zh: '北京', en: 'Beijing' },
+                  'ZGGG': { zh: '廣州', en: 'Guangzhou' },
+                  'ZGSZ': { zh: '深圳', en: 'Shenzhen' },
+                  'ZUUU': { zh: '成都', en: 'Chengdu' },
+                  'WSSS': { zh: '新加坡', en: 'Singapore' },
+                  'WMKK': { zh: '吉隆坡', en: 'Kuala Lumpur' },
+                  'VTBS': { zh: '曼谷', en: 'Bangkok' },
+                  'WIII': { zh: '雅加達', en: 'Jakarta' },
+                  'WADD': { zh: '峇里島', en: 'Bali' },
+                  'RPLL': { zh: '馬尼拉', en: 'Manila' },
+                  'VVTS': { zh: '胡志明市', en: 'Ho Chi Minh City' },
+                  'VVNB': { zh: '河內', en: 'Hanoi' },
+                  'EGLL': { zh: '倫敦', en: 'London' },
+                  'LFPG': { zh: '巴黎', en: 'Paris' },
+                  'EHAM': { zh: '阿姆斯特丹', en: 'Amsterdam' },
+                  'LOWW': { zh: '維也納', en: 'Vienna' },
+                  'EDDM': { zh: '慕尼黑', en: 'Munich' },
+                  'LIMC': { zh: '米蘭', en: 'Milan' },
+                  'YSSY': { zh: '雪梨', en: 'Sydney' },
+                  'YBBN': { zh: '布里斯本', en: 'Brisbane' },
+                  'RKSI': { zh: '首爾仁川', en: 'Seoul Incheon' },
+                  'RKSS': { zh: '首爾金浦', en: 'Seoul Gimpo' }
+              };
+              
+              const city = map[icao];
+              if (!city) return icao;
+              
+              if (lang === 'zh') return `${city.zh}國際機場`;
+              return `${city.en} International Airport`;
+          };
+
+          const getPaText = () => {
+              let fltNum = '___', depIcao = '', arrIcao = '', hr = '___', min = '___', alt = '______';
+              let tempC = '___', tempF = '___', staAmPm = '________', staLocalFormatted = '________';
+              
+              if (ofpExportData) {
+                  const d = ofpExportData;
+                  if (d.flightNo) fltNum = d.flightNo.replace(/[^\d]/g, '');
+                  if (d.depIcao) depIcao = d.depIcao;
+                  if (d.arrIcao) arrIcao = d.arrIcao;
+                  
+                  if (d.flightTime && d.flightTime.includes(':')) {
+                      const parts = d.flightTime.split(':');
+                      hr = parseInt(parts[0], 10);
+                      min = parseInt(parts[1], 10);
+                  }
+                  
+                  if (d.fl) {
+                      const m = d.fl.match(/FL(\d{3})/i);
+                      if (m) alt = parseInt(m[1]) * 100;
+                  }
+                  
+                  if (d.staL && d.staL.length >= 4) {
+                      const h = parseInt(d.staL.substring(0, 2));
+                      const mStr = d.staL.substring(2, 4);
+                      const isPM = h >= 12;
+                      const ampmEn = isPM ? 'PM' : 'AM';
+                      const h12 = h % 12 || 12;
+                      staAmPm = `${h12}:${mStr} ${ampmEn}`;
+                      staLocalFormatted = `${h12}:${mStr}`;
+                  }
+                  
+                  const arrWx = extractWeatherInfo(d.weather, d.arrIcao);
+                  if (arrWx.temp !== 'N/A') {
+                      const tVal = parseInt(arrWx.temp.replace('°C', ''));
+                      if (!isNaN(tVal)) {
+                          tempC = tVal;
+                          tempF = Math.round(tVal * 9 / 5 + 32);
+                      }
+                  }
+              }
+
+              const depZh = depIcao ? getAirportFullName(depIcao, 'zh') : '____';
+              const arrZh = arrIcao ? getAirportFullName(arrIcao, 'zh') : '____';
+              const depEn = depIcao ? getAirportFullName(depIcao, 'en') : '____';
+              const arrEn = arrIcao ? getAirportFullName(arrIcao, 'en') : '____';
+
+              return `=========================================
+Welcome PA
+=========================================
+
+各位貴賓早/午/晚安，僅代表機長與全體組員歡迎您搭乘長榮航空編號BR ${fltNum} 號班機，由 ${depZh} 飛往 ${arrZh}。本次飛行時間預計為 ${hr}小時${min}分，計畫巡航高度為 ${alt} 英呎。 沿途天氣大致穩定/可能會穿越到不穩定氣流區。航程中當繫緊安全帶指示燈號亮起時，請您留在座位上並繫緊安全帶。 
+
+目的地機場目前天氣狀況：良好/晴天/涼爽/多雲/下雨/起霧/風勢強勁/下雪，溫度為攝氏 ${tempC} 度或華氏 ${tempF} 度。即將抵達目的地機場時，會再做進一步的天氣資訊更新。
+
+本班機的地面作業將在幾分鐘後完成，並開始後推啟程，在此先預祝各位貴賓有個愉快的飛行旅程，謝謝。
+
+Dear passengers, Good (morning, afternoon, evening), this is your first officer speaking from the flight deck. On behalf of the captain and all the crew, WELCOME aboard EVA AIR flight BR ${fltNum}, departing from ${depEn} to ${arrEn}.
+We should be ready for departure in a few minutes. Our flight time today is ${hr} hours and ${min} minutes, with an initial cruising altitude of ${alt} feet.
+好天氣 The enroute weather seems fine; however,
+壞天氣 For the weather enroute. We might fly through some turbulent area.
+If you see the fasten seatbelt sign being turned on, for your safety, please remain seated and fasten on your seatbelt.
+Now please make yourself comfortable and enjoy the flight with us. Once again, welcome aboard.
+
+
+
+
+
+=========================================
+Descent PA
+=========================================
+
+各位貴賓早安/午安/晚安，這是副機長再次廣播。我們正巡航在 ${alt} 英呎高空，距離目的地 ${arrZh} 約 ______ 海哩，預計將在10分鐘之後開始下降高度準備落地，於當地時間 ____月____號 上午/下午/晚間 ${staLocalFormatted} 抵達 ${arrZh}，____和____有____小時的時差，目前當地時間為_______。 
+
+根據最新天氣資訊，目的地機場現在天氣狀況良好/晴天/多雲/起霧/風勢強勁/溼冷/乾冷/涼爽/正在下雨/下雪，地面溫度為攝氏 ${tempC} 度/華氏 ${tempF} 度。   
+
+（極端天氣如颱風的補充：由於天氣/颱風/鋒面的影響，待會下降過程中，可能會有非常顛波的情況，請務必留在座位上並繫緊安全帶。）
+
+感謝您選擇長榮航空，希望這趟飛行讓您感到滿意，並期待在不久的將來，還有機會能為您服務。謹代表全體組員預祝各位貴賓旅途愉快。謝謝。
+
+Ladies and gentlemen, this is your first officer speaking from the flight deck.
+We are approaching to ${arrEn} and expecting to start our descent within about 10 minutes.
+The estimated time of arrival at ${arrEn} will be ${staAmPm} and the current local time is __________.
+【ONLY IF DELAY EXPECTED】
+【 ${arrEn} is very busy at the moment. We may be delayed up to __________minutes before landing.】
+The present weather at the airport is (clear, partly cloudy, cloudy, raining, snowing, winding) with a temperature of ${tempC} degrees Celsius or ${tempF} degrees Fahrenheit. During the descent, we will fly through some turbulent area, please remain seated and fasten on your seatbelt.
+We certainly hope that you have enjoyed the flight with us, and we look forward to having you on board for another EVA flight again very soon. Thank you, and wish you all a wonderful day.`;
+          };
+
+          const getExportText = () => {
+              let text = "";
+
+              if (ofpExportData) {
+                  const d = ofpExportData;
+                  text += `[FLIGHT] ${d.flightNo || 'N/A'} | ${d.route || 'N/A'} | ${d.date || 'N/A'}\n`;
+                  text += `[A/C] Reg: ${d.reg || 'N/A'} ${d.fleetInfo ? `(${d.fleetInfo})` : ''}\n`;
+                  text += `BAY: ${parkingBay || '      '} | WATER: ${waterQuantity || '      '}\n`;
+                  
+                  if (customNote.trim() !== '') {
+                      text += `NOTE: ${customNote}\n\n`;
+                  } else {
+                      text += `\n`;
+                  }
+
+                  text += `🕒 TIMINGS (ZULU / LCL)\n`;
+                  text += `STD: ${d.stdZ || 'N/A'} (${d.stdL || 'N/A'})\n`;
+                  text += `STA: ${d.staZ || 'N/A'} (${d.staL || 'N/A'})\n`;
+                  text += `BLK: ${d.blockTime || 'N/A'} | FLT: ${d.flightTime || 'N/A'}\n\n`;
+
+                  text += `⚖️ WEIGHTS & PERF\n`;
+                  text += `ZFW: ${d.zfwPlanned || 'N/A'} (LMT: ${d.zfwLimit || 'N/A'})\n`;
+                  text += `LDW: ${d.ldwPlanned || 'N/A'} (LMT: ${d.ldwLimit || 'N/A'})\n`;
+                  text += `TOW: ${d.towPlanned || 'N/A'} (LMT: ${d.towLimit || 'N/A'})\n`;
+                  text += `FUEL: ${d.totalFuel || 'N/A'} | ALTN+RES: ${d.reserveFuelSum || 'N/A'}\n`;
+                  text += `CI: ${d.ci || 'N/A'} | FL: ${d.fl || 'N/A'}\n\n`;
+
+                  const depWx = extractWeatherInfo(d.weather, d.depIcao);
+                  text += `🛫 DEPARTURE (${d.depIcao || 'N/A'})\n`;
+                  text += `RWY: ${d.tkofRwy || 'N/A'} | SID: ${d.sid || 'N/A'}\n`;
+                  text += `WIND: ${depWx.wind} | TEMP: ${depWx.temp} | QNH: ${depWx.qnh}\n\n`;
+
+                  const arrWx = extractWeatherInfo(d.weather, d.arrIcao);
+                  text += `🛬 ARRIVAL (${d.arrIcao || 'N/A'})\n`;
+                  text += `RWY: ${d.ldgRwy || 'N/A'} | STAR: ${d.star || 'N/A'}\n`;
+                  text += `WIND: ${arrWx.wind} | TEMP: ${arrWx.temp} | QNH: ${arrWx.qnh}\n\n`;
+              } else {
+                  text += "OFP 資料尚未準備好或解析失敗。\n\n";
+              }
+
+              text += `⭐ PINNED NOTAMS (${pinnedNotamsExport.length} 筆)\n`;
+              text += `-----------------------------------------\n`;
+              if (pinnedNotamsExport.length === 0) {
+                  text += `(目前無標記的重要 NOTAM)\n`;
+              } else {
+                  pinnedNotamsExport.forEach((n, i) => {
+                      text += `[${n.id}]\n${n.text}\n`;
+                      if (i < pinnedNotamsExport.length - 1) text += `\n`;
+                  });
+              }
+              text += `-----------------------------------------\n`;
+              return text;
           };
 
           return (
@@ -966,19 +1212,141 @@
                                 <AlertTriangle className="w-4 h-4" /> NOTAM 過濾
                               </button>
                           </div>
-                          <button onClick={handleReset} className="text-sm font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
-                              重新上傳檔案
-                          </button>
+                          
+                          <div className="flex gap-2 sm:gap-3">
+                              <button onClick={() => setShowPaModal(true)} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors bg-slate-800 px-4 py-2 rounded-full border border-blue-700/50 flex items-center gap-2">
+                                  <Mic className="w-4 h-4" /> PA 廣播稿
+                              </button>
+                              <button onClick={() => setShowExportModal(true)} className="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors bg-slate-800 px-4 py-2 rounded-full border border-emerald-700/50 flex items-center gap-2">
+                                  <Clipboard className="w-4 h-4" /> 匯出精華版
+                              </button>
+                              <button onClick={handleReset} className="text-sm font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+                                  重新上傳
+                              </button>
+                          </div>
                         </div>
                       </nav>
 
                       <div className={`flex-1 ${activeMainTab === 'OFP' ? 'block' : 'hidden'}`}>
-                        <OfpSummaryApp rawText={sharedRawText} />
+                        <OfpSummaryApp rawText={sharedRawText} onOfpDataUpdate={setOfpExportData} />
                       </div>
                       <div className={`flex-1 ${activeMainTab === 'NOTAM' ? 'block' : 'hidden'}`}>
-                        <NotamFilterApp rawText={sharedRawText} />
+                        <NotamFilterApp rawText={sharedRawText} onPinnedUpdate={setPinnedNotamsExport} />
                       </div>
                   </Fragment>
+              )}
+
+              {/* === PA 廣播稿彈出視窗 === */}
+              {showPaModal && (
+                  <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+                          <div className="flex justify-between items-center p-4 border-b border-slate-200 bg-slate-50">
+                              <h3 className="font-black text-xl text-slate-800 flex items-center gap-2">
+                                  <Mic className="w-6 h-6 text-blue-600" />
+                                  PA 廣播稿 (自動填入版本)
+                              </h3>
+                              <button onClick={() => setShowPaModal(false)} className="text-slate-400 hover:bg-slate-200 hover:text-slate-700 p-1.5 rounded-full transition-colors">
+                                  <XCircle className="w-6 h-6" />
+                              </button>
+                          </div>
+                          
+                          <div className="p-4 flex-1 overflow-auto bg-slate-100/50">
+                              <textarea
+                                  readOnly
+                                  value={getPaText()}
+                                  className="w-full h-full min-h-[50vh] p-4 font-mono text-sm leading-relaxed text-slate-800 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 whitespace-pre"
+                              />
+                          </div>
+                          
+                          <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-end gap-3">
+                              <button onClick={() => {
+                                  const text = getPaText();
+                                  navigator.clipboard.writeText(text).then(() => alert('已複製到剪貼簿！')).catch(() => {
+                                      const textArea = document.createElement("textarea");
+                                      textArea.value = text; document.body.appendChild(textArea); textArea.select();
+                                      try { document.execCommand('copy'); alert('已複製到剪貼簿！'); } catch (e) { alert('複製失敗，請手動選取複製'); }
+                                      document.body.removeChild(textArea);
+                                  });
+                              }} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 active:scale-95 transition-all">
+                                  <Clipboard className="w-5 h-5" /> 複製廣播稿
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              )}
+
+              {/* === 匯出精華版彈出視窗 === */}
+              {showExportModal && (
+                  <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+                          <div className="flex justify-between items-center p-4 border-b border-slate-200 bg-slate-50">
+                              <h3 className="font-black text-xl text-slate-800 flex items-center gap-2">
+                                  <Clipboard className="w-6 h-6 text-emerald-600" />
+                                  駕駛艙精華版 (Cockpit Summary)
+                              </h3>
+                              <button onClick={() => setShowExportModal(false)} className="text-slate-400 hover:bg-slate-200 hover:text-slate-700 p-1.5 rounded-full transition-colors">
+                                  <XCircle className="w-6 h-6" />
+                              </button>
+                          </div>
+                          
+                          <div className="p-4 border-b border-slate-200 bg-white flex flex-col gap-4">
+                              <div className="flex flex-col sm:flex-row gap-4">
+                                  <div className="flex-1">
+                                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">停機坪 (Parking Bay)</label>
+                                      <input
+                                          type="text"
+                                          value={parkingBay}
+                                          onChange={e => setParkingBay(e.target.value)}
+                                          placeholder="例如: D6"
+                                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                      />
+                                  </div>
+                                  <div className="flex-1">
+                                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">水量 (Water QTY)</label>
+                                      <input
+                                          type="text"
+                                          value={waterQuantity}
+                                          onChange={e => setWaterQuantity(e.target.value)}
+                                          placeholder="例如: 100%"
+                                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                      />
+                                  </div>
+                              </div>
+                              <div>
+                                  <label className="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">備註 (Note)</label>
+                                  <input
+                                      type="text"
+                                      value={customNote}
+                                      onChange={e => setCustomNote(e.target.value)}
+                                      placeholder="填寫其他重要事項或交接重點..."
+                                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                  />
+                              </div>
+                          </div>
+                          
+                          <div className="p-4 flex-1 overflow-auto bg-slate-100/50">
+                              <textarea
+                                  readOnly
+                                  value={getExportText()}
+                                  className="w-full h-full min-h-[40vh] p-4 font-mono text-sm leading-relaxed text-slate-800 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 whitespace-pre"
+                              />
+                          </div>
+                          
+                          <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-end gap-3">
+                              <button onClick={() => {
+                                  const text = getExportText();
+                                  navigator.clipboard.writeText(text).then(() => alert('已複製到剪貼簿！')).catch(() => {
+                                      const textArea = document.createElement("textarea");
+                                      textArea.value = text; document.body.appendChild(textArea); textArea.select();
+                                      try { document.execCommand('copy'); alert('已複製到剪貼簿！'); } catch (e) { alert('複製失敗，請手動選取複製'); }
+                                      document.body.removeChild(textArea);
+                                  });
+                              }} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all">
+                                  <Clipboard className="w-5 h-5" /> 複製純文字
+                              </button>
+                          </div>
+                      </div>
+                  </div>
               )}
 
               {showTopBtn && (
@@ -1000,6 +1368,5 @@
     </script>
 </body>
 </html>
-
 
 
