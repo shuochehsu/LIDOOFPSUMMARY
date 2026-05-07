@@ -20,6 +20,328 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
+
+    <style>
+      /* Muted Dark Mode - full app, low saturation for night use */
+      .dark-muted {
+        background: #0b1220 !important;
+        color: #e5e7eb !important;
+      }
+      .dark-muted .bg-slate-200,
+      .dark-muted .bg-slate-100,
+      .dark-muted .bg-slate-50 {
+        background-color: #0b1220 !important;
+      }
+      .dark-muted .bg-white {
+        background-color: #111827 !important;
+      }
+      .dark-muted .bg-slate-900 {
+        background-color: #080d18 !important;
+      }
+      .dark-muted .bg-slate-800 {
+        background-color: #172033 !important;
+      }
+      .dark-muted .bg-blue-50,
+      .dark-muted .bg-emerald-50,
+      .dark-muted .bg-amber-50,
+      .dark-muted .bg-rose-50,
+      .dark-muted .bg-orange-50,
+      .dark-muted .bg-purple-50,
+      .dark-muted .bg-fuchsia-50,
+      .dark-muted .bg-indigo-50,
+      .dark-muted .bg-cyan-50,
+      .dark-muted .bg-violet-50,
+      .dark-muted .bg-lime-50 {
+        background-color: #162033 !important;
+      }
+      .dark-muted .bg-blue-100,
+      .dark-muted .bg-emerald-100,
+      .dark-muted .bg-amber-100,
+      .dark-muted .bg-rose-100,
+      .dark-muted .bg-orange-100,
+      .dark-muted .bg-purple-100,
+      .dark-muted .bg-fuchsia-100,
+      .dark-muted .bg-indigo-100,
+      .dark-muted .bg-cyan-100,
+      .dark-muted .bg-violet-100,
+      .dark-muted .bg-lime-100,
+      .dark-muted .bg-yellow-100,
+      .dark-muted .bg-yellow-200 {
+        background-color: #263244 !important;
+      }
+      .dark-muted .text-slate-900,
+      .dark-muted .text-slate-800,
+      .dark-muted .text-slate-700,
+      .dark-muted .text-black {
+        color: #f3f4f6 !important;
+      }
+      .dark-muted .text-slate-600,
+      .dark-muted .text-slate-500 {
+        color: #b8c0cc !important;
+      }
+      .dark-muted .text-slate-400,
+      .dark-muted .text-slate-300 {
+        color: #9ca3af !important;
+      }
+      .dark-muted .text-blue-600,
+      .dark-muted .text-blue-700,
+      .dark-muted .text-sky-600,
+      .dark-muted .text-indigo-600 {
+        color: #8fb4ff !important;
+      }
+      .dark-muted .text-emerald-600,
+      .dark-muted .text-emerald-700,
+      .dark-muted .text-teal-700 {
+        color: #8fd6bf !important;
+      }
+      .dark-muted .text-amber-600,
+      .dark-muted .text-amber-700,
+      .dark-muted .text-orange-600,
+      .dark-muted .text-orange-800 {
+        color: #e7c48e !important;
+      }
+      .dark-muted .text-rose-600,
+      .dark-muted .text-rose-700,
+      .dark-muted .text-rose-800,
+      .dark-muted .text-red-500 {
+        color: #e8a1ac !important;
+      }
+      .dark-muted .text-purple-700,
+      .dark-muted .text-fuchsia-700,
+      .dark-muted .text-violet-700 {
+        color: #c7b4f6 !important;
+      }
+      .dark-muted .border-slate-100,
+      .dark-muted .border-slate-200,
+      .dark-muted .border-slate-300 {
+        border-color: #2f3a4d !important;
+      }
+      .dark-muted .border-blue-200,
+      .dark-muted .border-emerald-200,
+      .dark-muted .border-amber-200,
+      .dark-muted .border-rose-200,
+      .dark-muted .border-orange-200,
+      .dark-muted .border-purple-200,
+      .dark-muted .border-fuchsia-200,
+      .dark-muted .border-indigo-200,
+      .dark-muted .border-cyan-200,
+      .dark-muted .border-violet-200,
+      .dark-muted .border-lime-200 {
+        border-color: #354155 !important;
+      }
+      .dark-muted input,
+      .dark-muted textarea,
+      .dark-muted select {
+        background-color: #111827 !important;
+        color: #e5e7eb !important;
+        border-color: #374151 !important;
+      }
+      .dark-muted pre {
+        color: #e5e7eb !important;
+      }
+      .dark-muted .shadow-sm,
+      .dark-muted .shadow-md,
+      .dark-muted .shadow-lg,
+      .dark-muted .shadow-xl,
+      .dark-muted .shadow-2xl {
+        box-shadow: 0 12px 30px rgba(0,0,0,.35) !important;
+      }
+      .dark-muted .ring-2 {
+        --tw-ring-color: rgba(148, 163, 184, .45) !important;
+      }
+      .dark-muted button[class*="bg-emerald-600"],
+      .dark-muted button[class*="bg-blue-600"],
+      .dark-muted button[class*="bg-indigo-600"],
+      .dark-muted button[class*="bg-amber-600"] {
+        filter: saturate(.72) brightness(.9) !important;
+        box-shadow: none !important;
+      }
+      .dark-muted .atis-chip,
+      .dark-muted span[class*="rounded-full"] {
+        filter: saturate(.62) brightness(.92);
+      }
+      .theme-toggle-btn {
+        -webkit-tap-highlight-color: transparent;
+      }
+    </style>
+
+
+    
+    <style>
+      /* Night Gray Mode - readable cockpit mode, low saturation but sufficient contrast */
+      .cockpit-black {
+        background: #0b0f16 !important;
+        color: #d7dde6 !important;
+      }
+      .cockpit-black .bg-white,
+      .cockpit-black .bg-slate-50,
+      .cockpit-black .bg-slate-100,
+      .cockpit-black .bg-slate-200,
+      .cockpit-black .bg-blue-50,
+      .cockpit-black .bg-emerald-50,
+      .cockpit-black .bg-amber-50,
+      .cockpit-black .bg-rose-50,
+      .cockpit-black .bg-orange-50,
+      .cockpit-black .bg-purple-50,
+      .cockpit-black .bg-fuchsia-50,
+      .cockpit-black .bg-indigo-50,
+      .cockpit-black .bg-cyan-50,
+      .cockpit-black .bg-violet-50,
+      .cockpit-black .bg-lime-50,
+      .cockpit-black .bg-teal-50,
+      .cockpit-black .bg-pink-50 {
+        background-color: #151b26 !important;
+      }
+      .cockpit-black .bg-slate-900,
+      .cockpit-black .bg-slate-800,
+      .cockpit-black .bg-slate-700 {
+        background-color: #101722 !important;
+      }
+      .cockpit-black .bg-blue-100,
+      .cockpit-black .bg-emerald-100,
+      .cockpit-black .bg-amber-100,
+      .cockpit-black .bg-rose-100,
+      .cockpit-black .bg-orange-100,
+      .cockpit-black .bg-purple-100,
+      .cockpit-black .bg-fuchsia-100,
+      .cockpit-black .bg-indigo-100,
+      .cockpit-black .bg-cyan-100,
+      .cockpit-black .bg-violet-100,
+      .cockpit-black .bg-lime-100,
+      .cockpit-black .bg-teal-100,
+      .cockpit-black .bg-pink-100,
+      .cockpit-black .bg-yellow-100,
+      .cockpit-black .bg-yellow-200 {
+        background-color: #222b3a !important;
+      }
+      .cockpit-black .text-slate-900,
+      .cockpit-black .text-slate-800,
+      .cockpit-black .text-slate-700,
+      .cockpit-black .text-black,
+      .cockpit-black .text-white {
+        color: #eef2f7 !important;
+      }
+      .cockpit-black .text-slate-600,
+      .cockpit-black .text-slate-500 {
+        color: #c4ccd8 !important;
+      }
+      .cockpit-black .text-slate-400,
+      .cockpit-black .text-slate-300 {
+        color: #aeb8c7 !important;
+      }
+      .cockpit-black .text-blue-600,
+      .cockpit-black .text-blue-700,
+      .cockpit-black .text-sky-600,
+      .cockpit-black .text-indigo-600,
+      .cockpit-black .text-indigo-700 {
+        color: #9db8e8 !important;
+      }
+      .cockpit-black .text-emerald-600,
+      .cockpit-black .text-emerald-700,
+      .cockpit-black .text-teal-700 {
+        color: #98d8c0 !important;
+      }
+      .cockpit-black .text-amber-600,
+      .cockpit-black .text-amber-700,
+      .cockpit-black .text-orange-600,
+      .cockpit-black .text-orange-800 {
+        color: #dfc08c !important;
+      }
+      .cockpit-black .text-rose-600,
+      .cockpit-black .text-rose-700,
+      .cockpit-black .text-rose-800,
+      .cockpit-black .text-red-500 {
+        color: #e4a0ab !important;
+      }
+      .cockpit-black .text-purple-700,
+      .cockpit-black .text-fuchsia-700,
+      .cockpit-black .text-violet-700 {
+        color: #c5b7e7 !important;
+      }
+      .cockpit-black .border-slate-100,
+      .cockpit-black .border-slate-200,
+      .cockpit-black .border-slate-300,
+      .cockpit-black .border-slate-700,
+      .cockpit-black .border-slate-800,
+      .cockpit-black .border-blue-200,
+      .cockpit-black .border-emerald-200,
+      .cockpit-black .border-amber-200,
+      .cockpit-black .border-rose-200,
+      .cockpit-black .border-orange-200,
+      .cockpit-black .border-purple-200,
+      .cockpit-black .border-fuchsia-200,
+      .cockpit-black .border-indigo-200,
+      .cockpit-black .border-cyan-200,
+      .cockpit-black .border-violet-200,
+      .cockpit-black .border-lime-200,
+      .cockpit-black .border-teal-200,
+      .cockpit-black .border-pink-200 {
+        border-color: #3a4658 !important;
+      }
+      .cockpit-black [class*="border-l-"] {
+        border-left-color: #7b8798 !important;
+      }
+      .cockpit-black .shadow-sm,
+      .cockpit-black .shadow-md,
+      .cockpit-black .shadow-lg,
+      .cockpit-black .shadow-xl,
+      .cockpit-black .shadow-2xl {
+        box-shadow: 0 10px 24px rgba(0,0,0,.32) !important;
+      }
+      .cockpit-black button,
+      .cockpit-black .rounded-full,
+      .cockpit-black .rounded-xl,
+      .cockpit-black .rounded-2xl {
+        filter: saturate(.45) brightness(.95) !important;
+      }
+      .cockpit-black button[class*="bg-emerald-600"],
+      .cockpit-black button[class*="bg-blue-600"],
+      .cockpit-black button[class*="bg-indigo-600"],
+      .cockpit-black button[class*="bg-amber-600"],
+      .cockpit-black .bg-emerald-600,
+      .cockpit-black .bg-blue-600,
+      .cockpit-black .bg-indigo-600,
+      .cockpit-black .bg-amber-600,
+      .cockpit-black .bg-cyan-700 {
+        background-color: #2b3546 !important;
+        color: #f3f6fb !important;
+        border: 1px solid #4a5a70 !important;
+      }
+      .cockpit-black pre,
+      .cockpit-black textarea,
+      .cockpit-black input,
+      .cockpit-black select {
+        background-color: #101722 !important;
+        color: #e3e8f0 !important;
+        border-color: #3a4658 !important;
+      }
+      .cockpit-black mark,
+      .cockpit-black span[class*="bg-yellow"],
+      .cockpit-black span[class*="bg-blue"],
+      .cockpit-black span[class*="bg-emerald"],
+      .cockpit-black span[class*="bg-amber"],
+      .cockpit-black span[class*="bg-rose"],
+      .cockpit-black span[class*="bg-purple"],
+      .cockpit-black span[class*="bg-cyan"],
+      .cockpit-black span[class*="bg-orange"] {
+        background-color: #30394a !important;
+        color: #eef2f7 !important;
+        border-color: #5a6678 !important;
+      }
+      .cockpit-black .ring-2 {
+        --tw-ring-color: rgba(160, 174, 192, .45) !important;
+      }
+      .cockpit-black nav {
+        background: #111827 !important;
+        border-color: #2f3a4d !important;
+      }
+      .cockpit-black .theme-toggle-btn {
+        background: #1a2230 !important;
+        color: #e3e8f0 !important;
+      }
+    </style>
+
+
 </head>
 <body class="bg-slate-200">
     <div id="root"></div>
@@ -103,7 +425,7 @@
         // ==========================================
         function ThreatsApp({ selectedThreats, onToggle }) {
             return (
-                <div className="max-w-6xl mx-auto px-4 mt-6 pb-12">
+                <div className="max-w-6xl mx-auto px-3 mt-3 pb-4">
                     <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-200">
                         <div className="bg-[#4878d0] text-white p-4 text-center font-black text-2xl tracking-wider">
                             THREATS AND MITIGATION
@@ -152,6 +474,7 @@
           const [bufferHours, setBufferHours] = useState(1); 
           const [localError, setLocalError] = useState(null);
           const [selectedNotams, setSelectedNotams] = useState([]);
+          const [expandedAirportNotams, setExpandedAirportNotams] = useState({});
 
           const [hideObstacles, setHideObstacles] = useState(true);
           const [hideBirds, setHideBirds] = useState(true);
@@ -408,52 +731,91 @@
             });
           };
 
+          const summarizeAirportNotam = (notam) => {
+            const text = String(notam.text || '').replace(/\s+/g, ' ').trim();
+            const upper = text.toUpperCase();
+
+            const rwy = Array.from(new Set((text.match(/\b(?:RWY|RUNWAY)\s*[0-3]?\d[LRC]?(?:\s*\/\s*[0-3]?\d[LRC]?)?/gi) || []).map(x => x.replace(/\s+/g, ' ').toUpperCase())));
+            const twy = Array.from(new Set((text.match(/\b(?:TWY|TAXIWAY|TXL)\s*[A-Z0-9-]+/gi) || []).map(x => x.replace(/\s+/g, ' ').toUpperCase())));
+            const ils = Array.from(new Set((text.match(/\b(?:ILS|LOC|GP|DME|PAPI|VASI|ALS|VOR|NDB)\b(?:\s+(?:RWY|RUNWAY)?\s*[0-3]?\d[LRC]?)?/gi) || []).map(x => x.replace(/\s+/g, ' ').toUpperCase())));
+            const timeRange = (text.match(/\b\d{4}Z?\s*-\s*\d{4}Z?\b/g) || []).slice(0, 3);
+            const valid = text.match(/VALID:\s*(\d{10})\s*-\s*(\d{10}|PERM|UFN|EST)?/i);
+
+            let action = 'Airport NOTAM. Review original text if relevant.';
+            if (/\b(?:RWY|RUNWAY)\b.*\b(?:CLSD|CLOSED)\b|\b(?:CLSD|CLOSED)\b.*\b(?:RWY|RUNWAY)\b/.test(upper)) action = 'Runway closure / runway availability change. Confirm runway in use and performance.';
+            else if (/\b(?:TWY|TAXIWAY|TXL|APRON|RAMP|STAND|BAY|PRKG|PARKING)\b.*\b(?:CLSD|CLOSED)\b|\b(?:CLSD|CLOSED)\b.*\b(?:TWY|TAXIWAY|TXL|APRON|RAMP|STAND|BAY|PRKG|PARKING)\b/.test(upper)) action = 'Taxiway / apron / stand closure. Check taxi route and ground movement.';
+            else if (/\b(?:ILS|LOC|GP|DME|PAPI|VASI|ALS|VOR|NDB|LGT|LIGHTS?)\b.*\b(?:U\/S|UNSERVICEABLE|OUT OF SERVICE|OTS)\b/.test(upper)) action = 'Navigation aid / lighting unserviceable. Check approach minima and backup procedure.';
+            else if (/\b(?:TAKEOFF MINIMUM|TAKEOFF MINIMA|TKOF MINIMUM|TKOF MINIMA)\b/.test(upper)) action = 'Takeoff minima changed. Review airport takeoff minimums.';
+            else if (/\b(?:MISSED APPROACH|MISSED APCH|MAPT|MAPC)\b/.test(upper)) action = 'Missed approach procedure changed. Review approach chart before briefing.';
+            else if (/\b(?:APPROACH MINIMUM|APP MINIMUM|MINIMA|DA\/MDA|OCA\/H|CAT II|CAT III|RVR)\b/.test(upper)) action = 'Approach / landing minima changed. Confirm applicable minima.';
+            else if (/\b(?:BIRD|WILDLIFE|FLOCK)\b/.test(upper)) action = 'Bird / wildlife activity. Use caution during takeoff / landing.';
+            else if (/\b(?:UAS|DRONE|BALLOON|KITE|LASER|FIREWORK)\b/.test(upper)) action = 'UAS / aerial activity nearby. Maintain lookout and follow ATC.';
+            else if (/\bCOMPANY\s+NOTAM\b/.test(upper)) action = 'Company NOTAM. Review operational note.';
+            else if (/\b(?:CRANE|OBST|OBSTACLE)\b/.test(upper)) action = 'Obstacle / crane notice. Check location versus runway / approach path.';
+
+            const chips = [];
+            const add = (x) => { if (x && !chips.includes(x)) chips.push(x); };
+            rwy.slice(0, 3).forEach(add);
+            twy.slice(0, 2).forEach(add);
+            ils.slice(0, 2).forEach(add);
+            timeRange.forEach(add);
+            if (valid) add(`VALID ${valid[1]}-${valid[2] || ''}`);
+
+            return { action, chips };
+          };
+
+          const toggleAirportNotamOriginal = (id) => {
+            setExpandedAirportNotams(prev => ({ ...prev, [id]: !prev[id] }));
+          };
+
           const NotamCard = ({ notam, isSelected, onToggle }) => {
             let borderClass = 'border-slate-200'; let badge = null;
             if (notam.keep || isSelected) {
-              if (notam.category === 'RWY_CLSD') { borderClass = 'border-l-4 border-l-rose-500 border-y-rose-200 border-r-rose-200 bg-rose-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200">🚨 跑道關閉</span>; } 
-              else if (notam.category === 'TWY_CLSD') { borderClass = 'border-l-4 border-l-amber-500 border-y-amber-200 border-r-amber-200 bg-amber-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">🚧 滑行道/停機坪關閉</span>; } 
-              else if (notam.category === 'COMPANY_NOTAM') { borderClass = 'border-l-4 border-l-teal-500 border-y-teal-200 border-r-teal-200 bg-teal-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800 border border-teal-200"><Building className="w-3 h-3 mr-1" /> 公司通報</span>; } 
-              else if (notam.category === 'MISSED_APPROACH') { borderClass = 'border-l-4 border-l-purple-500 border-y-purple-200 border-r-purple-200 bg-purple-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200"><CornerUpRight className="w-3 h-3 mr-1" /> 誤失進場更改</span>; } 
-              else if (notam.category === 'TAKEOFF_MINIMUM') { borderClass = 'border-l-4 border-l-pink-500 border-y-pink-200 border-r-pink-200 bg-pink-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800 border border-pink-200"><PlaneTakeoff className="w-3 h-3 mr-1" /> 起飛標準更改</span>; } 
-              else if (notam.category === 'LANDING_MINIMUM') { borderClass = 'border-l-4 border-l-fuchsia-500 border-y-fuchsia-200 border-r-fuchsia-200 bg-fuchsia-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200"><PlaneLanding className="w-3 h-3 mr-1" /> 降落標準更改</span>; } 
-              else if (notam.category === 'EQUIP_US') { borderClass = 'border-l-4 border-l-orange-400 border-y-orange-100 border-r-orange-100 bg-orange-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200"><LightbulbOff className="w-3 h-3 mr-1" /> 設備無法使用</span>; } 
-              else if (notam.category === 'OBSTACLE_ETC') { borderClass = 'border-l-4 border-l-indigo-400 border-y-indigo-100 border-r-indigo-100 bg-indigo-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-200"><MountainSnow className="w-3 h-3 mr-1" /> 障礙物/不平整</span>; } 
-              else if (notam.category === 'BIRD_HAZARD') { borderClass = 'border-l-4 border-l-cyan-400 border-y-cyan-100 border-r-cyan-100 bg-cyan-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 border border-cyan-200"><Bird className="w-3 h-3 mr-1" /> 鳥擊/野生動物</span>; } 
-              else if (notam.category === 'UAS_KITE') { borderClass = 'border-l-4 border-l-violet-400 border-y-violet-100 border-r-violet-100 bg-violet-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200"><SendKite className="w-3 h-3 mr-1" /> 無人機/氣球/煙火</span>; } 
-              else if (notam.category === 'MAINTENANCE') { borderClass = 'border-l-4 border-l-lime-400 border-y-lime-100 border-r-lime-100 bg-lime-50/30'; badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-lime-100 text-lime-800 border border-lime-200"><Tractor className="w-3 h-3 mr-1" /> 除草/周邊維護</span>; } 
-              else { badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200"><CheckCircle className="w-3 h-3 mr-1" /> 一般資訊</span>; }
+              if (notam.category === 'RWY_CLSD') { borderClass = 'border-l-4 border-l-rose-500 border-y-rose-200 border-r-rose-200 bg-rose-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-200">🚨 跑道關閉</span>; } 
+              else if (notam.category === 'TWY_CLSD') { borderClass = 'border-l-4 border-l-amber-500 border-y-amber-200 border-r-amber-200 bg-amber-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-200">🚧 滑行道/停機坪關閉</span>; } 
+              else if (notam.category === 'COMPANY_NOTAM') { borderClass = 'border-l-4 border-l-teal-500 border-y-teal-200 border-r-teal-200 bg-teal-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-teal-100 text-teal-800 border border-teal-200"><Building className="w-3 h-3 mr-1" /> 公司通報</span>; } 
+              else if (notam.category === 'MISSED_APPROACH') { borderClass = 'border-l-4 border-l-purple-500 border-y-purple-200 border-r-purple-200 bg-purple-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-100 text-purple-800 border border-purple-200"><CornerUpRight className="w-3 h-3 mr-1" /> 誤失進場更改</span>; } 
+              else if (notam.category === 'TAKEOFF_MINIMUM') { borderClass = 'border-l-4 border-l-pink-500 border-y-pink-200 border-r-pink-200 bg-pink-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-pink-100 text-pink-800 border border-pink-200"><PlaneTakeoff className="w-3 h-3 mr-1" /> 起飛標準更改</span>; } 
+              else if (notam.category === 'LANDING_MINIMUM') { borderClass = 'border-l-4 border-l-fuchsia-500 border-y-fuchsia-200 border-r-fuchsia-200 bg-fuchsia-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200"><PlaneLanding className="w-3 h-3 mr-1" /> 降落標準更改</span>; } 
+              else if (notam.category === 'EQUIP_US') { borderClass = 'border-l-4 border-l-orange-400 border-y-orange-100 border-r-orange-100 bg-orange-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-orange-100 text-orange-800 border border-orange-200"><LightbulbOff className="w-3 h-3 mr-1" /> 設備無法使用</span>; } 
+              else if (notam.category === 'OBSTACLE_ETC') { borderClass = 'border-l-4 border-l-indigo-400 border-y-indigo-100 border-r-indigo-100 bg-indigo-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-100 text-indigo-800 border border-indigo-200"><MountainSnow className="w-3 h-3 mr-1" /> 障礙物/不平整</span>; } 
+              else if (notam.category === 'BIRD_HAZARD') { borderClass = 'border-l-4 border-l-cyan-400 border-y-cyan-100 border-r-cyan-100 bg-cyan-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-cyan-100 text-cyan-800 border border-cyan-200"><Bird className="w-3 h-3 mr-1" /> 鳥擊/野生動物</span>; } 
+              else if (notam.category === 'UAS_KITE') { borderClass = 'border-l-4 border-l-violet-400 border-y-violet-100 border-r-violet-100 bg-violet-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-violet-100 text-violet-800 border border-violet-200"><SendKite className="w-3 h-3 mr-1" /> 無人機/氣球/煙火</span>; } 
+              else if (notam.category === 'MAINTENANCE') { borderClass = 'border-l-4 border-l-lime-400 border-y-lime-100 border-r-lime-100 bg-lime-50/30'; badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-lime-100 text-lime-800 border border-lime-200"><Tractor className="w-3 h-3 mr-1" /> 除草/周邊維護</span>; } 
+              else { badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-200"><CheckCircle className="w-3 h-3 mr-1" /> 一般資訊</span>; }
             } else {
               borderClass = 'bg-slate-50 border-slate-200 opacity-70 hover:opacity-100';
-              if (notam.reason.includes('障礙物')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 text-indigo-500 border border-indigo-100"><MountainSnow className="w-3 h-3 mr-1" /> 隱藏的障礙物</span>;
-              else if (notam.reason.includes('鳥類')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-cyan-50 text-cyan-600 border border-cyan-100"><Bird className="w-3 h-3 mr-1" /> 隱藏的動物警告</span>;
-              else if (notam.reason.includes('無人機')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-violet-50 text-violet-600 border border-violet-100"><SendKite className="w-3 h-3 mr-1" /> 隱藏的空中活動</span>;
-              else if (notam.reason.includes('除草')) badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-lime-50 text-lime-600 border border-lime-100"><Tractor className="w-3 h-3 mr-1" /> 隱藏的除草/維護</span>;
-              else badge = <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-200 text-slate-600"><XCircle className="w-3 h-3 mr-1" /> 已依時間過濾</span>;
+              badge = <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-600"><XCircle className="w-3 h-3 mr-1" /> 已過濾</span>;
             }
 
             const isDimmed = !(notam.keep || isSelected);
+            const summary = summarizeAirportNotam(notam);
 
             return (
-              <div className={`p-4 rounded-xl border mb-3 shadow-sm transition-all relative ${borderClass} ${isSelected ? 'ring-2 ring-amber-400 border-amber-400 !opacity-100 bg-amber-50/10' : ''}`}>
-                <div className="flex justify-between items-start mb-2 pr-10">
-                  <h4 className="font-bold text-slate-800 text-lg flex flex-wrap items-center gap-y-1">
-                    {notam.id}{badge}
-                  </h4>
-                </div>
-                
+              <div className={`p-4 rounded-xl border mb-3 shadow-sm transition-all relative ${borderClass} ${isSelected ? 'ring-2 ring-amber-400 border-amber-400 !opacity-100 bg-amber-50/20' : ''}`}>
                 <button 
                   onClick={onToggle}
                   title={isSelected ? "取消標記" : "標記為重要"}
-                  className={`absolute top-4 right-4 p-1.5 rounded-lg transition-all transform active:scale-90 ${isSelected ? 'text-amber-500 bg-amber-100 hover:bg-amber-200 shadow-sm' : 'text-slate-300 hover:text-amber-400 hover:bg-slate-100'}`}
+                  className={`absolute top-3 right-3 z-10 px-3 py-1.5 rounded-lg border text-xs font-black transition flex items-center gap-1.5 shadow-sm ${isSelected ? 'text-amber-700 bg-amber-100 border-amber-300 hover:bg-amber-200' : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'}`}
                 >
-                  <Star className="w-5 h-5" fill={isSelected ? "currentColor" : "none"} />
+                  <Star className="w-3.5 h-3.5" fill={isSelected ? "currentColor" : "none"} />
+                  {isSelected ? '已標記' : '標記重要'}
                 </button>
 
-                {isDimmed && <div className="text-sm font-medium mb-2 flex items-center text-slate-500"><AlertTriangle className="w-4 h-4 mr-1.5" />原因: {notam.reason}</div>}
-                
-                <pre className={`text-sm whitespace-pre-wrap font-mono leading-relaxed ${isDimmed ? 'text-slate-500' : 'text-slate-800'}`}>
-                    {formatNotamText(notam.text, isDimmed)}
+                <div className="mb-3 pr-32">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-black text-slate-800 text-lg">{notam.id}</span>
+                      {badge}
+                    </div>
+
+                  </div>
+                </div>
+
+                {isDimmed && <div className="text-xs font-medium mb-3 flex items-center text-slate-500"><AlertTriangle className="w-3.5 h-3.5 mr-1.5" />原因: {notam.reason}</div>}
+
+                <pre className={`text-sm whitespace-pre-wrap break-words overflow-x-hidden font-mono leading-relaxed ${isDimmed ? 'text-slate-500' : 'text-slate-800'}`}>
+                  {formatNotamText(notam.text, isDimmed)}
                 </pre>
               </div>
             );
@@ -538,13 +900,13 @@
                                   </section>
                                 )}
 
-                                {rwyClsdNotams.length > 0 && <section><h4 className="text-rose-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-rose-200 pb-2"><AlertOctagon className="w-5 h-5" />跑道關閉 (Runway Closed) - {rwyClsdNotams.length} 筆</h4><div>{rwyClsdNotams.map((notam, idx) => <NotamCard key={`rwy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
-                                {twyClsdNotams.length > 0 && <section><h4 className="text-amber-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-amber-200 pb-2"><MapIcon className="w-5 h-5" />滑行道/停機坪關閉 (Taxiway/Apron Closed) - {twyClsdNotams.length} 筆</h4><div>{twyClsdNotams.map((notam, idx) => <NotamCard key={`twy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
-                                {missedAppNotams.length > 0 && <section><h4 className="text-purple-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-purple-200 pb-2"><CornerUpRight className="w-5 h-5" />誤失進場程序更改 (Missed Approach) - {missedAppNotams.length} 筆</h4><div>{missedAppNotams.map((notam, idx) => <NotamCard key={`missed-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
-                                {equipUSNotams.length > 0 && <section><h4 className="text-orange-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-orange-200 pb-2"><LightbulbOff className="w-5 h-5" />設備無法使用 (Equipment U/S) - {equipUSNotams.length} 筆</h4><div>{equipUSNotams.map((notam, idx) => <NotamCard key={`equip-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {rwyClsdNotams.length > 0 && <section><h4 className="text-rose-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-rose-200 pb-2"><AlertOctagon className="w-4 h-4" />跑道關閉 (Runway Closed) - {rwyClsdNotams.length} 筆</h4><div>{rwyClsdNotams.map((notam, idx) => <NotamCard key={`rwy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {twyClsdNotams.length > 0 && <section><h4 className="text-amber-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-amber-200 pb-2"><MapIcon className="w-4 h-4" />滑行道/停機坪關閉 (Taxiway/Apron Closed) - {twyClsdNotams.length} 筆</h4><div>{twyClsdNotams.map((notam, idx) => <NotamCard key={`twy-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {missedAppNotams.length > 0 && <section><h4 className="text-purple-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-purple-200 pb-2"><CornerUpRight className="w-4 h-4" />誤失進場程序更改 (Missed Approach) - {missedAppNotams.length} 筆</h4><div>{missedAppNotams.map((notam, idx) => <NotamCard key={`missed-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {equipUSNotams.length > 0 && <section><h4 className="text-orange-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-orange-200 pb-2"><LightbulbOff className="w-4 h-4" />設備無法使用 (Equipment U/S) - {equipUSNotams.length} 筆</h4><div>{equipUSNotams.map((notam, idx) => <NotamCard key={`equip-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                                 
-                                {takeoffMinNotams.length > 0 && <section><h4 className="text-pink-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-pink-200 pb-2"><PlaneTakeoff className="w-5 h-5" />起飛標準更改 (Takeoff Minimums) - {takeoffMinNotams.length} 筆</h4><div>{takeoffMinNotams.map((notam, idx) => <NotamCard key={`tkofmin-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
-                                {landingMinNotams.length > 0 && <section><h4 className="text-fuchsia-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-fuchsia-200 pb-2"><PlaneLanding className="w-5 h-5" />降落標準更改 (Landing / Approach Minimums) - {landingMinNotams.length} 筆</h4><div>{landingMinNotams.map((notam, idx) => <NotamCard key={`ldgmin-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {takeoffMinNotams.length > 0 && <section><h4 className="text-pink-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-pink-200 pb-2"><PlaneTakeoff className="w-4 h-4" />起飛標準更改 (Takeoff Minimums) - {takeoffMinNotams.length} 筆</h4><div>{takeoffMinNotams.map((notam, idx) => <NotamCard key={`tkofmin-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {landingMinNotams.length > 0 && <section><h4 className="text-fuchsia-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-fuchsia-200 pb-2"><PlaneLanding className="w-4 h-4" />降落標準更改 (Landing / Approach Minimums) - {landingMinNotams.length} 筆</h4><div>{landingMinNotams.map((notam, idx) => <NotamCard key={`ldgmin-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                                 
                                 {(obstNotams.length > 0 || birdNotams.length > 0 || uasNotams.length > 0 || maintNotams.length > 0) && (
                                   <section>
@@ -560,7 +922,7 @@
                                   </section>
                                 )}
 
-                                {compNotams.length > 0 && <section><h4 className="text-teal-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-teal-200 pb-2"><Building className="w-5 h-5" />公司通報 (Company NOTAMs) - {compNotams.length} 筆</h4><div>{compNotams.map((notam, idx) => <NotamCard key={`comp-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
+                                {compNotams.length > 0 && <section><h4 className="text-teal-700 font-bold text-lg mb-3 flex items-center gap-2 border-b border-teal-200 pb-2"><Building className="w-4 h-4" />公司通報 (Company NOTAMs) - {compNotams.length} 筆</h4><div>{compNotams.map((notam, idx) => <NotamCard key={`comp-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
 
                                 {normalNotams.length > 0 && <section><h4 className="text-slate-600 font-bold text-lg mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">一般資訊 (Other Info) - {normalNotams.length} 筆</h4><div>{normalNotams.map((notam, idx) => <NotamCard key={`normal-${idx}`} notam={notam} isSelected={false} onToggle={() => toggleNotamSelection(notam.id)} />)}</div></section>}
                               </div>
@@ -582,6 +944,321 @@
                     </div>
                   </div>
                 </div>
+            </div>
+          );
+        }
+
+
+
+        // ==========================================
+        // 模組：ATIS.guru 起飛 / 降落機場 D-ATIS
+        // ==========================================
+        function AtisGuruApp({ rawText, onAtisDataUpdate }) {
+          const [routeInfo, setRouteInfo] = useState(null);
+          const [atisData, setAtisData] = useState({});
+          const [loading, setLoading] = useState(false);
+          const [error, setError] = useState(null);
+
+          useEffect(() => {
+            if (!rawText) {
+              setRouteInfo(null);
+              setAtisData({});
+              if (onAtisDataUpdate) onAtisDataUpdate({});
+              setError(null);
+              return;
+            }
+            try {
+              const data = parseOFP(rawText);
+              if (!data || data.depIcao === 'N/A' || data.arrIcao === 'N/A') throw new Error('Missing ICAO');
+              const nextRoute = { depIcao: data.depIcao, arrIcao: data.arrIcao };
+              setRouteInfo(nextRoute);
+              setError(null);
+              fetchAtisForRoute(nextRoute);
+            } catch (err) {
+              console.error('ATIS route parse error:', err);
+              setError('無法從 OFP 解析起飛 / 降落機場 ICAO，ATIS 模組無法啟用。');
+            }
+          }, [rawText]);
+
+          const fetchRawViaProxy = async (url) => {
+            // 快速顯示版：先用 Jina Reader 把 atis.guru 轉成純文字，通常比一般 CORS 代理快很多。
+            // 直接 fetch atis.guru 多數瀏覽器會被 CORS 擋；iframe 又會被 atis.guru 擋，所以採「抓純文字後在本頁顯示」。
+            const sources = [
+              `https://r.jina.ai/${url}`,
+              `https://r.jina.ai/http://r.jina.ai/http://http://${url.replace(/^https?:\/\//, '')}`,
+              `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+              `https://corsproxy.io/?${encodeURIComponent(url)}`
+            ];
+            for (let i = 0; i < sources.length; i++) {
+              const p = sources[i];
+              try {
+                const controller = new AbortController();
+                const id = setTimeout(() => controller.abort(), i === 0 ? 7000 : 9000);
+                const res = await fetch(p, { signal: controller.signal, cache: 'no-store' });
+                clearTimeout(id);
+                if (res.ok) {
+                  const text = await res.text();
+                  if (text && text.trim().length > 30) return text;
+                }
+              } catch (e) { }
+            }
+            return '';
+          };
+
+          const normalizeAtisText = (s) => (s || '').replace(/\s+/g, ' ').replace(/=\s*/g, '=').trim();
+
+          const parseAtisHtml = (html, icao) => {
+            const result = { icao, arr: null, dep: null, metar: null, taf: null, sourceUrl: `https://atis.guru/atis/${icao}` };
+            if (!html) return result;
+
+            const cleanMarkdownMarks = (s) => (s || '')
+              .replace(/^#+\s*/gm, '')
+              .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+              .replace(/\s+/g, ' ')
+              .trim();
+
+            const stripNoise = (s) => cleanMarkdownMarks(s)
+              .replace(/^(No ATIS available\.{0,3}|An unhandled error has occurred\.?|Reload)\s*/i, '')
+              .trim();
+
+            const readFromPlainText = (plainText, label) => {
+              const normalized = (plainText || '')
+                .replace(/\r/g, '\n')
+                .replace(/\u00a0/g, ' ')
+                .replace(/[ \t]+/g, ' ')
+                .replace(/\n{3,}/g, '\n\n');
+              const labelRegex = label === 'ARR' ? /Arrival\s+ATIS/i : /Departure\s+ATIS/i;
+              const match = labelRegex.exec(normalized);
+              if (!match) return null;
+              const startIdx = match.index + match[0].length;
+              const rest = normalized.slice(startIdx);
+              const nextMatch = rest.search(/\n\s*#{0,6}\s*(Arrival\s+ATIS|Departure\s+ATIS|METAR|TAF)\b/i);
+              const section = nextMatch >= 0 ? rest.slice(0, nextMatch) : rest;
+              const timeMatch = section.match(/(20\d{2}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+UTC)/i);
+              const time = timeMatch ? timeMatch[1] : '';
+              let text = section.replace(/20\d{2}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+UTC/i, ' ');
+              text = stripNoise(text);
+              if (!text) return null;
+              return { time, text };
+            };
+
+            try {
+              const doc = new DOMParser().parseFromString(html, 'text/html');
+              const bodyText = (doc.body && (doc.body.innerText || doc.body.textContent) ? (doc.body.innerText || doc.body.textContent) : html);
+
+              // atis.guru 會同時輸出一段「No ATIS available」和後面的實際靜態內容；
+              // 不要被前段文字誤判，直接從 Arrival / Departure 標題後方抓資料。
+              result.arr = readFromPlainText(bodyText, 'ARR');
+              result.dep = readFromPlainText(bodyText, 'DEP');
+
+              const readWeatherSection = (plainText, label) => {
+                const normalized = (plainText || '')
+                  .replace(/\r/g, '\n')
+                  .replace(/\u00a0/g, ' ')
+                  .replace(/[ \t]+/g, ' ')
+                  .replace(/\n{3,}/g, '\n\n');
+                const labelRegex = label === 'METAR' ? /(?:^|\n)\s*METAR\b/i : /(?:^|\n)\s*TAF\b/i;
+                const match = labelRegex.exec(normalized);
+                if (!match) return null;
+                const startIdx = match.index + match[0].length;
+                const rest = normalized.slice(startIdx);
+                const nextRegex = label === 'METAR'
+                  ? /\n\s*#{0,6}\s*TAF\b/i
+                  : /\n\s*(?:An unhandled error has occurred|Reload|function\s+startTime|window\.|document\.|<script|Loading\.{0,3})\b/i;
+                const nextMatch = rest.search(nextRegex);
+                let section = nextMatch >= 0 ? rest.slice(0, nextMatch) : rest;
+                section = stripNoise(section)
+                  .replace(/\bAn unhandled error has occurred[\s\S]*$/i, '')
+                  .replace(/\bfunction\s+startTime[\s\S]*$/i, '')
+                  .replace(/\bdocument\.[\s\S]*$/i, '')
+                  .replace(/\bwindow\.[\s\S]*$/i, '')
+                  .trim();
+                if (!section) return null;
+                return `${label} ${section}`.replace(/\s+/g, ' ').trim();
+              };
+
+              result.metar = readWeatherSection(bodyText, 'METAR');
+              result.taf = readWeatherSection(bodyText, 'TAF');
+            } catch (err) {
+              console.error('ATIS parse error:', err);
+            }
+            return result;
+          };
+
+          const fetchOneAtis = async (icao) => {
+            const raw = await fetchRawViaProxy(`https://atis.guru/atis/${icao}`);
+            return parseAtisHtml(raw, icao);
+          };
+
+          const fetchAtisForRoute = async (route = routeInfo) => {
+            if (!route || !route.depIcao || !route.arrIcao) return;
+            setLoading(true);
+            setError(null);
+            try {
+              const uniqueIcaos = Array.from(new Set([route.depIcao, route.arrIcao]));
+              const pairs = await Promise.all(uniqueIcaos.map(async (icao) => [icao, await fetchOneAtis(icao)]));
+              const next = {};
+              pairs.forEach(([icao, data]) => next[icao] = data);
+              setAtisData(next);
+              if (onAtisDataUpdate) onAtisDataUpdate(next);
+            } catch (err) {
+              console.error('ATIS fetch error:', err);
+              setError('ATIS 連線失敗。請按「開啟 atis.guru」確認該站是否有資料，或稍後再重新整理。');
+            } finally {
+              setLoading(false);
+            }
+          };
+
+          const pickAtisForRole = (airportData, role) => {
+            if (!airportData) return null;
+            if (role === 'DEP') return airportData.dep || airportData.arr;
+            return airportData.arr || airportData.dep;
+          };
+
+          const extractAtisEssentials = (text) => {
+            const upper = (text || '').toUpperCase();
+            const runwaySet = new Set();
+            const runwayRegex = /\b(?:RWY|RUNWAY)\s*([0-3]?\d[ LRC]?)(?:\s*\/\s*([0-3]?\d[ LRC]?))?/gi;
+            let m;
+            while ((m = runwayRegex.exec(upper)) !== null) {
+              if (m[1]) runwaySet.add(m[1].replace(/\s+/g, ''));
+              if (m[2]) runwaySet.add(m[2].replace(/\s+/g, ''));
+            }
+            const windMatch = upper.match(/\bWIND(?:\s+(?:TDZ|MID|END))?\s+((?:[0-3]\d{2}|VRB)\/?\d{1,3}(?:G\d{1,3})?KT|(?:[0-3]\d{2}|VRB)\d{2,3}(?:G\d{2,3})?KT)/i) || upper.match(/\b((?:[0-3]\d{2}|VRB)\d{2,3}(?:G\d{2,3})?KT)\b/i);
+            const qnhMatch = upper.match(/\bQNH\s*(\d{4})(?:\s*HPA)?\b/i) || upper.match(/\bQ(\d{4})\b/i);
+            const qfeMatch = upper.match(/\bQFE\s*(\d{4})(?:\s*HPA)?\b/i);
+            const tempMatch = upper.match(/\b(?:TEMP(?:ERATURE)?|T)\s*(M?\d{1,2})\b/i) || upper.match(/\b(M?\d{2})\/(?:M?\d{2}|\/\/)\b/i);
+            const visMatch = upper.match(/\bVIS\s*([0-9]{3,5}M?|[0-9]+KM|CAVOK)\b/i) || upper.match(/\b(CAVOK)\b/i);
+            const infoMatch = upper.match(/\bINFORMATION\s+([A-Z])\b/i) || upper.match(/\bINFO\s+([A-Z])\b/i);
+            const cleanTemp = tempMatch ? tempMatch[1].replace('M', '-') : '';
+            return {
+              runways: Array.from(runwaySet),
+              wind: windMatch ? windMatch[1].replace('/', '') : '',
+              temp: cleanTemp,
+              qnh: qnhMatch ? qnhMatch[1] : '',
+              qfe: qfeMatch ? qfeMatch[1] : '',
+              vis: visMatch ? (visMatch[1] || visMatch[0]) : '',
+              info: infoMatch ? infoMatch[1] : ''
+            };
+          };
+
+          const findRunwayClosureConflict = (icao, runways) => {
+            if (!rawText || !icao || !runways || runways.length === 0) return [];
+            const compact = rawText.toUpperCase().replace(/\s+/g, ' ');
+            return runways.filter(rwy => {
+              const r = rwy.replace(/\s+/g, '');
+              const patterns = [
+                new RegExp('RWY\\s*' + r + '\\b.{0,80}\\b(?:CLSD|CLOSED)\\b', 'i'),
+                new RegExp('\\b(?:CLSD|CLOSED)\\b.{0,80}RWY\\s*' + r + '\\b', 'i'),
+                new RegExp('RUNWAY\\s*' + r + '\\b.{0,80}\\b(?:CLSD|CLOSED)\\b', 'i')
+              ];
+              return patterns.some(rx => rx.test(compact));
+            });
+          };
+
+          const HighlightedAtisText = ({ text }) => {
+            const regex = /(\b(?:RWY|RUNWAY)\s*[0-3]?\d[ LRC]?(?:\s*\/\s*[0-3]?\d[ LRC]?)?\b|\bWIND(?:\s+(?:TDZ|MID|END))?\s+(?:[0-3]\d{2}|VRB)\/?\d{1,3}(?:G\d{1,3})?KT\b|\b(?:[0-3]\d{2}|VRB)\d{2,3}(?:G\d{2,3})?KT\b|\bQNH\s*\d{4}(?:\s*HPA)?\b|\bQFE\s*\d{4}(?:\s*HPA)?\b|\bQ\d{4}\b|\b(?:TEMP(?:ERATURE)?|T)\s*M?\d{1,2}\b|\bM?\d{2}\/(?:M?\d{2}|\/\/)\b|\bVIS\s*(?:[0-9]{3,5}M?|[0-9]+KM|CAVOK)\b|\bINFORMATION\s+[A-Z]\b)/gi;
+            const parts = (text || '').split(regex);
+            return parts.map((part, idx) => {
+              if (!part) return null;
+              const u = part.toUpperCase();
+              if (/^(?:RWY|RUNWAY)\b/.test(u)) return <span key={idx} className="font-black bg-yellow-200/70 border border-yellow-300 text-slate-950 px-1 py-0.5 rounded-md">{part}</span>;
+              if (/^(?:WIND|[0-3]\d{2}|VRB)/.test(u)) return <span key={idx} className="font-black bg-sky-100 border border-sky-200 text-sky-900 px-1 py-0.5 rounded-md">{part}</span>;
+              if (/^(?:QNH|QFE|Q\d{4})\b/.test(u)) return <span key={idx} className="font-black bg-emerald-100 border border-emerald-200 text-emerald-900 px-1 py-0.5 rounded-md">{part}</span>;
+              if (/^(?:TEMP|TEMPERATURE|T\s*M?\d|M?\d{2}\/)\b/.test(u)) return <span key={idx} className="font-black bg-orange-100 border border-orange-200 text-orange-900 px-1 py-0.5 rounded-md">{part}</span>;
+              if (/^(?:VIS|CAVOK)\b/.test(u)) return <span key={idx} className="font-black bg-violet-100 border border-violet-200 text-violet-900 px-1 py-0.5 rounded-md">{part}</span>;
+              if (/^INFORMATION\b/.test(u)) return <span key={idx} className="font-black bg-amber-100 border border-amber-200 text-amber-900 px-1 py-0.5 rounded-md">{part}</span>;
+              return <Fragment key={idx}>{part}</Fragment>;
+            });
+          };
+
+          const AtisCard = ({ label, icao, role }) => {
+            const airportData = atisData[icao];
+            const atis = pickAtisForRole(airportData, role);
+            const preferred = role === 'DEP' ? 'Departure ATIS' : 'Arrival ATIS';
+            const fallbackUsed = airportData && atis && ((role === 'DEP' && !airportData.dep) || (role === 'ARR' && !airportData.arr));
+            const essentials = atis && atis.text ? extractAtisEssentials(atis.text) : { runways: [], wind: '', temp: '', qnh: '', qfe: '', vis: '', info: '' };
+            return (
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div className={`px-5 py-4 border-b ${role === 'DEP' ? 'bg-blue-50 border-blue-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                  <div className="flex flex-wrap justify-between items-center gap-3">
+                    <div>
+                      <div className="text-sm font-bold text-slate-500 flex items-center gap-2">
+                        {role === 'DEP' ? <PlaneTakeoff className="w-4 h-4" /> : <PlaneLanding className="w-4 h-4" />}
+                        {label}
+                      </div>
+                      <div className="text-3xl font-black text-slate-800 tracking-wide">{icao}</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <a href={`https://atis.guru/atis/${icao}`} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-blue-600 hover:text-blue-800 bg-white border border-blue-100 px-3 py-1.5 rounded-lg shadow-sm">
+                        開啟 atis.guru
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-5 bg-slate-50 min-h-[220px]">
+                  {loading && !airportData ? (
+                    <div className="text-blue-600 font-bold animate-pulse flex items-center gap-2"><Clock className="w-5 h-5 animate-spin" /> ATIS 快速抓取中，通常數秒內完成...</div>
+                  ) : !airportData ? (
+                    <div className="text-slate-500 font-bold">尚未抓取資料</div>
+                  ) : !atis || !atis.text ? (
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 font-bold flex items-start gap-2">
+                      <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
+                      <span>{icao} 目前在 atis.guru 沒有可顯示的 {preferred}。</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`text-xs font-black px-2.5 py-1 rounded-full border ${role === 'DEP' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-emerald-100 text-emerald-800 border-emerald-200'}`}>{fallbackUsed ? '備用顯示' : preferred}</span>
+                        {atis.time && <span className="text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-full">{atis.time}</span>}
+                      </div>
+                      {fallbackUsed && <div className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">找不到 {preferred}，已暫時顯示同機場另一組 ATIS。</div>}
+                      {(essentials.runways.length > 0 || essentials.wind || essentials.temp || essentials.qnh || essentials.qfe || essentials.vis || essentials.info) && (
+                        <div className="flex flex-wrap gap-2">
+                          {essentials.info && <span className="text-xs font-black px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200">INFO {essentials.info}</span>}
+                          {essentials.runways.map(r => <span key={r} className="text-xs font-black px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-900 border border-yellow-200">RWY {r}</span>)}
+                          {essentials.wind && <span className="text-xs font-black px-2.5 py-1 rounded-full bg-sky-100 text-sky-900 border border-sky-200">WIND {essentials.wind}</span>}
+                          {essentials.temp && <span className="text-xs font-black px-2.5 py-1 rounded-full bg-orange-100 text-orange-900 border border-orange-200">TEMP {essentials.temp}°C</span>}
+                          {essentials.vis && <span className="text-xs font-black px-2.5 py-1 rounded-full bg-violet-100 text-violet-900 border border-violet-200">VIS {essentials.vis}</span>}
+                          {essentials.qnh && <span className="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200">QNH {essentials.qnh}</span>}
+                          {essentials.qfe && <span className="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200">QFE {essentials.qfe}</span>}
+                        </div>
+                      )}
+                      <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-slate-800 bg-white border border-slate-200 rounded-xl p-4 shadow-sm"><HighlightedAtisText text={atis.text} /></pre>
+                      {(airportData.metar || airportData.taf) && (
+                        <div className="grid grid-cols-1 gap-3">
+                          {airportData.metar && <div><div className="text-xs font-black text-slate-500 mb-1">METAR</div><pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-lg p-3">{airportData.metar}</pre></div>}
+                          {airportData.taf && <div><div className="text-xs font-black text-slate-500 mb-1">TAF</div><pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-lg p-3">{airportData.taf}</pre></div>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          };
+
+          if (!routeInfo && !error) return null;
+
+          return (
+            <div className="w-full mt-4 mb-4">
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2"><Mic className="w-6 h-6 text-sky-600" /> 起飛 / 降落 ATIS</h2>
+                </div>
+                <button onClick={() => fetchAtisForRoute()} disabled={loading || !routeInfo} className={`px-4 py-2 rounded-xl font-bold text-white shadow-sm flex items-center gap-2 ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'}`}>
+                  <Clock className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> 重新整理 ATIS
+                </button>
+              </div>
+
+              {error && <div className="mb-5 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 font-bold flex items-start gap-2"><AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />{error}</div>}
+
+              {routeInfo && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <AtisCard label="起飛機場" icao={routeInfo.depIcao} role="DEP" />
+                  <AtisCard label="降落機場" icao={routeInfo.arrIcao} role="ARR" />
+                </div>
+              )}
             </div>
           );
         }
@@ -733,7 +1410,16 @@
           });
         };
 
-        function OfpSummaryApp({ rawText, onOfpDataUpdate }) {
+
+        const formatFlightLevelDisplay = (value) => {
+          const text = String(value || '').trim();
+          if (!text) return '—';
+          return text
+            .replace(/\s*-\s*/g, ' -\n')
+            .replace(/\s*\/\s*/g, ' /\n');
+        };
+
+        function OfpSummaryApp({ rawText, onOfpDataUpdate, onAtisDataUpdate }) {
           const [data, setData] = useState(null);
           const [useLiveWx, setUseLiveWx] = useState(false);
           const [liveWxData, setLiveWxData] = useState({});
@@ -851,15 +1537,15 @@
                               <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
                               <div className="flex items-center gap-2 text-slate-400 mb-4 pb-3 border-b border-slate-100"><Fuel className="w-5 h-5 text-emerald-500" /> <h3 className="text-base font-bold text-slate-700">效能 (Perf)</h3></div>
                               <div className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-3">
-                                      <div className="flex flex-col bg-emerald-50 p-3 rounded-xl border border-emerald-100"><span className="text-xs font-bold text-emerald-800 mb-1">Total Fuel</span><span className="font-black text-2xl text-emerald-900 leading-none">{data.totalFuel}</span></div>
-                                      <div className="flex flex-col bg-teal-50 p-3 rounded-xl border border-teal-100"><span className="text-xs font-bold text-teal-800 mb-1">ALTN+FIN RES</span><span className="font-black text-2xl text-teal-900 leading-none">{data.reserveFuelSum}</span></div>
+                                  <div className="grid grid-cols-1 gap-3">
+                                      <div className="flex flex-row items-center justify-between gap-3 bg-emerald-50 p-3 rounded-xl border border-emerald-100 min-w-0 overflow-hidden"><span className="text-xs font-bold text-emerald-800 whitespace-nowrap">Total Fuel</span><span className="font-black text-lg md:text-xl text-emerald-900 leading-none whitespace-nowrap tracking-tight tabular-nums">{data.totalFuel}</span></div>
+                                      <div className="flex flex-row items-center justify-between gap-3 bg-teal-50 p-3 rounded-xl border border-teal-100 min-w-0 overflow-hidden"><span className="text-xs font-bold text-teal-800 whitespace-nowrap">ALTN+FIN RES</span><span className="font-black text-lg md:text-xl text-teal-900 leading-none whitespace-nowrap tracking-tight tabular-nums">{data.reserveFuelSum}</span></div>
                                   </div>
                                   <div className="flex gap-3">
                                       <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 w-1/3"><span className="block text-xs font-bold text-slate-400 mb-1">CI</span><span className="font-black text-xl text-slate-700">{data.ci}</span></div>
                                       <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 w-2/3 flex flex-col justify-center overflow-hidden">
                                           <span className="block text-xs font-bold text-blue-500 mb-1">Flight Level</span>
-                                          <span className="font-black text-xl text-blue-700 tracking-tight">{data.fl}</span>
+                                          <span className="font-black text-sm md:text-base text-blue-700 tracking-tight whitespace-pre-line break-words tabular-nums leading-snug">{formatFlightLevelDisplay(data.fl)}</span>
                                       </div>
                                   </div>
                               </div>
@@ -871,6 +1557,8 @@
                           <ChevronRight className="w-8 h-8 text-slate-300 hidden md:block" />
                           <div className="flex-1 w-full bg-emerald-50/50 p-4 rounded-xl border border-emerald-100"><div className="flex items-center justify-between mb-3"><div className="flex items-center gap-2"><PlaneLanding className="w-6 h-6 text-emerald-600"/> <span className="font-black text-xl text-slate-700">ARR</span></div><span className="bg-emerald-200 text-emerald-900 font-black text-base px-3 py-1 rounded-lg border border-emerald-300">{data.arrIcao}</span></div><div className="flex gap-6"><div><span className="block text-xs font-bold text-slate-400 mb-1">RWY</span><span className="font-black text-2xl text-slate-800 leading-none">{data.ldgRwy}</span></div><div><span className="block text-xs font-bold text-slate-400 mb-1">STAR</span><span className="font-black text-2xl text-emerald-700 leading-none">{data.star}</span></div></div></div>
                       </div>
+
+                      <AtisGuruApp rawText={rawText} onAtisDataUpdate={onAtisDataUpdate} />
 
                       <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100">
@@ -923,15 +1611,1092 @@
         // ==========================================
         // 主程式入口: 統一上傳與狀態派發中心
         // ==========================================
+
+
+
+        // ==========================================
+        // 模組：Enroute FIR NOTAM 精簡閱讀
+        // ==========================================
+        function EnrouteFirNotamApp({ rawText, onImportantUpdate }) {
+          const [groups, setGroups] = useState([]);
+          const [expandedGroups, setExpandedGroups] = useState({});
+          const [expandedNotams, setExpandedNotams] = useState({});
+          const [importantFirNotams, setImportantFirNotams] = useState([]);
+          const [showLow, setShowLow] = useState(false);
+          const [activeFilter, setActiveFilter] = useState('ALL');
+
+          useEffect(() => {
+            if (onImportantUpdate) onImportantUpdate(importantFirNotams);
+          }, [importantFirNotams]);
+
+          const sanitize = (text) => {
+            return String(text || '')
+              .replace(/BR\s+\d{3}\/\d{2}[A-Za-z]{3}\d{2}\/[A-Z]{3}-[A-Z]{3}.*?Page\s+\d+\s+of\s+\d+/gi, '\n')
+              .replace(/BR\s+\d{3}\/\d{2}[A-Za-z]{3}\d{2}.*?Page\s+\d+\s+of\s+\d+/gi, '\n')
+              .replace(/Page\s+\d+\s+of\s+\d+/gi, '\n')
+              .replace(/---\s*PAGE\s*\d+\s*---/gi, '\n')
+              .replace(/\r/g, '');
+          };
+
+          const extractRouteFirOrder = (text) => {
+            const order = [];
+            const seen = new Set();
+            const re = /^\s*-([A-Z]{4})\s+([A-Z0-9_ ]{3,60}?(?:FIR|UIR)(?:_[A-Z_]+)?)/gm;
+            let m;
+            while ((m = re.exec(text)) !== null) {
+              const code = m[1];
+              const name = m[2].replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+              if (!seen.has(code)) {
+                seen.add(code);
+                order.push({ code, name, idx: order.length });
+              }
+            }
+            return order;
+          };
+
+          const parseNotamBlocks = (sectionText) => {
+            const clean = String(sectionText || '').trim();
+            if (!clean || /^\s*NIL\s*$/i.test(clean)) return [];
+            const parts = clean.split(/(?=^\s*(?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+(?:VALID:|COMPANY\s+NOTAM))/gmi);
+            return parts.map(part => {
+              let t = part.trim();
+              if (!t) return null;
+              const idMatch = t.match(/^\s*((?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2}))/i);
+              if (!idMatch) return null;
+              t = t.replace(/\*{10,}/g, '').replace(/\n{3,}/g, '\n\n').trim();
+              return { id: idMatch[1].toUpperCase(), text: t };
+            }).filter(Boolean);
+          };
+
+          const getChips = (text, header) => {
+            const s = (header + ' ' + text).toUpperCase();
+            const chips = [];
+            const add = (label) => { if (!chips.includes(label)) chips.push(label); };
+            if (/\bGNSS|GPS|SPOOF|JAMM/.test(s)) add('GNSS');
+            if (/\bATS\s+NOT\s+AVAILABLE|ATC|TIBA|COMMUNICATION|CONTACT|FREQUENC/.test(s)) add('ATC/COMM');
+            if (/\bCLSD|CLOSED|SEGMENT CLOSED|RTE SEGMENTS CLSD|ROUTE.*CLOSED|AWY.*CLOSED/.test(s)) add('ROUTE CLSD');
+            if (/\bRESTRICTED|PROHIBITED|DANGER AREA|OAP|MILITARY|AIR REFUELLING/.test(s)) add('AIRSPACE');
+            if (/\bKABUL|OAKX|AFGHAN/.test(s)) add('KABUL');
+            if (/\bCOMPANY\s+NOTAM|FLEET CIRCULAR|FD PRO|CAA RESTRICTION|VOYAGE REPORT/.test(s)) add('COMPANY');
+            if (/\bOFFSET|LONGITUDINAL|SPACING|5NM|8NM/.test(s)) add('OFFSET/SPACING');
+            if (/\bDECOMPRESSION|ESCAPE|PNR|DIVERSION|EMERGENCY DESCENT/.test(s)) add('ESCAPE');
+            if (/\bBORDER|RUSSIA|URRV/.test(s)) add('BORDER');
+            if (chips.length === 0) add('INFO');
+            return chips;
+          };
+
+          const isValidOnlyNotam = (text) => {
+            const s = String(text || '')
+              .replace(/^\s*(?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+/i, '')
+              .replace(/VALID:\s*\d{10}\s*-\s*(?:\d{10}|UFN|PERM|EST)?/ig, '')
+              .replace(/COMPANY\s+NOTAM/ig, '')
+              .replace(/[-–—\s.]+/g, '')
+              .trim();
+            return s.length < 12;
+          };
+
+          const classifyNotam = (text, header) => {
+            if (isValidOnlyNotam(text)) return 'INFO';
+
+            const s = (header + ' ' + text).toUpperCase();
+
+            // Do not classify a NOTAM as Critical just because the section is OAKX/Kabul.
+            // It must contain actual operational trigger words.
+            if (/\bATS\s+NOT\s+AVAILABLE|GNSS\s+JAMM|GPS.*(NOT|CAN NOT|CANNOT)|SPOOF|RTE SEGMENTS CLSD|SEGMENT CLOSED|ROUTE.*CLOSED|PROHIBITED AREA|DANGER AREA|EMERGENCY DESCENT|DECOMPRESSION|ESCAPE|BORDER|CAA RESTRICTION/.test(s)) {
+              return 'CRITICAL';
+            }
+            if (/\bKABUL|OAKX|RNAV|RNP|ATC|TIBA|COMMUNICATION|CONTACT|SPACING|OFFSET|RESTRICTED|AIR REFUELLING|MILITARY|DELAYING ACTION|REPORT TO ATC/.test(s)) {
+              return 'CAUTION';
+            }
+            if (/\bCOMPANY\s+NOTAM|FLEET CIRCULAR|FD PRO|VOYAGE REPORT/.test(s)) {
+              return 'COMPANY';
+            }
+            return 'INFO';
+          };
+
+          const buildSummary = (text, header, chips, level) => {
+            const s = text.replace(/\s+/g, ' ').trim();
+            const up = s.toUpperCase();
+
+            if (isValidOnlyNotam(text)) return 'Only validity line available; no operational content parsed. Hidden by default.';
+
+            if (chips.includes('GNSS')) {
+              if (/SPOOF/.test(up) && /JAMM/.test(up)) return 'GNSS jamming / spoofing reported. Use caution for RNAV/RNP and cross-check navigation.';
+              if (/GPS.*(CAN NOT|CANNOT|NOT).*RECEIVED|GPS SIGNAL/.test(up)) return 'GPS signal loss reported in this FIR. Use caution for RNAV/RNP procedures.';
+              return 'GNSS reliability notice. Conventional navigation / ATC cross-check may be required.';
+            }
+            if (chips.includes('ROUTE CLSD')) {
+              const airway = s.match(/\b(?:AWY\s+)?(?:N\/UN|M\/UM|U?M|U?N|P|B|A|L|J|V)\d{2,4}\b/i);
+              return airway ? `${airway[0].toUpperCase()} segment / route closure. Check planned routing and alternatives.` : 'ATS route or segment closure. Check planned routing and alternatives.';
+            }
+            if (chips.includes('KABUL') && /ATS NOT AVAILABLE/i.test(s)) return 'Kabul FIR ATS not available. Apply published TIBA / company procedures.';
+            if (chips.includes('KABUL') && /LONGITUDINAL|SPACING/i.test(s)) return 'Kabul FIR entry may require spacing / delaying action. Expect ATC flow restriction.';
+            if (chips.includes('OFFSET/SPACING')) return 'Special offset / spacing procedure applies. Confirm route-specific procedure before entry.';
+            if (chips.includes('ESCAPE')) return 'Escape / decompression / diversion procedure notice. Review company escape-zone guidance.';
+            if (chips.includes('BORDER')) return 'Border / restricted FIR avoidance notice. Maintain planned routing and avoid unauthorized deviation.';
+            if (chips.includes('AIRSPACE')) return 'Restricted / special activity airspace active. Check lateral and vertical relevance.';
+            if (chips.includes('ATC/COMM')) return 'ATC / communication procedure notice. Check frequency or contact requirement.';
+            if (chips.includes('COMPANY')) return 'Company NOTAM. Review procedure or operational note relevant to this route.';
+
+            const firstSentence = s.split(/(?<=\.)\s+/)[0] || s;
+            return firstSentence.length > 180 ? firstSentence.slice(0, 180) + '...' : firstSentence;
+          };
+
+          const extractSections = (text, routeOrder) => {
+            const clean = sanitize(text);
+            const lines = clean.split('\n');
+            const routeMap = new Map(routeOrder.map(item => [item.code, item]));
+            const sections = [];
+            let current = null;
+            let currentFir = null;
+
+            const isHeader = (line, next) => {
+              const h = line.trim();
+              const n = (next || '').trim();
+              if (!h || !/^-{6,}$/.test(n)) return false;
+              if (/^(BR\s+\d+|PAGE|OFP|VALIDITY|WIND SUMMARY|AIRPORT WX|DESTINATION|ALTERNATE|TAKEOFF|LANDING|RMK)/i.test(h)) return false;
+              if (!/^[A-Z0-9_\/ .-]{3,80}$/.test(h)) return false;
+              return /\b(FIR|UIR|DCT|P\d{2,4}|N\d{2,4}|L\d{2,4}|M\d{2,4}|B\d{2,4}|A\d{2,4}|J\d{2,4}|V\d{2,4}|COMPANY|NOTAM)\b/i.test(h);
+            };
+
+            const flush = () => {
+              if (!current) return;
+              const body = current.body.join('\n').trim();
+              const blocks = parseNotamBlocks(body);
+              if (blocks.length > 0 || /^\s*NIL\s*$/i.test(body)) {
+                sections.push({ ...current, body, blocks });
+              }
+            };
+
+            for (let i = 0; i < lines.length - 1; i++) {
+              if (isHeader(lines[i], lines[i + 1])) {
+                flush();
+                const header = lines[i].trim().replace(/_/g, ' ');
+                const codeMatch = header.match(/\b([A-Z]{4})\b/);
+                const code = codeMatch ? codeMatch[1] : (currentFir ? currentFir.code : 'ROUTE');
+                if (/\b(FIR|UIR)\b/i.test(header) && codeMatch) {
+                  currentFir = { code, name: header };
+                }
+                const orderInfo = routeMap.get(code);
+                current = {
+                  header,
+                  code,
+                  firName: orderInfo ? orderInfo.name : (currentFir ? currentFir.name : header),
+                  order: orderInfo ? orderInfo.idx : 999,
+                  body: []
+                };
+                i++;
+              } else if (current) {
+                current.body.push(lines[i]);
+              }
+            }
+            flush();
+            return sections;
+          };
+
+          useEffect(() => {
+            if (!rawText) {
+              setGroups([]);
+              return;
+            }
+            const routeOrder = extractRouteFirOrder(rawText);
+            const sections = extractSections(rawText, routeOrder);
+
+            const allItems = [];
+            sections.forEach(section => {
+              section.blocks.forEach(block => {
+                const chips = getChips(block.text, section.header);
+                const level = classifyNotam(block.text, section.header);
+                const summary = buildSummary(block.text, section.header, chips, level);
+                const validOnly = isValidOnlyNotam(block.text);
+                const lowValue = validOnly || (level === 'INFO' && !chips.some(c => ['GNSS','ROUTE CLSD','KABUL','COMPANY','ATC/COMM','AIRSPACE','ESCAPE','BORDER'].includes(c)));
+                allItems.push({
+                  ...block,
+                  sectionHeader: section.header,
+                  code: section.code,
+                  firName: section.firName,
+                  order: section.order,
+                  chips,
+                  level,
+                  summary,
+                  lowValue,
+                  validOnly
+                });
+              });
+            });
+
+            const groupedMap = new Map();
+            allItems.forEach(item => {
+              const key = `${String(item.order).padStart(3,'0')}-${item.code}-${item.firName}`;
+              if (!groupedMap.has(key)) groupedMap.set(key, { code: item.code, firName: item.firName, order: item.order, items: [] });
+              groupedMap.get(key).items.push(item);
+            });
+
+            // 只保留 Navigation Log / ICAO FPL EET 裡實際航路經過的 FIR。
+            // order === 999 代表 PDF 後段一般 FIR NOTAM，不屬於本航路，預設完全排除。
+            const sorted = Array.from(groupedMap.values())
+              .filter(g => g.order < 999)
+              .sort((a,b) => a.order - b.order || a.firName.localeCompare(b.firName));
+            sorted.forEach(g => {
+              g.items.sort((a,b) => {
+                const rank = { CRITICAL: 0, CAUTION: 1, COMPANY: 2, INFO: 3 };
+                return (rank[a.level] || 9) - (rank[b.level] || 9);
+              });
+            });
+
+            const initialExpanded = {};
+            sorted.forEach(g => {
+              const criticalCount = g.items.filter(i => i.level === 'CRITICAL').length;
+              if (criticalCount > 0) initialExpanded[`${g.code}-${g.firName}`] = true;
+            });
+            setExpandedGroups(initialExpanded);
+            setExpandedNotams({});
+            setImportantFirNotams([]);
+            setGroups(sorted);
+          }, [rawText]);
+
+          const allItems = groups.flatMap(g => g.items);
+          const meaningfulItems = allItems.filter(i => !i.validOnly);
+          const counts = {
+            ALL: meaningfulItems.length,
+            CRITICAL: meaningfulItems.filter(i => i.level === 'CRITICAL').length,
+            CAUTION: meaningfulItems.filter(i => i.level === 'CAUTION').length,
+            COMPANY: meaningfulItems.filter(i => i.level === 'COMPANY').length,
+            INFO: meaningfulItems.filter(i => i.level === 'INFO').length
+          };
+
+          const visibleGroups = groups.map(g => ({
+            ...g,
+            items: g.items.filter(item => {
+              if (!showLow && item.lowValue) return false;
+              if (activeFilter !== 'ALL' && item.level !== activeFilter) return false;
+              return true;
+            })
+          })).filter(g => g.items.length > 0);
+
+          const levelStyle = {
+            CRITICAL: 'bg-rose-100 text-rose-800 border-rose-200',
+            CAUTION: 'bg-amber-100 text-amber-800 border-amber-200',
+            COMPANY: 'bg-sky-100 text-sky-800 border-sky-200',
+            INFO: 'bg-slate-100 text-slate-700 border-slate-200'
+          };
+
+          const levelLabel = {
+            CRITICAL: 'Critical',
+            CAUTION: 'Caution',
+            COMPANY: 'Company',
+            INFO: 'Info'
+          };
+
+          const toggleGroup = (key) => setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
+          const toggleNotam = (key) => setExpandedNotams(prev => ({ ...prev, [key]: !prev[key] }));
+          const getImportantKey = (item) => `${item.code}-${item.id}-${item.sectionHeader}`;
+          const toggleImportantFirNotam = (item) => {
+            const key = getImportantKey(item);
+            setImportantFirNotams(prev => {
+              if (prev.some(x => x.key === key)) return prev.filter(x => x.key !== key);
+              return [...prev, { key, ...item }];
+            });
+          };
+          const isImportantFirNotam = (item) => importantFirNotams.some(x => x.key === getImportantKey(item));
+
+          if (!rawText) return null;
+
+          return (
+            <div className="max-w-6xl mx-auto px-3 mt-3 pb-4">
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div className="bg-slate-900 text-white p-5">
+                  <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+                    <div>
+                      <div className="text-2xl font-black tracking-wide">ENROUTE FIR NOTAM</div>
+                      <div className="text-slate-300 text-sm mt-1"></div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {['ALL','CRITICAL','CAUTION','COMPANY','INFO'].map(key => (
+                        <button
+                          key={key}
+                          onClick={() => setActiveFilter(key)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-black border transition ${activeFilter === key ? 'bg-white text-slate-900 border-white' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}`}
+                        >
+                          {key === 'ALL' ? 'All' : levelLabel[key]} {counts[key] || 0}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setShowLow(!showLow)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-black border transition ${showLow ? 'bg-slate-200 text-slate-900 border-slate-200' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'}`}
+                      >
+                        {showLow ? '隱藏低相關' : '顯示低相關'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6 bg-slate-50">
+                  {allItems.length === 0 ? (
+                    <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-10 text-center text-slate-500">
+                      <CheckCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <div className="font-bold">沒有解析到 ENROUTE FIR NOTAM</div>
+                      <div className="text-sm mt-1">若 OFP 內沒有與本航路 FIR 對應的 NOTAM，這裡會保持空白。</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-5">
+                      {importantFirNotams.length > 0 && (
+                        <section className="bg-amber-50 border-2 border-amber-300 rounded-2xl shadow-sm overflow-hidden">
+                          <div className="p-4 border-b border-amber-200 bg-amber-100/70 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                              <div className="font-black text-amber-900 text-xl flex items-center gap-2">
+                                <Star className="w-5 h-5 text-amber-600" fill="currentColor" />
+                                標記的重要 FIR NOTAM
+                              </div>
+                              <div className="text-sm text-amber-800 mt-1"></div>
+                            </div>
+                            <button
+                              onClick={() => setImportantFirNotams([])}
+                              className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-800 text-xs font-black hover:bg-amber-50"
+                            >
+                              清除全部
+                            </button>
+                          </div>
+                          <div className="p-4 space-y-3">
+                            {importantFirNotams.map((item, idx) => {
+                              const nkey = `important-${item.key}-${idx}`;
+                              const nOpen = !!expandedNotams[nkey];
+                              return (
+                                <div key={nkey} className="rounded-xl border border-amber-300 bg-white p-4 shadow-sm">
+                                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-black border ${levelStyle[item.level]}`}>{levelLabel[item.level]}</span>
+                                        <span className="text-sm font-black text-slate-700">{item.id}</span>
+                                        <span className="text-xs text-slate-400">{item.firName}</span>
+                                      </div>
+                                      <div className="text-slate-900 font-bold leading-relaxed break-words">{item.summary}</div>
+                                      <div className="flex flex-wrap gap-1.5 mt-3">
+                                        {item.chips.map(chip => (
+                                          <span key={chip} className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600">{chip}</span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <div className="flex shrink-0 gap-2">
+                                      <button
+                                        onClick={() => toggleNotam(nkey)}
+                                        className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs font-black hover:bg-slate-50"
+                                      >
+                                        {nOpen ? '收合原文' : 'Show original'}
+                                      </button>
+                                      <button
+                                        onClick={() => toggleImportantFirNotam(item)}
+                                        className="px-3 py-1.5 rounded-lg bg-amber-100 border border-amber-300 text-amber-800 text-xs font-black hover:bg-amber-200"
+                                      >
+                                        取消標記
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {nOpen && (
+                                    <pre className="mt-4 p-3 rounded-xl bg-slate-900 text-slate-100 text-xs leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
+{item.text}
+                                    </pre>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </section>
+                      )}
+
+                      {visibleGroups.map((group, gidx) => {
+                        const gkey = `${group.code}-${group.firName}`;
+                        const groupCounts = {
+                          critical: group.items.filter(i => i.level === 'CRITICAL').length,
+                          caution: group.items.filter(i => i.level === 'CAUTION').length,
+                          company: group.items.filter(i => i.level === 'COMPANY').length,
+                          info: group.items.filter(i => i.level === 'INFO').length
+                        };
+                        const isOpen = !!expandedGroups[gkey];
+
+                        return (
+                          <section key={gkey} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                            <button
+                              onClick={() => toggleGroup(gkey)}
+                              className="w-full p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-slate-50 transition text-left"
+                            >
+                              <div>
+                                <div className="font-black text-slate-900 text-lg flex items-center gap-2">
+                                  {isOpen ? <ChevronUp className="w-5 h-5 text-slate-500" /> : <ChevronDown className="w-5 h-5 text-slate-500" />}
+                                  {group.firName}
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1">Route order #{group.order < 999 ? group.order + 1 : 'N/A'} · {group.items.length} item(s)</div>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {groupCounts.critical > 0 && <span className="px-2.5 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-800 border border-rose-200">Critical {groupCounts.critical}</span>}
+                                {groupCounts.caution > 0 && <span className="px-2.5 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800 border border-amber-200">Caution {groupCounts.caution}</span>}
+                                {groupCounts.company > 0 && <span className="px-2.5 py-1 rounded-full text-xs font-black bg-sky-100 text-sky-800 border border-sky-200">Company {groupCounts.company}</span>}
+                                {groupCounts.info > 0 && <span className="px-2.5 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-600 border border-slate-200">Info {groupCounts.info}</span>}
+                              </div>
+                            </button>
+
+                            {isOpen && (
+                              <div className="px-4 pb-4 space-y-3">
+                                {group.items.map((item, idx) => {
+                                  const nkey = `${gkey}-${item.id}-${idx}`;
+                                  const nOpen = !!expandedNotams[nkey];
+                                  return (
+                                    <div key={nkey} className={`rounded-xl border p-4 relative ${isImportantFirNotam(item) ? 'ring-2 ring-amber-300 border-amber-300 bg-amber-50/30' : item.level === 'CRITICAL' ? 'border-l-4 border-l-rose-500 bg-rose-50/40' : item.level === 'CAUTION' ? 'border-l-4 border-l-amber-500 bg-amber-50/40' : item.level === 'COMPANY' ? 'border-l-4 border-l-sky-500 bg-sky-50/40' : 'border-slate-200 bg-white'}`}>
+                                      <button
+                                        onClick={() => toggleImportantFirNotam(item)}
+                                        className={`absolute top-3 right-3 z-10 px-3 py-1.5 rounded-lg border text-xs font-black transition flex items-center gap-1.5 shadow-sm ${isImportantFirNotam(item) ? 'bg-amber-100 border-amber-300 text-amber-800 hover:bg-amber-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                      >
+                                        <Star className="w-3.5 h-3.5" fill={isImportantFirNotam(item) ? "currentColor" : "none"} />
+                                        {isImportantFirNotam(item) ? '已標記' : '標記重要'}
+                                      </button>
+                                      <div className="space-y-3">
+                                        <div className="min-w-0 pr-32">
+                                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-black border ${levelStyle[item.level]}`}>{levelLabel[item.level]}</span>
+                                            <span className="text-sm font-black text-slate-700">{item.id}</span>
+                                            <span className="text-xs text-slate-400">{item.sectionHeader}</span>
+                                          </div>
+                                          <div className="text-slate-900 font-bold leading-relaxed break-words">{item.summary}</div>
+                                          <div className="flex flex-wrap gap-1.5 mt-3">
+                                            {item.chips.map(chip => (
+                                              <span key={chip} className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600">{chip}</span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <button
+                                            onClick={() => toggleNotam(nkey)}
+                                            className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 text-xs font-black hover:bg-slate-50"
+                                          >
+                                            {nOpen ? '收合原文' : 'Show original'}
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {nOpen && (
+                                        <pre className="mt-4 p-3 rounded-xl bg-slate-900 text-slate-100 text-xs leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
+{item.text}
+                                        </pre>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </section>
+                        );
+                      })}
+
+                      {visibleGroups.length === 0 && (
+                        <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-10 text-center text-slate-500">
+                          目前篩選條件下沒有顯示項目。
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+
+
+        // ==========================================
+        // 模組：Crew Rest Calculator
+        // ==========================================
+        function RestInputField({ label, value, onChange, placeholder = 'HH:MM', readOnly = false }) {
+          return (
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-black text-slate-500">{label}</span>
+              <input
+                value={value}
+                onChange={(e) => onChange && onChange(e.target.value)}
+                placeholder={placeholder}
+                inputMode="numeric"
+                autoComplete="off"
+                readOnly={readOnly}
+                className={`bg-white border border-slate-300 rounded-xl px-4 py-3 text-xl font-mono font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400 ${readOnly ? 'opacity-80 cursor-default' : ''}`}
+              />
+            </label>
+          );
+        }
+
+        // ==========================================
+        // 模組：Crew Rest Calculator
+        // ==========================================
+        function RestCalcApp({ ofpData }) {
+          const getFlightTimeFromOFP = () => {
+            const raw = ofpData?.flightTime || '';
+            const m = String(raw).match(/(\d{1,2})[:Hh](\d{2})/);
+            if (!m) return '';
+            return `${m[1].padStart(2, '0')}:${m[2]}`;
+          };
+
+          const [flightTime, setFlightTime] = useState(getFlightTimeFromOFP());
+          const [crew, setCrew] = useState('4P');
+          const [restStart, setRestStart] = useState('');
+          const [fixedWindow, setFixedWindow] = useState('');
+          const [manualWindow, setManualWindow] = useState(false);
+          const [manualDurations, setManualDurations] = useState({});
+
+          const parseHHMM = (value) => {
+            const s = String(value || '').trim();
+            const m = s.match(/^(\d{1,2})(?::?(\d{2}))$/);
+            if (!m) return null;
+            const h = parseInt(m[1], 10);
+            const min = parseInt(m[2], 10);
+            if (h > 47 || min > 59) return null;
+            return h * 60 + min;
+          };
+
+          const formatHHMM = (mins) => {
+            if (mins === null || mins === undefined || Number.isNaN(mins)) return '—';
+            const day = Math.floor(mins / 1440);
+            const mod = ((mins % 1440) + 1440) % 1440;
+            const h = Math.floor(mod / 60);
+            const m = mod % 60;
+            return `${String(h).padStart(2, '0')}${String(m).padStart(2, '0')}${day > 0 ? ` +${day}` : ''}`;
+          };
+
+          const formatDuration = (mins) => {
+            if (mins === null || mins === undefined || Number.isNaN(mins)) return '';
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+          };
+
+          const displayDuration = (mins) => formatDuration(mins) || '—';
+
+          const roundDown5 = (mins) => {
+            if (mins === null || mins === undefined || Number.isNaN(mins)) return null;
+            return Math.floor(mins / 5) * 5;
+          };
+
+          const defaultWindowFromFlightTime = () => {
+            const mins = parseHHMM(flightTime);
+            if (mins === null) return '';
+            return formatDuration(roundDown5(Math.max(0, mins - 70)));
+          };
+
+          useEffect(() => {
+            const next = getFlightTimeFromOFP();
+            if (next && !flightTime) setFlightTime(next);
+          }, [ofpData]);
+
+          useEffect(() => {
+            if (!manualWindow) {
+              const next = defaultWindowFromFlightTime();
+              if (next) setFixedWindow(next);
+            }
+          }, [flightTime, manualWindow]);
+
+          const handleFlightTimeChange = (value) => {
+            setFlightTime(value);
+            if (!manualWindow) {
+              const mins = parseHHMM(value);
+              if (mins !== null) setFixedWindow(formatDuration(roundDown5(Math.max(0, mins - 70))));
+            }
+          };
+
+          const handleFixedWindowChange = (value) => {
+            const cleaned = String(value || '').replace(/[^\d:]/g, '').slice(0, 5);
+            setManualWindow(true);
+            setFixedWindow(cleaned);
+          };
+
+          const resetFixedWindow = () => {
+            setManualWindow(false);
+            const next = defaultWindowFromFlightTime();
+            if (next) setFixedWindow(next);
+          };
+
+          const windowMins = parseHHMM(fixedWindow);
+          const restStartMins = parseHHMM(restStart);
+          const totalCrew = crew === '4P' ? 4 : 3;
+          const groupTotalMins = windowMins !== null && crew === '4P' ? roundDown5(Math.floor(windowMins / 2)) : null;
+          const perPersonMins = windowMins !== null ? roundDown5(Math.floor(windowMins / totalCrew)) : null;
+
+          const cleanDurationInput = (value) => String(value || '').replace(/[^\d:]/g, '').slice(0, 5);
+          const defaultManualDuration = () => perPersonMins !== null ? formatDuration(perPersonMins) : '';
+
+          const getManualDuration = (label) => {
+            if (manualDurations[label] !== undefined) return manualDurations[label];
+            return defaultManualDuration();
+          };
+
+          const updateManualDuration = (label, value) => {
+            setManualDurations(prev => ({ ...prev, [label]: cleanDurationInput(value) }));
+          };
+
+          const buildRows = () => {
+            const rows = [];
+            let cursor = restStartMins;
+
+            const pushRow = ({ label, group, duration, auto = false, editable = false }) => {
+              const start = cursor;
+              const end = start !== null && duration !== null ? start + duration : null;
+              rows.push({ label, group, duration, start, end, auto, editable });
+              if (end !== null) cursor = end;
+            };
+
+            if (crew === '3P') {
+              ['A', 'B', 'C'].forEach(label => {
+                pushRow({
+                  label,
+                  group: '3P',
+                  duration: perPersonMins,
+                  auto: true,
+                  editable: false
+                });
+              });
+              return rows;
+            }
+
+            // 4P order: (A/B), (C/D), (A/B), (C/D) = A, C, B, D.
+            const targetAB = groupTotalMins;
+            const targetCD = groupTotalMins;
+
+            let durA = parseHHMM(getManualDuration('A'));
+            if (durA === null) durA = perPersonMins || 0;
+            if (targetAB !== null) durA = Math.min(durA, targetAB);
+
+            let durC = parseHHMM(getManualDuration('C'));
+            if (durC === null) durC = perPersonMins || 0;
+            if (targetCD !== null) durC = Math.min(durC, targetCD);
+
+            const durB = targetAB !== null ? Math.max(0, targetAB - durA) : null;
+            const durD = targetCD !== null ? Math.max(0, targetCD - durC) : null;
+
+            pushRow({ label: 'A', group: 'A/B', duration: durA, editable: true });
+            pushRow({ label: 'C', group: 'C/D', duration: durC, editable: true });
+            pushRow({ label: 'B', group: 'A/B', duration: durB, auto: true });
+            pushRow({ label: 'D', group: 'C/D', duration: durD, auto: true });
+
+            return rows;
+          };
+
+          const rows = buildRows();
+
+          return (
+            <div className="max-w-6xl mx-auto px-3 mt-3 pb-4">
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div className="bg-slate-900 text-white px-5 py-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black flex items-center gap-2">⌛ Crew Rest Calc</h2>
+
+                  </div>
+                  <button onClick={resetFixedWindow} className="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-black">
+                    依 Flight Time 重算
+                  </button>
+                </div>
+
+                <div className="p-3 bg-slate-50 space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <RestInputField label="Flight Time" value={flightTime} onChange={handleFlightTimeChange} />
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs font-black text-slate-500">Crew</span>
+                      <select value={crew} onChange={(e) => setCrew(e.target.value)} className="bg-white border border-slate-300 rounded-xl px-4 py-3 text-xl font-black text-slate-800">
+                        <option value="3P">3P</option>
+                        <option value="4P">4P</option>
+                      </select>
+                    </label>
+                    <RestInputField label="Rest Start (UTC)" value={restStart} onChange={setRestStart} placeholder="HHMM" />
+                    <RestInputField label="Fixed Rest Window" value={fixedWindow} onChange={handleFixedWindowChange} placeholder="HH:MM" />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white rounded-2xl border border-slate-200 p-4">
+                      <div className="text-xs font-black text-slate-500 mb-1">Fixed Rest Window</div>
+                      <div className="text-3xl font-black text-slate-800">{displayDuration(windowMins)}</div>
+                      <div className="text-xs text-slate-400 font-bold mt-1">
+                        {manualWindow ? '已手動調整；可按「依 Flight Time 重算」恢復。' : '自動使用 Flight Time - 1:10，並向下取整到 5 分鐘。'}
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-slate-200 p-4">
+                      <div className="text-xs font-black text-slate-500 mb-1">{crew === '4P' ? 'Group Total' : 'Duration / Person'}</div>
+                      <div className="text-3xl font-black text-blue-700">{crew === '4P' ? displayDuration(groupTotalMins) : displayDuration(perPersonMins)}</div>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-slate-200 p-4">
+                      <div className="text-xs font-black text-slate-500 mb-1">{crew === '4P' ? 'Default First Rest' : 'Crew Count'}</div>
+                      <div className="text-3xl font-black text-emerald-700">{crew === '4P' ? displayDuration(perPersonMins) : totalCrew}</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <div className="grid grid-cols-4 bg-slate-100 border-b border-slate-200 text-xs font-black text-slate-500">
+                      <div className="p-3">Crew</div>
+                      <div className="p-3">Start</div>
+                      <div className="p-3">Duration</div>
+                      <div className="p-3">End</div>
+                    </div>
+                    {rows.map((r, idx) => {
+                      const key = `${r.group}-${r.label}-${idx}`;
+                      return (
+                        <div key={key} className="grid grid-cols-4 items-center border-b last:border-b-0 border-slate-100">
+                          <div className="p-3">
+                            <div className="font-black text-blue-700 text-lg">{crew === '4P' ? r.group : r.label}</div>
+                          </div>
+                          <div className="p-3 font-mono font-black text-slate-700">{formatHHMM(r.start)}</div>
+                          <div className="p-3">
+                            {r.editable ? (
+                              <input
+                                value={getManualDuration(r.label)}
+                                onChange={(e) => updateManualDuration(r.label, e.target.value)}
+                                placeholder="HH:MM"
+                                inputMode="numeric"
+                                autoComplete="off"
+                                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-mono font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              />
+                            ) : (
+                              <div className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 font-mono font-black text-emerald-700">
+                                {displayDuration(r.duration)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-3 font-mono font-black text-emerald-700">{formatHHMM(r.end)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+</div>
+              </div>
+            </div>
+          );
+        }
+
+
+        // ==========================================
+        // 模組：PA 廣播稿（一頁式、分類切換、無水平滑動）
+        // ==========================================
+        function PAApp({ ofpData, atisData }) {
+          const [activePa, setActivePa] = useState('WELCOME');
+          const [copiedKey, setCopiedKey] = useState('');
+          const [editedPA, setEditedPA] = useState({});
+
+          const normalizeFlightNo = (value) => {
+            if (!value) return '___';
+            const compact = String(value).replace(/\s+/g, '');
+            const br = compact.match(/BR?\s*(\d+[A-Z]?)/i);
+            if (br) return br[1];
+            const digits = compact.match(/\d+[A-Z]?/);
+            return digits ? digits[0] : compact;
+          };
+
+          const airportMap = {
+            RCTP: { zh: '台北桃園國際機場', en: 'Taipei Taoyuan International Airport' },
+            RCSS: { zh: '台北松山機場', en: 'Taipei Songshan Airport' },
+            RJAA: { zh: '東京成田國際機場', en: 'Tokyo Narita International Airport' },
+            RJTT: { zh: '東京羽田機場', en: 'Tokyo Haneda Airport' },
+            RJBB: { zh: '大阪關西國際機場', en: 'Osaka Kansai International Airport' },
+            VHHH: { zh: '香港國際機場', en: 'Hong Kong International Airport' },
+            RKSI: { zh: '首爾仁川國際機場', en: 'Seoul Incheon International Airport' },
+            ZSPD: { zh: '上海浦東國際機場', en: 'Shanghai Pudong International Airport' },
+            ZBAA: { zh: '北京首都國際機場', en: 'Beijing Capital International Airport' },
+            VTBS: { zh: '曼谷蘇凡納布國際機場', en: 'Bangkok Suvarnabhumi Airport' },
+            WSSS: { zh: '新加坡樟宜機場', en: 'Singapore Changi Airport' },
+            KLAX: { zh: '洛杉磯國際機場', en: 'Los Angeles International Airport' },
+            KSFO: { zh: '舊金山國際機場', en: 'San Francisco International Airport' },
+            KSEA: { zh: '西雅圖塔科馬國際機場', en: 'Seattle Tacoma International Airport' },
+            KORD: { zh: '芝加哥歐海爾國際機場', en: "Chicago O'Hare International Airport" },
+            KJFK: { zh: '紐約甘迺迪國際機場', en: 'New York John F. Kennedy International Airport' },
+            EGLL: { zh: '倫敦希斯洛機場', en: 'London Heathrow Airport' },
+            LFPG: { zh: '巴黎戴高樂機場', en: 'Paris Charles de Gaulle Airport' },
+            EHAM: { zh: '阿姆斯特丹史基浦機場', en: 'Amsterdam Schiphol Airport' },
+            LOWW: { zh: '維也納國際機場', en: 'Vienna International Airport' },
+            LIMC: { zh: '米蘭馬爾彭薩機場', en: 'Milan Malpensa Airport' }
+          };
+
+          const airportName = (icao, lang) => {
+            if (!icao || icao === 'N/A') return '____';
+            const item = airportMap[String(icao).toUpperCase()];
+            return item ? item[lang] : String(icao).toUpperCase();
+          };
+
+          const parseTempFromWeather = (weather, icao) => {
+            const list = Array.isArray(weather) ? weather : [];
+            const joined = list.map(w => typeof w === 'string' ? w : Object.values(w || {}).join(' ')).join('\n');
+            const target = icao ? joined.split('\n').find(line => line.includes(icao)) || joined : joined;
+            const m = target.match(/\b(M?\d{2})\/(M?\d{2})\b/);
+            if (!m) return { c: '___', f: '___' };
+            const c = m[1].startsWith('M') ? -parseInt(m[1].slice(1), 10) : parseInt(m[1], 10);
+            return { c, f: Math.round(c * 9 / 5 + 32) };
+          };
+
+          const pickAtisForPA = (icao, role) => {
+            const airportData = atisData && icao ? atisData[icao] : null;
+            if (!airportData) return null;
+            const atis = role === 'DEP' ? (airportData.dep || airportData.arr) : (airportData.arr || airportData.dep);
+            return {
+              text: atis?.text || '',
+              time: atis?.time || '',
+              metar: airportData.metar || '',
+              taf: airportData.taf || ''
+            };
+          };
+
+          const parseAtisForPA = (text, metar) => {
+            const raw = `${text || ''} ${metar || ''}`.toUpperCase();
+            const tempMatch = raw.match(/\b(?:TEMP(?:ERATURE)?|T)\s*(M?\d{1,2})\b/i) || raw.match(/\b(M?\d{2})\/(?:M?\d{2}|\/\/)\b/i);
+            let tempC = null;
+            if (tempMatch) {
+              const t = tempMatch[1].replace('M', '-');
+              tempC = parseInt(t, 10);
+            }
+
+            let wxZh = '良好';
+            let wxEn = 'good';
+            if (/\b(?:\+?TS|TSRA|VCTS|CB)\b/.test(raw)) { wxZh = '有雷雨或積雨雲活動'; wxEn = 'thunderstorm activity in the vicinity'; }
+            else if (/\b(?:\+?SN|SHSN|FZRA|FZDZ|PL|SG)\b/.test(raw)) { wxZh = '下雪或有冬季天氣'; wxEn = 'snowing or winter weather conditions'; }
+            else if (/\b(?:\+?RA|SHRA|DZ)\b/.test(raw)) { wxZh = '下雨'; wxEn = 'raining'; }
+            else if (/\b(?:FG|FZFG)\b/.test(raw)) { wxZh = '起霧'; wxEn = 'foggy'; }
+            else if (/\b(?:BR|HZ|FU|DU|SA)\b/.test(raw)) { wxZh = '能見度略受影響'; wxEn = 'reduced visibility'; }
+            else if (/\b(?:BKN|OVC)\b/.test(raw)) { wxZh = '多雲'; wxEn = 'cloudy'; }
+            else if (/\b(?:FEW|SCT)\b/.test(raw)) { wxZh = '部分多雲'; wxEn = 'partly cloudy'; }
+            else if (/\b(?:CAVOK|SKC|NSC|CLR)\b/.test(raw)) { wxZh = '晴朗或良好'; wxEn = 'clear or good'; }
+
+            const windMatch = raw.match(/\bWIND(?:\s+(?:TDZ|MID|END))?\s+((?:[0-3]\d{2}|VRB)\/?\d{1,3}(?:G\d{1,3})?KT|(?:[0-3]\d{2}|VRB)\d{2,3}(?:G\d{2,3})?KT)/i) || raw.match(/\b((?:[0-3]\d{2}|VRB)\d{2,3}(?:G\d{2,3})?KT)\b/i);
+            const visMatch = raw.match(/\bVIS\s*([0-9]{3,5}M?|[0-9]+KM|CAVOK)\b/i) || raw.match(/\b(CAVOK)\b/i);
+            return {
+              wxZh,
+              wxEn,
+              tempC: tempC !== null && !Number.isNaN(tempC) ? tempC : null,
+              tempF: tempC !== null && !Number.isNaN(tempC) ? Math.round(tempC * 9 / 5 + 32) : null,
+              wind: windMatch ? windMatch[1].replace('/', '') : '',
+              vis: visMatch ? (visMatch[1] || visMatch[0]) : ''
+            };
+          };
+
+          const formatFlightTime = (value) => {
+            if (!value || value === 'N/A') return { zh: '___小時___分', en: '___ hours and ___ minutes' };
+            const m = String(value).match(/(\d{1,2})[:Hh](\d{2})/);
+            if (!m) return { zh: String(value), en: String(value) };
+            return { zh: `${parseInt(m[1], 10)}小時${parseInt(m[2], 10)}分`, en: `${parseInt(m[1], 10)} hours and ${parseInt(m[2], 10)} minutes` };
+          };
+
+          const getAltitude = (value) => {
+            if (!value || value === 'N/A') return '______';
+            const m = String(value).match(/FL\s*(\d{3})/i) || String(value).match(/\b(\d{3})\b/);
+            return m ? String(parseInt(m[1], 10) * 100) : String(value);
+          };
+
+          const formatSta = (value) => {
+            if (!value || value === 'N/A') return '________';
+            const m = String(value).match(/(\d{2})(\d{2})/);
+            if (!m) return String(value);
+            const h = parseInt(m[1], 10);
+            const min = m[2];
+            const h12 = h % 12 || 12;
+            return `${h12}:${min} ${h >= 12 ? 'PM' : 'AM'}`;
+          };
+
+          const parseOFPDate = (value) => {
+            if (!value || value === 'N/A') return null;
+            const m = String(value).match(/(\d{2})([A-Za-z]{3})(\d{2})/);
+            if (!m) return null;
+            const months = { JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5, JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11 };
+            const mon = months[m[2].toUpperCase()];
+            if (mon === undefined) return null;
+            return new Date(Date.UTC(2000 + parseInt(m[3], 10), mon, parseInt(m[1], 10)));
+          };
+
+          const formatZhStaWithDate = (dateValue, stdL, staL) => {
+            const staMatch = String(staL || '').match(/(\d{2})(\d{2})/);
+            if (!staMatch) return ' 月 號 上午';
+            const h = parseInt(staMatch[1], 10);
+            const min = staMatch[2];
+            const baseDate = parseOFPDate(dateValue);
+            if (!baseDate) {
+              return `${h < 12 ? '上午' : '下午'} ${h % 12 || 12}:${min}`;
+            }
+
+            const stdMatch = String(stdL || '').match(/(\d{2})(\d{2})/);
+            if (stdMatch) {
+              const stdMinutes = parseInt(stdMatch[1], 10) * 60 + parseInt(stdMatch[2], 10);
+              const staMinutes = h * 60 + parseInt(min, 10);
+              if (staMinutes < stdMinutes) baseDate.setUTCDate(baseDate.getUTCDate() + 1);
+            }
+
+            return `${baseDate.getUTCMonth() + 1}月${baseDate.getUTCDate()}日 ${h < 12 ? '上午' : '下午'}${h % 12 || 12}:${min}`;
+          };
+
+          const info = (() => {
+            const d = ofpData || {};
+            const arrIcao = d.arrIcao || d.destIcao || '____';
+            const depIcao = d.depIcao || '____';
+            const ofpTemp = parseTempFromWeather(d.weather, arrIcao);
+            const depAtis = pickAtisForPA(depIcao, 'DEP');
+            const arrAtis = pickAtisForPA(arrIcao, 'ARR');
+            const depAtisInfo = parseAtisForPA(depAtis?.text, depAtis?.metar);
+            const arrAtisInfo = parseAtisForPA(arrAtis?.text, arrAtis?.metar);
+            const finalTempC = arrAtisInfo.tempC !== null ? arrAtisInfo.tempC : ofpTemp.c;
+            const finalTempF = arrAtisInfo.tempF !== null ? arrAtisInfo.tempF : ofpTemp.f;
+            return {
+              flightNo: normalizeFlightNo(d.flightNo),
+              depIcao,
+              arrIcao,
+              depZh: airportName(depIcao, 'zh'),
+              arrZh: airportName(arrIcao, 'zh'),
+              depEn: airportName(depIcao, 'en'),
+              arrEn: airportName(arrIcao, 'en'),
+              flightTime: formatFlightTime(d.flightTime),
+              altitude: getAltitude(d.fl),
+              tempC: finalTempC,
+              tempF: finalTempF,
+              depWeatherZh: depAtisInfo.wxZh,
+              depWeatherEn: depAtisInfo.wxEn,
+              arrWeatherZh: arrAtisInfo.wxZh,
+              arrWeatherEn: arrAtisInfo.wxEn,
+              arrWind: arrAtisInfo.wind,
+              arrVis: arrAtisInfo.vis,
+              sta: formatSta(d.staL),
+              staZh: formatZhStaWithDate(d.date, d.stdL, d.staL)
+            };
+          })();
+
+          const paTemplates = {
+            WELCOME: {
+              label: 'Welcome',
+              note: '',
+              en: `Dear passengers, good morning / afternoon / evening, this is your first officer speaking from the flight deck. On behalf of the captain and all the crew, welcome aboard EVA Air flight BR ${info.flightNo}, departing from ${info.depEn} to ${info.arrEn}.\n\nWe should be ready for departure in a few minutes. Our flight time today is ${info.flightTime.en}, with an initial cruising altitude of ${info.altitude} feet.\n\nThe enroute weather seems fine; however, we may fly through some turbulent areas. If you see the fasten seatbelt sign being turned on, for your safety, please remain seated and fasten your seatbelt.\n\nNow please make yourself comfortable and enjoy the flight with us. Once again, welcome aboard.`,
+              zh: `各位貴賓早安 / 午安 / 晚安，謹代表機長與全體組員歡迎您搭乘長榮航空 BR ${info.flightNo} 號班機，由 ${info.depZh} 飛往 ${info.arrZh}。\n\n本次飛行時間預計為 ${info.flightTime.zh}，計畫巡航高度為 ${info.altitude} 英呎。沿途天氣大致穩定，但仍可能穿越不穩定氣流區。航程中當繫緊安全帶指示燈號亮起時，請您留在座位上並繫緊安全帶。\n\n本班機的地面作業將在幾分鐘後完成，並開始後推啟程。在此先預祝各位貴賓有個愉快的飛行旅程，謝謝。`
+            },
+            GROUND_DELAY: {
+              label: 'Ground Delay',
+              note: 'If ground delay is expected to be more than 15 minutes before pushback, or more than 30 minutes after pushback.',
+              en: `Dear passengers, this is captain speaking. Due to [for example: ground handling, traffic congestion or weather condition], we might be delayed up to [xx] minutes before takeoff. I will keep you updated if longer delay happens. Thank you.`,
+              zh: `各位貴賓，這裡是機長廣播。由於[延誤原因]，我們可能需要延遲約[分鐘]分鐘後才能起飛。如果有更長時間的延誤，我會再向各位報告。感謝您的耐心等候。`
+            },
+            DESCENT: {
+              label: 'Descent',
+              note: '',
+              en: `Dear passengers, this is your first officer speaking from the flight deck.\n\nWe are approaching ${info.arrEn} and expect to start our descent within about 10 minutes. The estimated time of arrival at ${info.arrEn} will be ${info.sta}, and the current local time is [local time].\n\nThe present weather at the airport is ${info.arrWeatherEn}, with a temperature of ${info.tempC} degrees Celsius or ${info.tempF} degrees Fahrenheit. During the descent, we may fly through some turbulent areas. Please remain seated and keep your seatbelt fastened whenever the seatbelt sign is on.\n\nWe certainly hope that you have enjoyed the flight with us, and we look forward to having you on board another EVA Air flight again soon. Thank you.`,
+              zh: `各位貴賓早安 / 午安 / 晚安，這是副機長再次廣播。\n\n距離目的地 ${info.arrZh} 約 ______ 海哩，將在約 10 分鐘後開始下降高度，於當地時間 ${info.staZh} 抵達 ${info.arrZh}，目前當地時間為_______。\n\n根據最新天氣資訊，目的地機場目前天氣為${info.arrWeatherZh}，地面溫度為攝氏 ${info.tempC} 度 / 華氏 ${info.tempF} 度。下降過程中，可能會有顛簸情況，請務必留在座位上並繫緊安全帶。\n\n感謝您選擇長榮航空，希望這趟飛行讓您感到滿意，並期待不久的將來還有機會為您服務。預祝各位貴賓旅途愉快，謝謝。`
+            },
+            DEICE: {
+              label: 'De/Anti-ice',
+              note: 'Before de-icing / anti-icing procedure.',
+              en: `Dear passengers, welcome on board. This is captain speaking. Today we must complete a procedure to protect the aircraft against the build-up of ice. [If delay: And we will be on ground for xx minutes.] This will involve the spraying of a fluid onto the aircraft; there may be some noise during this process and, possibly, a slightly unusual smell inside of the cabin. The procedure is routine and should be completed in a few minutes. Thank you for your attention.`,
+              zh: `各位貴賓，歡迎登機。這裡是機長廣播。今天我們需要進行除冰/防冰程序以保護飛機。我們將在地面等候約[分鐘]分鐘。過程中會在機身噴灑除冰液，期間可能會有一些噪音，機艙內也可能聞到些許異味。這是例行程序，幾分鐘內即可完成。感謝您的配合。`
+            },
+            MISSED: {
+              label: 'Missed Approach',
+              note: 'After level-off at missed approach altitude and before the next approach.',
+              en: `Dear passengers, this is captain speaking. We were unable to complete our approach to landing at [airport]. We have just completed a routine go-around procedure and, shortly, we shall be starting another approach to land. We will be landing in [x] minutes. Thank you for your attention.`,
+              zh: `各位貴賓，這裡是機長廣播。我們無法完成在[機場]的進場降落。我們剛剛已完成例行的重飛程序，稍後將再次進場降落。預計在[分鐘]分鐘後落地。感謝您的配合。`
+            },
+            DIVERSION: {
+              label: 'Diversion',
+              note: 'Use when diversion has been decided.',
+              en: `Dear passengers, this is captain speaking. Unfortunately the weather at [destination] airport is not very good and we are unable to land there at the moment. We shall divert to [alternate] airport where the weather is better and we can wait for the weather at [destination] airport to improve.`,
+              zh: `各位貴賓，這裡是機長廣播。目的地機場天氣低於降落標準，目前無法降落。我們將轉降至[備降機場]，等待目的地機場天氣改善。`
+            }
+          };
+
+          const paOrder = ['WELCOME', 'GROUND_DELAY', 'DESCENT', 'DEICE', 'MISSED', 'DIVERSION'];
+          const current = paTemplates[activePa] || paTemplates.WELCOME;
+          const currentEn = editedPA[activePa]?.en ?? current.en;
+          const currentZh = editedPA[activePa]?.zh ?? current.zh;
+          const updatePAContent = (lang, value) => {
+            setEditedPA(prev => ({
+              ...prev,
+              [activePa]: {
+                en: lang === 'en' ? value : (prev[activePa]?.en ?? current.en),
+                zh: lang === 'zh' ? value : (prev[activePa]?.zh ?? current.zh)
+              }
+            }));
+          };
+          const resetCurrentPA = () => {
+            setEditedPA(prev => {
+              const next = { ...prev };
+              delete next[activePa];
+              return next;
+            });
+          };
+
+          const renderTextWithPlaceholders = (text) => String(text).split(/(\[[^\]]+\])/g).map((part, idx) => {
+            if (/^\[[^\]]+\]$/.test(part)) {
+              return <span key={idx} className="inline-flex align-baseline mx-1 px-3 py-1 rounded-xl border-2 border-dashed border-blue-400/80 bg-blue-50 text-blue-700 font-black text-base sm:text-lg break-words">{part.slice(1, -1)}</span>;
+            }
+            return <Fragment key={idx}>{part}</Fragment>;
+          });
+
+          const copyCurrent = () => {
+            const text = `English\n${currentEn}\n\n中文\n${currentZh}`;
+            navigator.clipboard.writeText(text).then(() => {
+              setCopiedKey(activePa);
+              setTimeout(() => setCopiedKey(''), 1500);
+            }).catch(() => alert('複製失敗，請手動選取文字。'));
+          };
+
+          return (
+            <div className="max-w-6xl mx-auto px-3 mt-3 pb-4">
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                <div className="bg-slate-900 text-white px-4 py-3 flex flex-row items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-xl font-black flex items-center gap-2"><Mic className="w-5 h-5 text-blue-400" /> PA 廣播稿</h2>
+
+                  </div>
+                  <button onClick={copyCurrent} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-black text-sm shadow-sm active:scale-95 transition flex items-center justify-center gap-2">
+                    <Clipboard className="w-4 h-4" /> {copiedKey === activePa ? '已複製' : '複製目前稿'}
+                  </button>
+                </div>
+
+                <div className="p-4 bg-slate-950 border-b border-slate-800">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {paOrder.map(key => (
+                      <button
+                        key={key}
+                        onClick={() => setActivePa(key)}
+                        className={`px-3 py-3 rounded-xl border-2 font-black text-sm sm:text-base transition-all break-words ${activePa === key ? 'border-blue-500 text-blue-400 bg-blue-500/10 shadow-[0_0_12px_rgba(59,130,246,0.25)]' : 'border-slate-700 text-slate-400 bg-slate-900 hover:border-slate-500 hover:text-slate-200'}`}
+                      >
+                        {paTemplates[key].label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-5 sm:p-6 bg-slate-50 space-y-5">
+                  <div className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                    <div className="text-lg font-black text-slate-800 mb-1">{current.label}</div>
+                    {current.note && <div className="text-slate-500 italic font-semibold leading-relaxed break-words">{current.note}</div>}
+                  </div>
+
+                  <section className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                    <div className="text-blue-600 font-black text-base mb-2 flex items-center gap-2">English <span className="text-base">📝</span></div>
+                    <textarea
+                      value={currentEn}
+                      onChange={(e) => updatePAContent('en', e.target.value)}
+                      className="w-full h-[245px] text-slate-800 text-sm sm:text-base leading-[1.34] whitespace-pre-wrap break-words bg-transparent border border-slate-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                    />
+                  </section>
+
+                  <section className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                    <div className="text-blue-600 font-black text-base mb-2 flex items-center gap-2">中文 <span className="text-base">📝</span></div>
+                    <textarea
+                      value={currentZh}
+                      onChange={(e) => updatePAContent('zh', e.target.value)}
+                      className="w-full h-[245px] text-slate-800 text-sm sm:text-base leading-[1.38] whitespace-pre-wrap break-words bg-transparent border border-slate-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                    />
+                  </section>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         function App() {
           const [activeMainTab, setActiveMainTab] = useState('OFP'); 
           const [sharedRawText, setSharedRawText] = useState(null); 
           const [globalLoading, setGlobalLoading] = useState(false);
           const [globalError, setGlobalError] = useState(null);
           const [showTopBtn, setShowTopBtn] = useState(false); 
+          const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ofpDarkModeMuted') === 'true');
 
           const [ofpExportData, setOfpExportData] = useState(null);
           const [pinnedNotamsExport, setPinnedNotamsExport] = useState([]);
+          const [atisExportData, setAtisExportData] = useState({});
+          const [importantFirNotamsExport, setImportantFirNotamsExport] = useState([]);
           
           // 兩個彈出視窗狀態
           const [showExportModal, setShowExportModal] = useState(false);
@@ -943,6 +2708,11 @@
           
           // 新增：紀錄被選取的 Threats 狀態
           const [selectedThreats, setSelectedThreats] = useState([]);
+
+          useEffect(() => {
+            localStorage.setItem('ofpDarkModeMuted', darkMode ? 'true' : 'false');
+            document.body.className = darkMode ? 'bg-black' : 'bg-slate-200';
+          }, [darkMode]);
 
           useEffect(() => {
             window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1007,6 +2777,8 @@
             setActiveMainTab('OFP');
             setOfpExportData(null);
             setPinnedNotamsExport([]);
+            setAtisExportData({});
+            setImportantFirNotamsExport([]);
             setParkingBay('');
             setWaterQuantity('');
             setCustomNote('');
@@ -1180,12 +2952,11 @@ Descent PA
 各位貴賓早安/午安/晚安，這是副機長再次廣播。我們正巡航在 ${alt} 英呎高空，距離目的地 ${arrZh} 約 ______ 海哩，預計將在10分鐘之後開始下降高度準備落地，於當地時間 ____月____號 上午/下午/晚間 ${staLocalFormatted} 抵達 ${arrZh}，____和____有____小時的時差，目前當地時間為_______。 
 
 根據最新天氣資訊，目的地機場現在天氣狀況良好/晴天/多雲/起霧/風勢強勁/溼冷/乾冷/涼爽/正在下雨/下雪，地面溫度為攝氏 ${tempC} 度/華氏 ${tempF} 度。   
-
 （極端天氣如颱風的補充：由於天氣/颱風/鋒面的影響，待會下降過程中，可能會有非常顛波的情況，請務必留在座位上並繫緊安全帶。）
 
 感謝您選擇長榮航空，希望這趟飛行讓您感到滿意，並期待在不久的將來，還有機會能為您服務。謹代表全體組員預祝各位貴賓旅途愉快。謝謝。
 
-Ladies and gentlemen, this is your first officer speaking from the flight deck.
+Dear passengers, this is your first officer speaking from the flight deck.
 We are approaching to ${arrEn} and expecting to start our descent within about 10 minutes.
 The estimated time of arrival at ${arrEn} will be ${staAmPm} and the current local time is __________.
 【ONLY IF DELAY EXPECTED】
@@ -1249,6 +3020,21 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                   text += `-----------------------------------------\n\n`;
               }
 
+              text += `⭐ IMPORTANT FIR NOTAMS (${importantFirNotamsExport.length} 筆)\n`;
+              text += `-----------------------------------------\n`;
+              if (importantFirNotamsExport.length === 0) {
+                  text += `(目前無標記的重要 FIR NOTAM)\n`;
+              } else {
+                  importantFirNotamsExport.forEach((n, i) => {
+                      text += `[${n.id}] ${n.firName || n.code || ''}\n`;
+                      text += `${n.summary || ''}\n`;
+                      if (n.chips && n.chips.length) text += `TAGS: ${n.chips.join(', ')}\n`;
+                      text += `${n.text || ''}\n`;
+                      if (i < importantFirNotamsExport.length - 1) text += `\n`;
+                  });
+              }
+              text += `-----------------------------------------\n\n`;
+
               text += `⭐ PINNED NOTAMS (${pinnedNotamsExport.length} 筆)\n`;
               text += `-----------------------------------------\n`;
               if (pinnedNotamsExport.length === 0) {
@@ -1264,7 +3050,7 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
           };
 
           return (
-            <div className="min-h-screen font-sans flex flex-col bg-slate-200">
+            <div className={`min-h-screen font-sans flex flex-col pl-20 transition-colors duration-300 ${darkMode ? "cockpit-black bg-black" : "bg-slate-200"}`}>
               {!sharedRawText ? (
                   <div className="flex-1 flex flex-col items-center justify-center p-6">
                       <div className="max-w-xl w-full bg-white p-10 rounded-2xl shadow-xl border border-slate-200 text-center">
@@ -1274,6 +3060,12 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                           </div>
                           <h1 className="text-3xl font-black mb-2 text-slate-800">LIDO OFP 助理</h1>
                           <p className="text-slate-500 font-medium mb-8">NOTAM 篩選與 OFP 天氣摘要</p>
+                          <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className={`theme-toggle-btn mb-6 px-4 py-2 rounded-full text-sm font-black border transition-all ${darkMode ? 'bg-slate-700 text-slate-100 border-slate-500' : 'bg-slate-900 text-white border-slate-700'}`}
+                          >
+                            {darkMode ? '☀️ Light' : '🌙 Night'}
+                          </button>
 
                           <label className={`relative cursor-pointer bg-blue-600 text-white px-6 py-5 rounded-xl font-bold hover:bg-blue-700 transition-all flex flex-col items-center justify-center gap-3 w-full shadow-lg shadow-blue-600/20 ${globalLoading ? 'opacity-70 pointer-events-none' : ''}`}>
                               {globalLoading ? (
@@ -1294,39 +3086,57 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                   </div>
               ) : (
                   <Fragment>
-                      <nav className="bg-slate-900 shadow-lg sticky top-0 z-50 border-b border-slate-800">
-                        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center gap-4">
-                          <div className="flex flex-wrap justify-center gap-2">
-                              <button onClick={() => setActiveMainTab('OFP')} className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'OFP' ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-                                <FileText className="w-4 h-4 hidden sm:block" /> OFP 摘要
+                      <nav className="bg-slate-900/95 backdrop-blur-md shadow-[8px_0_22px_rgba(15,23,42,0.18)] fixed top-0 left-0 bottom-0 z-50 border-r border-slate-800 w-20 overflow-y-auto">
+                        <div className="h-full px-1.5 py-3 flex flex-col justify-between items-stretch gap-3">
+                          <div className="flex flex-col gap-2">
+                              <button onClick={() => setActiveMainTab('OFP')} className={`h-14 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 ${activeMainTab === 'OFP' ? 'bg-emerald-600 text-white shadow-[0_0_12px_rgba(16,185,129,0.38)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <FileText className="w-4 h-4" /> OFP
                               </button>
-                              <button onClick={() => setActiveMainTab('NOTAM')} className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'NOTAM' ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-                                <AlertTriangle className="w-4 h-4 hidden sm:block" /> NOTAM 篩選
+                              <button onClick={() => setActiveMainTab('NOTAM')} className={`h-14 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 ${activeMainTab === 'NOTAM' ? 'bg-blue-600 text-white shadow-[0_0_12px_rgba(37,99,235,0.38)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <AlertTriangle className="w-4 h-4" /> NOTAM
                               </button>
-                              <button onClick={() => setActiveMainTab('THREATS')} className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-sm transition-all flex items-center gap-2 ${activeMainTab === 'THREATS' ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(217,119,6,0.5)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
-                                <Shield className="w-4 h-4 hidden sm:block" /> 威脅評估
+                              <button onClick={() => setActiveMainTab('FIR')} className={`h-14 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 ${activeMainTab === 'FIR' ? 'bg-cyan-700 text-white shadow-[0_0_12px_rgba(14,116,144,0.34)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <MapIcon className="w-4 h-4" /> FIR
+                              </button>
+                              <button onClick={() => setActiveMainTab('PA')} className={`h-14 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 ${activeMainTab === 'PA' ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(79,70,229,0.38)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <Mic className="w-4 h-4" /> PA
+                              </button>
+                              <button onClick={() => setActiveMainTab('REST')} className={`h-14 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 ${activeMainTab === 'REST' ? 'bg-sky-700 text-white shadow-[0_0_12px_rgba(3,105,161,0.35)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <Clock className="w-4 h-4" /> Rest
+                              </button>
+                              <button onClick={() => setActiveMainTab('THREATS')} className={`h-14 rounded-xl font-black text-[10px] transition-all flex flex-col items-center justify-center gap-1 ${activeMainTab === 'THREATS' ? 'bg-amber-600 text-white shadow-[0_0_12px_rgba(217,119,6,0.34)]' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}>
+                                <Shield className="w-4 h-4" /> 威脅
                               </button>
                           </div>
                           
-                          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-                              <button onClick={() => setShowPaModal(true)} className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors bg-slate-800 px-4 py-2 rounded-full border border-blue-700/50 flex items-center gap-2">
-                                  <Mic className="w-4 h-4" /> PA 廣播稿
+                          <div className="flex flex-col gap-2">
+                              <button onClick={() => setDarkMode(!darkMode)} className={`theme-toggle-btn h-11 rounded-xl border text-[10px] font-black transition-colors flex flex-col items-center justify-center gap-0.5 ${darkMode ? 'bg-slate-700 text-slate-100 border-slate-500 hover:bg-slate-600' : 'bg-slate-800 text-slate-300 hover:text-white border-slate-700'}`}>
+                                  <span>{darkMode ? '☀️' : '🌙'}</span><span>{darkMode ? 'Light' : 'Night'}</span>
                               </button>
-                              <button onClick={() => setShowExportModal(true)} className="text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors bg-slate-800 px-4 py-2 rounded-full border border-emerald-700/50 flex items-center gap-2">
-                                  <Clipboard className="w-4 h-4" /> 匯出精華版
+                              <button onClick={() => setShowExportModal(true)} className="h-11 rounded-xl text-[10px] font-black text-emerald-400 hover:text-emerald-300 transition-colors bg-slate-800 border border-emerald-700/50 flex flex-col items-center justify-center gap-0.5">
+                                  <Clipboard className="w-4 h-4" /> 匯出
                               </button>
-                              <button onClick={handleReset} className="text-sm font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
-                                  重新上傳
+                              <button onClick={handleReset} className="h-11 rounded-xl text-[10px] font-black text-slate-400 hover:text-white transition-colors bg-slate-800 border border-slate-700 flex items-center justify-center">
+                                  重傳
                               </button>
                           </div>
                         </div>
                       </nav>
 
                       <div className={`flex-1 ${activeMainTab === 'OFP' ? 'block' : 'hidden'}`}>
-                        <OfpSummaryApp rawText={sharedRawText} onOfpDataUpdate={setOfpExportData} />
+                        <OfpSummaryApp rawText={sharedRawText} onOfpDataUpdate={setOfpExportData} onAtisDataUpdate={setAtisExportData} />
                       </div>
                       <div className={`flex-1 ${activeMainTab === 'NOTAM' ? 'block' : 'hidden'}`}>
                         <NotamFilterApp rawText={sharedRawText} onPinnedUpdate={setPinnedNotamsExport} />
+                      </div>
+                      <div className={`flex-1 ${activeMainTab === 'FIR' ? 'block' : 'hidden'}`}>
+                        <EnrouteFirNotamApp rawText={sharedRawText} onImportantUpdate={setImportantFirNotamsExport} />
+                      </div>
+                      <div className={`flex-1 ${activeMainTab === 'PA' ? 'block' : 'hidden'}`}>
+                        <PAApp ofpData={ofpExportData} atisData={atisExportData} />
+                      </div>
+                      <div className={`flex-1 ${activeMainTab === 'REST' ? 'block' : 'hidden'}`}>
+                        <RestCalcApp ofpData={ofpExportData} />
                       </div>
                       <div className={`flex-1 ${activeMainTab === 'THREATS' ? 'block' : 'hidden'}`}>
                         <ThreatsApp selectedThreats={selectedThreats} onToggle={handleThreatToggle} />
@@ -1366,7 +3176,7 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                                       document.body.removeChild(textArea);
                                   });
                               }} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 active:scale-95 transition-all">
-                                  <Clipboard className="w-5 h-5" /> 複製廣播稿
+                                  <Clipboard className="w-4 h-4" /> 複製廣播稿
                               </button>
                           </div>
                       </div>
@@ -1440,7 +3250,7 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                                       document.body.removeChild(textArea);
                                   });
                               }} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 active:scale-95 transition-all">
-                                  <Clipboard className="w-5 h-5" /> 複製純文字
+                                  <Clipboard className="w-4 h-4" /> 複製純文字
                               </button>
                           </div>
                       </div>
