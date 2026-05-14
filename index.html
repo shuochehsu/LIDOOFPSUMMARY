@@ -2687,7 +2687,7 @@
 
         function App() {
           const [activeMainTab, setActiveMainTab] = useState('OFP'); 
-          const [sharedRawText, setSharedRawText] = useState(null); 
+          const [sharedRawText, setSharedRawText] = useState(() => localStorage.getItem('ofpSavedRawText') || null); 
           const [globalLoading, setGlobalLoading] = useState(false);
           const [globalError, setGlobalError] = useState(null);
           const [showTopBtn, setShowTopBtn] = useState(false); 
@@ -2713,6 +2713,17 @@
             localStorage.setItem('ofpDarkModeMuted', darkMode ? 'true' : 'false');
             document.body.className = darkMode ? 'bg-black' : 'bg-slate-200';
           }, [darkMode]);
+
+          useEffect(() => {
+            try {
+              if (sharedRawText) {
+                localStorage.setItem('ofpSavedRawText', sharedRawText);
+                localStorage.setItem('ofpSavedAt', new Date().toISOString());
+              }
+            } catch (e) {
+              console.warn('OFP autosave failed:', e);
+            }
+          }, [sharedRawText]);
 
           useEffect(() => {
             window.scrollTo({ top: 0, behavior: 'instant' });
@@ -2762,6 +2773,12 @@
                     fullText += pageText + '\n';
                 }
                 setSharedRawText(fullText);
+                try {
+                  localStorage.setItem('ofpSavedRawText', fullText);
+                  localStorage.setItem('ofpSavedAt', new Date().toISOString());
+                } catch (e) {
+                  console.warn('OFP autosave failed:', e);
+                }
               } catch (err) {
                 console.error("Global PDF Error:", err);
                 setGlobalError("讀取 PDF 失敗，請確認是否為有效 LIDO 文件。");
@@ -2773,6 +2790,8 @@
 
           const handleReset = () => {
             setSharedRawText(null);
+            localStorage.removeItem('ofpSavedRawText');
+            localStorage.removeItem('ofpSavedAt');
             setGlobalError(null);
             setActiveMainTab('OFP');
             setOfpExportData(null);
@@ -3060,7 +3079,8 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                               <FileText className="w-12 h-12 text-emerald-500" />
                           </div>
                           <h1 className="text-3xl font-black mb-2 text-slate-800">LIDO OFP 助理</h1>
-                          <p className="text-slate-500 font-medium mb-8">NOTAM 篩選與 OFP 天氣摘要</p>
+                          <p className="text-slate-500 font-medium mb-3">NOTAM 篩選與 OFP 天氣摘要</p>
+                          <p className="text-xs text-slate-400 font-bold mb-8">已加入離線暫存：有網路時上傳過 OFP 後，無網路重新開啟也會保留資料。</p>
                           <button
                             onClick={() => setDarkMode(!darkMode)}
                             className={`theme-toggle-btn mb-6 px-4 py-2 rounded-full text-sm font-black border transition-all ${darkMode ? 'bg-slate-700 text-slate-100 border-slate-500' : 'bg-slate-900 text-white border-slate-700'}`}
