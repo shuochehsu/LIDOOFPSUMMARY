@@ -3180,18 +3180,19 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
                               </button>
                           </div>
                           
-                                                    <div className="rounded-xl border border-slate-700 bg-slate-950/80 px-1.5 py-2 text-center shadow-inner">
-                              <div className="text-[9px] font-black text-slate-500 tracking-wide mb-1">TIME</div>
-                              <div className="space-y-1">
-                                  <div className="rounded-lg bg-slate-900 border border-slate-800 px-1 py-1">
-                                      <div className="text-[8px] font-black text-blue-400 leading-none">STD</div>
-                                      <div className="text-[10px] font-black text-slate-200 leading-tight font-mono">{ofpExportData?.stdZ || '----'}</div>
-                                      <div className="text-[8px] font-bold text-slate-500 leading-tight font-mono">{ofpExportData?.stdL ? `L ${ofpExportData.stdL}` : ''}</div>
+                                                    <div className="px-0.5 py-1 text-center">
+                              <div className="text-[8px] font-black text-slate-500 tracking-wide mb-1">TIME</div>
+                              <div className="space-y-1.5">
+                                  <div className="px-0 py-1">
+                                      <div className="text-[9px] font-black text-blue-400 leading-none">STD</div>
+                                      <div className="text-[13px] font-black text-slate-100 leading-tight font-mono tracking-tight">{ofpExportData?.stdZ || '----'}</div>
+                                      <div className="text-[9px] font-bold text-slate-500 leading-tight font-mono tracking-tight">{ofpExportData?.stdL ? `L ${ofpExportData.stdL}` : ''}</div>
                                   </div>
-                                  <div className="rounded-lg bg-slate-900 border border-slate-800 px-1 py-1">
-                                      <div className="text-[8px] font-black text-emerald-400 leading-none">STA</div>
-                                      <div className="text-[10px] font-black text-slate-200 leading-tight font-mono">{ofpExportData?.staZ || '----'}</div>
-                                      <div className="text-[8px] font-bold text-slate-500 leading-tight font-mono">{ofpExportData?.staL ? `L ${ofpExportData.staL}` : ''}</div>
+                                  <div className="h-px bg-slate-800/80 mx-1"></div>
+                                  <div className="px-0 py-1">
+                                      <div className="text-[9px] font-black text-emerald-400 leading-none">STA</div>
+                                      <div className="text-[13px] font-black text-slate-100 leading-tight font-mono tracking-tight">{ofpExportData?.staZ || '----'}</div>
+                                      <div className="text-[9px] font-bold text-slate-500 leading-tight font-mono tracking-tight">{ofpExportData?.staL ? `L ${ofpExportData.staL}` : ''}</div>
                                   </div>
                               </div>
                           </div>
