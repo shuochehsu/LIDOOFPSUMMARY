@@ -1,6 +1,12 @@
-const CACHE_NAME = 'lido-ofp-offline-v2';
+const CACHE_NAME = 'lido-ofp-offline-v3';
 const APP_SHELL = './index.html';
-const SAME_ORIGIN_PRECACHE = ['./', './index.html', './manifest.webmanifest'];
+const SAME_ORIGIN_PRECACHE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png'
+];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {

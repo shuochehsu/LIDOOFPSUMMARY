@@ -341,14 +341,15 @@
       }
     </style>
 
-
-
-    <meta name="application-name" content="LIDO OFP Assistant">
+    <meta name="application-name" content="LIDO OFP">
     <meta name="apple-mobile-web-app-title" content="LIDO OFP">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0b1220">
     <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 
 </head>
 <body class="bg-slate-200">
@@ -2705,7 +2706,8 @@
           const [sharedRawText, setSharedRawText] = useState(() => localStorage.getItem('ofpSavedRawText') || null); 
           const [globalLoading, setGlobalLoading] = useState(false);
           const [globalError, setGlobalError] = useState(null);
-          const [showTopBtn, setShowTopBtn] = useState(false); 
+          const [showTopBtn, setShowTopBtn] = useState(false);
+          const [isOnline, setIsOnline] = useState(navigator.onLine); 
           const [darkMode, setDarkMode] = useState(() => localStorage.getItem('ofpDarkModeMuted') === 'true');
 
           const [ofpExportData, setOfpExportData] = useState(null);
@@ -2743,6 +2745,16 @@
           useEffect(() => {
             window.scrollTo({ top: 0, behavior: 'instant' });
           }, [activeMainTab]);
+
+          useEffect(() => {
+            const updateOnline = () => setIsOnline(navigator.onLine);
+            window.addEventListener('online', updateOnline);
+            window.addEventListener('offline', updateOnline);
+            return () => {
+              window.removeEventListener('online', updateOnline);
+              window.removeEventListener('offline', updateOnline);
+            };
+          }, []);
 
           useEffect(() => {
             const handleScroll = () => setShowTopBtn(window.scrollY > 300);
@@ -3086,6 +3098,29 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
 
           return (
             <div className={`min-h-screen font-sans flex flex-col transition-colors duration-300 ${sharedRawText ? "pl-20" : ""} ${darkMode ? "cockpit-black bg-black" : "bg-slate-200"}`}>
+              <div className="fixed top-3 right-3 z-[70] flex items-center gap-2">
+                <div className={`px-2.5 py-1 rounded-full border text-[10px] font-black shadow-sm ${isOnline ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-900 text-slate-100 border-slate-700'}`}>
+                  {isOnline ? 'Online' : 'Offline Ready'}
+                </div>
+                <button
+                  onClick={() => {
+                    if ('serviceWorker' in navigator) {
+                      navigator.serviceWorker.getRegistration().then(reg => {
+                        if (reg) {
+                          reg.update().then(() => alert('離線版本已檢查更新。若剛上傳新版，請重新整理一次。'));
+                        } else {
+                          alert('尚未註冊離線快取，請有網路時重新整理。');
+                        }
+                      });
+                    } else {
+                      alert('此瀏覽器不支援 Service Worker。');
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-slate-900 text-slate-100 border border-slate-700 text-[10px] font-black shadow-sm"
+                >
+                  更新離線版
+                </button>
+              </div>
               {!sharedRawText ? (
                   <div className="flex-1 flex flex-col items-center justify-center p-6">
                       <div className="max-w-xl w-full bg-white p-10 rounded-2xl shadow-xl border border-slate-200 text-center">
@@ -3333,7 +3368,7 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
           navigator.serviceWorker.register('./sw.js', { scope: './' })
             .then(reg => {
               if (reg && reg.update) reg.update();
-              console.log('OFP service worker v2 registered');
+              console.log('OFP service worker v3 registered');
             })
             .catch(err => console.warn('OFP service worker registration failed:', err));
         });
