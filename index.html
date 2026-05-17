@@ -342,6 +342,14 @@
     </style>
 
 
+
+    <meta name="application-name" content="LIDO OFP Assistant">
+    <meta name="apple-mobile-web-app-title" content="LIDO OFP">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b1220">
+    <link rel="manifest" href="./manifest.webmanifest">
+
 </head>
 <body class="bg-slate-200">
     <div id="root"></div>
@@ -3311,6 +3319,20 @@ We certainly hope that you have enjoyed the flight with us, and we look forward 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js', { scope: './' })
+            .then(reg => {
+              if (reg && reg.update) reg.update();
+              console.log('OFP service worker registered');
+            })
+            .catch(err => console.warn('OFP service worker registration failed:', err));
+        });
+      }
+    </script>
+
 </body>
 </html>
 

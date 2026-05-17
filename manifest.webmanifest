@@ -1,0 +1,10 @@
+{
+  "name": "LIDO OFP Assistant",
+  "short_name": "LIDO OFP",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "description": "Offline-capable LIDO OFP briefing assistant"
+}
