@@ -1935,8 +1935,8 @@
 
             const initialExpanded = {};
             sorted.forEach(g => {
-              const criticalCount = g.items.filter(i => i.level === 'CRITICAL').length;
-              if (criticalCount > 0) initialExpanded[`${g.code}-${g.firName}`] = true;
+              // Auto-expand every FIR NOTAM group by default.
+              initialExpanded[`${g.code}-${g.firName}`] = true;
             });
             setExpandedGroups(initialExpanded);
             setExpandedNotams({});
@@ -2476,6 +2476,8 @@
           const [activePa, setActivePa] = useState('WELCOME');
           const [copiedKey, setCopiedKey] = useState('');
           const [editedPA, setEditedPA] = useState({});
+          const [delayReason, setDelayReason] = useState('TRANSIT_PASSENGER');
+          const [delayMinutes, setDelayMinutes] = useState('15');
 
           const normalizeFlightNo = (value) => {
             if (!value) return '___';
@@ -2657,6 +2659,44 @@
             };
           })();
 
+          const delayReasonOptions = [
+            { key: 'TRANSIT_PASSENGER', label: 'Transit passenger', en: 'we are waiting for connecting passengers', zh: '等候轉機旅客' },
+            { key: 'ATC_FLOW', label: 'ATC flow control', en: 'air traffic flow control', zh: '航管流量管制' },
+            { key: 'WEATHER', label: 'Weather', en: 'weather conditions', zh: '天候因素' },
+            { key: 'LATE_ARRIVAL', label: 'Late arrival aircraft', en: 'the late arrival of the inbound aircraft', zh: '前段班機抵達較晚' },
+            { key: 'CARGO_LOADING', label: 'Cargo loading', en: 'cargo loading operations', zh: '貨物裝載作業' },
+            { key: 'CATERING', label: 'Catering', en: 'catering service', zh: '空廚餐點補給作業' },
+            { key: 'MAINTENANCE', label: 'Maintenance check', en: 'a required maintenance check', zh: '必要的機務檢查' },
+            { key: 'DEICING', label: 'Deicing', en: 'the de-icing / anti-icing procedure', zh: '除冰或防冰作業' },
+            { key: 'GATE_CONGESTION', label: 'Gate congestion', en: 'gate and ramp congestion', zh: '登機門及機坪壅塞' },
+            { key: 'DOCUMENT', label: 'Document issue', en: 'flight documentation processing', zh: '飛航文件處理' },
+            { key: 'CUSTOM', label: 'Custom reason', en: '[reason]', zh: '[延誤原因]' }
+          ];
+
+          const selectedDelayReason = delayReasonOptions.find(item => item.key === delayReason) || delayReasonOptions[0];
+          const delayMinuteTextEn = String(delayMinutes || '').trim() ? `about ${String(delayMinutes).trim()} minutes` : '[xx] minutes';
+          const delayMinuteTextZh = String(delayMinutes || '').trim() ? `約${String(delayMinutes).trim()}分鐘` : '約[分鐘]分鐘';
+
+          const buildGroundDelayPA = () => {
+            const reason = selectedDelayReason;
+            const openingEn = reason.key === 'TRANSIT_PASSENGER'
+              ? 'We are currently waiting for a few connecting passengers to board the aircraft.'
+              : `Due to ${reason.en},`;
+            const openingZh = reason.key === 'TRANSIT_PASSENGER'
+              ? '目前我們正在等候幾位轉機旅客登機。'
+              : `由於${reason.zh}，`;
+
+            const en = reason.key === 'TRANSIT_PASSENGER'
+              ? `Dear passengers, this is captain speaking. ${openingEn} We expect a delay of ${delayMinuteTextEn} before takeoff. We apologize for the inconvenience and will keep you updated if there is any further information. Thank you for your patience.`
+              : `Dear passengers, this is captain speaking. ${openingEn} we expect a delay of ${delayMinuteTextEn} before takeoff. We apologize for the inconvenience and will keep you updated if there is any further information. Thank you for your patience.`;
+
+            const zh = `各位貴賓，這裡是機長廣播。${openingZh}本班機預計將延遲${delayMinuteTextZh}後起飛。造成各位貴賓不便，我們深感抱歉；若有進一步訊息，將再向各位報告。感謝您的耐心等候。`;
+
+            return { en, zh };
+          };
+
+          const groundDelayPA = buildGroundDelayPA();
+
           const paTemplates = {
             WELCOME: {
               label: 'Welcome',
@@ -2667,8 +2707,8 @@
             GROUND_DELAY: {
               label: 'Ground Delay',
               note: 'If ground delay is expected to be more than 15 minutes before pushback, or more than 30 minutes after pushback.',
-              en: `Dear passengers, this is captain speaking. Due to [for example: ground handling, traffic congestion or weather condition], we might be delayed up to [xx] minutes before takeoff. I will keep you updated if longer delay happens. Thank you.`,
-              zh: `各位貴賓，這裡是機長廣播。由於[延誤原因]，我們可能需要延遲約[分鐘]分鐘後才能起飛。如果有更長時間的延誤，我會再向各位報告。感謝您的耐心等候。`
+              en: groundDelayPA.en,
+              zh: groundDelayPA.zh
             },
             DESCENT: {
               label: 'Descent',
@@ -2715,6 +2755,24 @@
               delete next[activePa];
               return next;
             });
+          };
+
+          const clearGroundDelayEdit = () => {
+            setEditedPA(prev => {
+              const next = { ...prev };
+              delete next.GROUND_DELAY;
+              return next;
+            });
+          };
+
+          const handleDelayReasonChange = (value) => {
+            setDelayReason(value);
+            clearGroundDelayEdit();
+          };
+
+          const handleDelayMinutesChange = (value) => {
+            setDelayMinutes(value.replace(/[^0-9]/g, '').slice(0, 3));
+            clearGroundDelayEdit();
           };
 
           const renderTextWithPlaceholders = (text) => String(text).split(/(\[[^\]]+\])/g).map((part, idx) => {
@@ -2764,6 +2822,35 @@
                     <div className="text-lg font-black text-slate-800 mb-1">{current.label}</div>
                     {current.note && <div className="text-slate-500 italic font-semibold leading-relaxed break-words">{current.note}</div>}
                   </div>
+
+                  {activePa === 'GROUND_DELAY' && (
+                    <section className="bg-white border border-blue-200 rounded-xl p-3 shadow-sm space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
+                        <label className="block">
+                          <span className="block text-xs font-black text-slate-500 mb-1">Delay Reason</span>
+                          <select
+                            value={delayReason}
+                            onChange={(e) => handleDelayReasonChange(e.target.value)}
+                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          >
+                            {delayReasonOptions.map(item => (
+                              <option key={item.key} value={item.key}>{item.label}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="block">
+                          <span className="block text-xs font-black text-slate-500 mb-1">Minutes</span>
+                          <input
+                            inputMode="numeric"
+                            value={delayMinutes}
+                            onChange={(e) => handleDelayMinutesChange(e.target.value)}
+                            placeholder="xx"
+                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          />
+                        </label>
+                      </div>
+                    </section>
+                  )}
 
                   <section className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
                     <div className="text-blue-600 font-black text-base mb-2 flex items-center gap-2">English <span className="text-base">📝</span></div>
