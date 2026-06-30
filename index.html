@@ -1713,8 +1713,115 @@
               .trim();
           };
 
+          const reflowFirDisplayText = (text) => {
+            const rawLines = String(text || '')
+              .replace(/\r/g, '\n')
+              .split('\n')
+              .map(line => line.trim())
+              .filter(Boolean);
+
+            if (rawLines.length === 0) return '';
+
+            const normalizeInline = (value) => {
+              let s = String(value || '').replace(/\t/g, ' ');
+
+              // Repair PDF/OFP extraction artifacts where letters or digits are separated
+              // one by one: V A L I D -> VALID, A P P L I C A B L E -> APPLICABLE,
+              // 1 2 N M -> 12NM. This keeps normal words and real spaces intact.
+              // Collapse PDF extraction artifacts where a word was split into individual letters.
+              // Examples: V A L I D -> VALID, F L I G H T -> FLIGHT, 1 2 N M -> 12NM.
+              s = s.replace(/\b(?:[A-Z]\s+){2,}[A-Z]\b/g, (m) => m.replace(/\s+/g, ''));
+              s = s.replace(/\b(?:\d\s+)+\d\s*(?:NM|FT|KM|M)\b/gi, (m) => m.replace(/\s+/g, ''));
+
+              const shortRepairs = [
+                ['A S', 'AS'], ['O F', 'OF'], ['T O', 'TO'], ['I N', 'IN'], ['B Y', 'BY'], ['W I', 'WI'], ['O R', 'OR'],
+                ['A I R', 'AIR'], ['S F C', 'SFC'], ['U N L', 'UNL'], ['F L W', 'FLW'],
+                ['R M K', 'RMK'], ['A P', 'AP'], ['A C F T', 'ACFT'], ['L D G', 'LDG'],
+                ['T E L', 'TEL'], ['D E P', 'DEP'], ['D E S T', 'DEST'], ['F I R', 'FIR'],
+                ['C T C', 'CTC'], ['O P R', 'OPR'], ['A B V', 'ABV'], ['B L W', 'BLW'],
+                ['T F C', 'TFC'], ['R T E', 'RTE'], ['R W Y', 'RWY'], ['T W Y', 'TWY']
+              ];
+              shortRepairs.forEach(([from, to]) => {
+                s = s.replace(new RegExp('\\b' + from.replace(/ /g, '\\s+') + '\\b', 'gi'), to);
+              });
+
+              return s
+                .replace(/[ \t]+/g, ' ')
+                .replace(/\s+([,.;:])/g, '$1')
+                .replace(/\(\s+/g, '(')
+                .replace(/\s+\)/g, ')')
+                .replace(/\bADS-\s+R\b/gi, 'ADS-R')
+                .replace(/\bTIS-\s+B\b/gi, 'TIS-B')
+                .replace(/\bFIS-\s+B\b/gi, 'FIS-B')
+                .replace(/\bADS\s*-\s*B\b/gi, 'ADS-B')
+                .replace(/\bADS\s*-\s*C\b/gi, 'ADS-C')
+                .replace(/\bRNP\s+(\d+)\b/gi, 'RNP$1')
+                .replace(/\bRCP\s+(\d+)\b/gi, 'RCP$1')
+                .replace(/\bRSP\s+(\d+)\b/gi, 'RSP$1')
+                .replace(/--+/g, '—')
+                .trim();
+            };
+
+            const isShortContinuation = (line) => /^[A-Z0-9]{1,4}[),.]?$/i.test(String(line || '').trim());
+            const isNotamHeader = (line) => /^\s*(?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+VALID:/i.test(line);
+            const isNumberedItem = (line) => /^\s*(?:\d+[\.)]|\(\d+\))\s*/.test(line);
+            const isLimitLine = (line) => /^\s*[FG]\)\s*/i.test(line);
+            const isMajorLabel = (line) => /^\s*(?:AIR\s+EXER\s+WILL\s+TAKE\s+PLACE|AREA\s+AS\s+FLW|REFERENCE\b|RMK\b|NOTE\b|REMARKS?\b|OPR\s+TEL\b|TEL\b|CONTACT\b|TRACK\s+\d+\b|FLEX\s+ROUTE\b|JAPAN\s+ROUTE\b|NAR\s+ROUTE\b|OBJECTIVES?\b|APPLICABLE\s+(?:TIME|AIRSPACE)\b|RQMTS\b|REQUIREMENTS?\b|CONTINGENCY\b|SUSPENSION\b|EXAMPLES?\s+OF\s+NOTIFICATION\b|FROM\s+SFC\s+TO\s+UNL\b)/i.test(line);
+            const shouldStartNewParagraph = (line, prev) => {
+              if (!prev) return false;
+              if (isNotamHeader(line) || isNumberedItem(line) || isLimitLine(line) || isMajorLabel(line)) return true;
+              if (/^\s*(?:VALIDITY|VALID\s*:)\b/i.test(line)) return true;
+              return false;
+            };
+
+            const logicalLines = [];
+            rawLines.forEach((originalLine) => {
+              let line = normalizeInline(originalLine);
+              if (!line) return;
+
+              if (logicalLines.length === 0) {
+                logicalLines.push(line);
+                return;
+              }
+
+              let prev = logicalLines[logicalLines.length - 1];
+
+              // Repair obvious split tokens such as ADS- / R without creating a line break.
+              if (/[-/]$/.test(prev) && isShortContinuation(line)) {
+                logicalLines[logicalLines.length - 1] = normalizeInline(prev + line);
+                return;
+              }
+
+              // Keep true NOTAM structure, but remove arbitrary PDF hard returns inside a paragraph.
+              if (shouldStartNewParagraph(line, prev)) {
+                logicalLines.push(line);
+              } else {
+                // Join wrapped PDF lines into the same paragraph. Browser will wrap naturally.
+                logicalLines[logicalLines.length - 1] = normalizeInline(prev + ' ' + line);
+              }
+            });
+
+            let out = logicalLines
+              .join('\n')
+              .replace(/\n{3,}/g, '\n')
+              .trim();
+
+            // After wrapped lines are joined, restore meaningful NOTAM structure that
+            // often appears mid-line after PDF extraction.
+            out = out
+              .replace(/\s+(?=(?:\d+\.|\(\d+\))\s+[A-Z])/g, '\n')
+              .replace(/\s+(?=TRACK\s+\d+\.)/gi, '\n')
+              .replace(/\s+(?=(?:FLEX|JAPAN|NAR|RNP|RNAV|UPR)\s+ROUTE\s*:)/gi, '\n')
+              .replace(/\s+(?=RMK\s*:)/gi, '\n')
+              .replace(/\s+(?=(?:F|G)\)\s+)/g, '\n')
+              .replace(/\s+(?=FROM\s+SFC\s+TO\s+UNL\b)/gi, '\n')
+              .replace(/\n{3,}/g, '\n\n');
+
+            return out.trim();
+          };
+
           const highlightFirNotamText = (text) => {
-            const clean = cleanOFPPageArtifacts(text);
+            const clean = reflowFirDisplayText(cleanOFPPageArtifacts(text));
             const regex = /(\b(?:MISSILE|MISSILES|ROCKET|ROCKETS|LAUNCH|ANTIBALLISTIC|SPACE\s+OPS|SPACE\s+OPERATION)\b|\b(?:GNSS|GPS|SPOOF(?:ING)?|JAMM(?:ING)?|JAMMED|GPS\s+SIGNAL)\b|\b(?:CPDLC|DATA\s+LINK|DATALINK|ADS-C|FANS)\b|\b(?:ADS-B|ADS-R|TIS-B|FIS-B|SURVEILLANCE|RADAR)\b|\b(?:ATC|TIBA|COMMUNICATION|CONTACT|FREQUENC(?:Y|IES)?|HF|VHF)\b|\b(?:RTE\s+SEGMENTS?\s+CLSD|ROUTE\s+CLOSED|SEGMENT\s+CLOSED|AWY\s+CLOSED|CLSD|CLOSED)\b|\b(?:RESTRICTED|PROHIBITED|DANGER\s+AREA|MILITARY|AIR\s+REFUELLING|SPECIAL\s+ACTIVITY|GUN\s+FRNG|FIRING|TRAINING\s+AREA)\b|\b(?:OFFSET|SPACING|LONGITUDINAL|DELAYING\s+ACTION|REPORT\s+TO\s+ATC|5NM|8NM|12NM)\b|\b(?:DECOMPRESSION|ESCAPE|PNR|DIVERSION|EMERGENCY\s+DESCENT)\b|\b(?:PACOTS|NOPAC|FLEX\s+ROUTE|UPR|FPL|FLIGHT\s+PLANNING|RNAV|RNP)\b)/gi;
             const parts = clean.split(regex);
 
@@ -1759,7 +1866,30 @@
               const idMatch = t.match(/^\s*((?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2}))/i);
               if (!idMatch) return null;
               t = cleanOFPPageArtifacts(t.replace(/\*{10,}/g, '').replace(/\n{3,}/g, '\n\n').trim());
-              return { id: idMatch[1].toUpperCase(), text: t };
+
+              const normalizedOneLine = t.replace(/\s+/g, ' ').trim();
+              const validMatch = normalizedOneLine.match(/^((?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+VALID:\s*\d{10}\s*-\s*(?:\d{10}|UFN|PERM|EST)?)/i);
+              const companyMatch = normalizedOneLine.match(/^((?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+COMPANY\s+NOTAM)/i);
+              const metaLine = validMatch ? validMatch[1].toUpperCase() : (companyMatch ? companyMatch[1].toUpperCase() : idMatch[1].toUpperCase());
+
+              let bodyText = t;
+              if (validMatch) {
+                bodyText = bodyText.replace(/^\s*(?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+VALID:\s*\d{10}\s*-\s*(?:\d{10}|UFN|PERM|EST)?\s*/i, '');
+              } else if (companyMatch) {
+                bodyText = bodyText.replace(/^\s*(?:[A-Z0-9]{1,4}\d{1,4}\/\d{2}|CO\d+\/\d{2})\s+COMPANY\s+NOTAM\s*/i, '');
+              }
+              bodyText = bodyText.trim();
+
+              // Remove a duplicated NOTAM ID/title line from the body when the same ID
+              // is already shown in the top meta row. Example: meta SX75/24, body starts
+              // SX0075/24 AIP SUPPLEMENT... Keep the actual content after that line.
+              const idParts = idMatch[1].toUpperCase().match(/^([A-Z]+)(\d+)\/(\d{2})$/);
+              if (idParts) {
+                const idLineRegex = new RegExp('^\\s*' + idParts[1] + '0*' + idParts[2] + '\\/\\s*' + idParts[3] + '\\b[^\\n]*(?:\\n|$)', 'i');
+                bodyText = bodyText.replace(idLineRegex, '').trim();
+              }
+
+              return { id: idMatch[1].toUpperCase(), metaLine, text: bodyText, rawText: t };
             }).filter(Boolean);
           };
 
@@ -1894,10 +2024,11 @@
             const allItems = [];
             sections.forEach(section => {
               section.blocks.forEach(block => {
-                const chips = getChips(block.text, section.header);
-                const level = classifyNotam(block.text, section.header);
-                const summary = buildSummary(block.text, section.header, chips, level);
-                const validOnly = isValidOnlyNotam(block.text);
+                const sourceText = block.rawText || block.text;
+                const chips = getChips(sourceText, section.header);
+                const level = classifyNotam(sourceText, section.header);
+                const summary = buildSummary(sourceText, section.header, chips, level);
+                const validOnly = isValidOnlyNotam(sourceText);
                 const lowValue = validOnly || (level === 'INFO' && !chips.some(c => ['GNSS','ROUTE CLSD','KABUL','COMPANY','ATC/COMM','AIRSPACE','ESCAPE','BORDER'].includes(c)));
                 allItems.push({
                   ...block,
@@ -2055,7 +2186,8 @@
                                     <div className="min-w-0">
                                       <div className="flex flex-wrap items-center gap-1.5 mb-2">
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-black border ${levelStyle[item.level]}`}>{levelLabel[item.level]}</span>
-                                        <span className="text-sm font-black text-slate-700">{item.id}</span>
+                                        {!item.metaLine && <span className="text-sm font-black text-slate-700">{item.id}</span>}
+                                        {item.metaLine && <span className="text-xs font-black text-slate-700 bg-white border border-slate-200 rounded-md px-2 py-0.5">{item.metaLine}</span>}
                                         <span className="text-xs text-slate-400">{item.firName}</span>
                                         {item.chips.map(chip => (
                                           <span key={chip} className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600">{chip}</span>
@@ -2071,7 +2203,7 @@
                                       </button>
                                     </div>
                                   </div>
-                                  <pre className="mt-4 p-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-mono leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
+                                  <pre className="mt-4 p-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-[15px] font-mono tracking-normal leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
 {highlightFirNotamText(item.text)}
                                   </pre>
                                 </div>
@@ -2129,7 +2261,8 @@
                                         <div className="min-w-0 pr-32">
                                           <div className="flex flex-wrap items-center gap-1.5 mb-2 pr-1">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-black border ${levelStyle[item.level]}`}>{levelLabel[item.level]}</span>
-                                            <span className="text-sm font-black text-slate-700">{item.id}</span>
+                                            {!item.metaLine && <span className="text-sm font-black text-slate-700">{item.id}</span>}
+                                            {item.metaLine && <span className="text-xs font-black text-slate-700 bg-white border border-slate-200 rounded-md px-2 py-0.5">{item.metaLine}</span>}
                                             <span className="text-xs text-slate-400">{item.sectionHeader}</span>
                                             {item.chips.map(chip => (
                                               <span key={chip} className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-black text-slate-600">{chip}</span>
@@ -2139,7 +2272,7 @@
 
                                       </div>
 
-                                      <pre className="mt-4 p-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-mono leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
+                                      <pre className="mt-4 p-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-[15px] font-mono tracking-normal leading-relaxed whitespace-pre-wrap break-words overflow-x-hidden">
 {highlightFirNotamText(item.text)}
                                       </pre>
                                     </div>
